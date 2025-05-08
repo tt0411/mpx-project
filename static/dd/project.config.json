@@ -1,0 +1,15 @@
+{
+  "setting": {
+    "newFeature": true,
+    "urlCheck": true,
+    "es6": false,
+    "postcss": false,
+    "minified": false,
+    "checkSiteMap": false,
+    "autoAudits": false
+  },
+  "appid": "wx43ed82bf04e8a3b7",
+  "projectname": "mpx-project",
+  "description": "A mpx project",
+  "condition": {}
+}
