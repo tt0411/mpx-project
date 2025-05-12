@@ -1,14 +1,52 @@
 <template>
-  <list></list>
+  <list name="{{value}}"></list>
+  <view class="mx-10px">
+    <ant-button type="primary" bindtap="handleClick">按钮</ant-button>
+  </view>
+  <!-- <input type="text" wx:model="{{ value }}" /> -->
+  <!-- <van-checkbox wx:model="{{ checked }}" wx:model-value-path="[]">复选框</van-checkbox>
+  <van-field wx:model="{{ value }}" placeholder="请输入用户名" wx:model-value-path="[]" /> -->
+  <ant-input wx:model="{{value}}" wx:model-event="change" wx:model-value-path="[]"/>
 </template>
 
 <script>
 import { createPage } from '@mpxjs/core'
+import { storeToRefs, mapState, mapActions } from '@mpxjs/pinia'
+import { useOrderStore, useCommonStore } from '@/store'
+import { getTest } from '@/api'
 
 createPage({
+  data: {
+    currentName: 'hello123',
+    checked: true,
+    value: '666',
+    loading: false
+  },
   onLoad() {
     //
-  }
+  },
+  computed: {
+   ...mapState(useOrderStore, ['name', 'count']),
+   ...mapState(useCommonStore, ['title', 'num']),
+  },
+  onLoad() {
+    // getTest('/api/test')
+  },
+  methods: {
+     ...mapActions(useCommonStore, ['increment']),
+     handleClick() {
+      this.increment()
+      console.log('click', this.name, this.count, this.title, this.num);
+      console.log(this.value, '===value===')
+      this.loading = true
+      setTimeout(() => {
+        this.loading = false
+      }, 2000) 
+    },
+    onChange(e) {
+      console.log(e, '===e===')
+    }
+  },
 })
 </script>
 

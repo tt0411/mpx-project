@@ -1,8 +1,12 @@
 <script>
 import mpx, { createApp } from '@mpxjs/core'
+import { createPinia } from '@mpxjs/pinia'
 import apiProxy from '@mpxjs/api-proxy'
+import mpxFetch from '@mpxjs/fetch'
 
+mpx.use(mpxFetch)
 mpx.use(apiProxy, { usePromise: true })
+createPinia()
 
 createApp({
   onLaunch() {
@@ -11,7 +15,7 @@ createApp({
 })
 </script>
 
-<style>
+<style lang="scss">
   /*此处编写全局样式*/
 </style>
 
@@ -19,7 +23,11 @@ createApp({
   {
     "pages": [
       "./pages/index"
-    ]
+    ],
+    "usingComponents": {
+      "ant-button": "antd-mini/Button/index",
+      "ant-input": "antd-mini/Input/index"
+    }
   }
 </script>
 

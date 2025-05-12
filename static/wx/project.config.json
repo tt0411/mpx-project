@@ -1,15 +1,24 @@
 {
-  "setting": {
-    "newFeature": true,
-    "urlCheck": true,
-    "es6": false,
-    "postcss": true,
-    "minified": false,
-    "checkSiteMap": false,
-    "autoAudits": false
-  },
   "appid": "wx43ed82bf04e8a3b7",
-  "projectname": "mpx-project",
-  "description": "A mpx project",
-  "condition": {}
+  "compileType": "miniprogram",
+  "libVersion": "3.8.3",
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  },
+  "condition": {},
+  "setting": {
+    "postcss": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    },
+    "ignoreUploadUnusedFiles": true
+  },
+  "editorSetting": {
+    "tabIndent": "insertSpaces",
+    "tabSize": 2
+  },
+  "projectname": "mpx-project"
 }
