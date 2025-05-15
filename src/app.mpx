@@ -1,34 +1,41 @@
 <script>
-import mpx, { createApp } from '@mpxjs/core'
-import { createPinia } from '@mpxjs/pinia'
-import apiProxy from '@mpxjs/api-proxy'
-import mpxFetch from '@mpxjs/fetch'
+  import mpx, { createApp } from '@mpxjs/core'
+  import { createPinia } from '@mpxjs/pinia'
+  import apiProxy from '@mpxjs/api-proxy'
+  import mpxFetch from '@mpxjs/fetch'
 
-mpx.use(mpxFetch)
-mpx.use(apiProxy, { usePromise: true })
-createPinia()
+  mpx.use(mpxFetch)
+  mpx.use(apiProxy, { usePromise: true })
+  createPinia()
 
-createApp({
-  onLaunch() {
-    //
-  }
-})
+  createApp({
+    onLaunch() {
+      //
+    }
+  })
 </script>
 
 <style lang="scss">
   /*此处编写全局样式*/
 </style>
 
-<script type="application/json">
-  {
-    "pages": [
-      "./pages/index"
-    ],
-    "usingComponents": {
-      "ant-button": "antd-mini/Button/index",
-      "ant-input": "antd-mini/Input/index"
-    }
-  }
+<script name="json">
+  // {
+  //   "pages": ["./pages/index"],
+  //   "usingComponents": {
+  //     "van-checkbox": "@vant/weapp/checkbox/index",
+  //     "van-checkbox-group": "@vant/weapp/checkbox-group/index"
+  //   }
+  // }
+   module.exports = {
+    "pages": ["./pages/index"],
+     "usingComponents": {
+       "van-checkbox": "@vant/weapp/checkbox/index",
+       "van-checkbox-group": "@vant/weapp/checkbox-group/index",
+       "van-field": "@vant/weapp/field/index",
+       "van-button": "@vant/weapp/button/index"
+     }
+   }
 </script>
 
 <!--也可以通过以下形式用js输出json，便于书写注释和使用条件编译-->

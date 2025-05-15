@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "serve": "mpx-cli-service serve --watch",
-    "build": "mpx-cli-service build",
+    "build:test:wx": "mpx-cli-service --mode=development build",
+    "build:prod:wx": "mpx-cli-service build",
     "serve:ali": "mpx-cli-service serve --targets=ali --watch",
-    "build:ali": "mpx-cli-service build --targets=ali"
+    "build:test:ali": "mpx-cli-service build --mode=development --targets=ali",
+    "build:prod:ali": "mpx-cli-service build --targets=ali"
   },
   "dependencies": {
     "@mpxjs/api-proxy": "^2.9.0",
@@ -16,7 +18,6 @@
     "@mpxjs/store": "^2.9.0",
     "@mpxjs/utils": "^2.9.0",
     "@vant/weapp": "^1.11.7",
-    "antd-mini": "^3.1.12",
     "pinia": "^2.0.14",
     "vue": "^2.7.0",
     "vue-demi": "^0.14.6",

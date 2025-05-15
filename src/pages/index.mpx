@@ -1,19 +1,16 @@
 <template>
   <list name="{{value}}"></list>
-  <view class="mx-10px">
-    <ant-button type="primary" bindtap="handleClick">按钮</ant-button>
-  </view>
-  <!-- <input type="text" wx:model="{{ value }}" /> -->
-  <!-- <van-checkbox wx:model="{{ checked }}" wx:model-value-path="[]">复选框</van-checkbox>
-  <van-field wx:model="{{ value }}" placeholder="请输入用户名" wx:model-value-path="[]" /> -->
-  <ant-input wx:model="{{value}}" wx:model-event="change" wx:model-value-path="[]"/>
+  <view class="w-100px h-100px bg-red"></view>
+  <van-button type="primary" block bindtap="handleClick">按钮</van-button>
+  <van-checkbox wx:model="{{ checked }}" wx:model-value-path="[]">复选框</van-checkbox>
+  <van-field wx:model="{{ value }}" placeholder="请输入用户名" wx:model-value-path="[]" /> 
 </template>
 
 <script>
 import { createPage } from '@mpxjs/core'
 import { storeToRefs, mapState, mapActions } from '@mpxjs/pinia'
 import { useOrderStore, useCommonStore } from '@/store'
-import { getTest } from '@/api'
+import { getTest, postTest } from '@/api'
 
 createPage({
   data: {
@@ -30,21 +27,34 @@ createPage({
    ...mapState(useCommonStore, ['title', 'num']),
   },
   onLoad() {
-    // getTest('/api/test')
+  
   },
   methods: {
      ...mapActions(useCommonStore, ['increment']),
      handleClick() {
       this.increment()
+      this.fetchData()
       console.log('click', this.name, this.count, this.title, this.num);
-      console.log(this.value, '===value===')
       this.loading = true
       setTimeout(() => {
         this.loading = false
       }, 2000) 
     },
-    onChange(e) {
-      console.log(e, '===e===')
+    async fetchData() {
+      // await getTest({ 
+      //   headers: { 'Content-Type': 'application/json' }, 
+      //   params: { id: 1 },
+      //   showLoading: true, 
+      //   showToastMsg: true 
+      // })
+      await postTest({ 
+        params: { id: 1 },
+        showLoading: true, 
+        showToastMsg: true,
+        data: {
+          name: 'test'
+        }
+      })
     }
   },
 })
