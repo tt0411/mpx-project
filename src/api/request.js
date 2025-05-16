@@ -33,7 +33,6 @@ mpx.xfetch.interceptors.request.use((config) => {
 // 添加响应拦截器
 mpx.xfetch.interceptors.response.use(
   (response) => {
-    console.log(response, "=== response ===");
     if (response.requestConfig.showLoading) {
       hideLoading();
     }
