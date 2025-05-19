@@ -1,4 +1,27 @@
 <template>
+  <van-tabbar
+    @wx
+    active="{{activeTabbarIndex}}"
+    active-color="#F39C3E"
+    inactive-color="#999999"
+    bind:change="onChange"
+  >
+    <van-tabbar-item wx:for="{{filteredTabBarList}}" wx:for-item="item" wx:key="index">
+      <image
+        slot="icon"
+        src="{{item.iconPath}}"
+        mode="aspectFit"
+        style="width: 25px; height: 25px"
+      />
+      <image
+        slot="icon-active"
+        src="{{item.selectedIconPath}}"
+        mode="aspectFit"
+        style="width: 25px; height: 25px"
+      />
+      {{ item.text }}
+    </van-tabbar-item>
+  </van-tabbar>
   <view @ali class="custom-tabbar">
     <view class="tabbar-content">
       <view
@@ -16,7 +39,7 @@
           class="tabbar-icon"
         />
         <text class="tabbar-text {{activeTabbarIndex === index ? 'active' : ''}}">
-          {{item.text}}
+          {{ item.text }}
         </text>
       </view>
     </view>
@@ -25,83 +48,82 @@
 </template>
 
 <script>
-import mpx, { createComponent } from '@mpxjs/core'
-import { mapState, mapGetters, mapActions} from '@mpxjs/pinia'
-import { useCommonStore } from '@/store'
-createComponent({
-  computed: {
-    ...mapState(useCommonStore, ['activeTabbarIndex']),
-    ...mapGetters(useCommonStore, ['filteredTabBarList'])
-  },
+  import mpx, { createComponent } from '@mpxjs/core'
+  import { mapState, mapGetters, mapActions } from '@mpxjs/pinia'
+  import { useCommonStore } from '@/store'
+  createComponent({
+    computed: {
+      ...mapState(useCommonStore, ['activeTabbarIndex']),
+      ...mapGetters(useCommonStore, ['filteredTabBarList'])
+    },
 
-  methods: {
-    ...mapActions(useCommonStore, ['setActiveTabbarIndex']),
-   onChange(e) {
-    let index
-    // #ifdef MP-WEIXIN
-    index = e.detail
-    // #endif
-    // #ifdef MP-ALIPAY
-    index = e.currentTarget.dataset.index
-    // #endif
-    this.setActiveTabbarIndex(index)
-    mpx.switchTab({ url: this.filteredTabBarList[index].pagePath })
-  }
-  }
-})
+    methods: {
+      ...mapActions(useCommonStore, ['setActiveTabbarIndex']),
+      onChange(e) {
+        let index
+        if (__mpx_mode__ === 'ali') {
+          index = e.currentTarget.dataset.index
+        } else {
+          index = e.detail
+        }
+        this.setActiveTabbarIndex(index)
+        mpx.switchTab({ url: this.filteredTabBarList[index].pagePath })
+      }
+    }
+  })
 </script>
 <style lang="scss" scoped>
-.custom-tabbar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 999;
-  width: 100vw;
-  display: flex;
-  flex-direction: column;
-  background: #fff;
-  border-top: 1rpx solid #eee;
-}
-.tabbar-content {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  align-items: center;
-  height: 100rpx;
-  width: 100%;
-}
-.tabbar-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 10rpx 0;
-}
-.tabbar-icon {
-  width: 48rpx;
-  height: 48rpx;
-}
-.tabbar-text {
-  font-size: 24rpx;
-  color: #999;
-  margin-top: 4rpx;
-}
-.tabbar-text.active {
-  color: #F39C3E;
-  font-weight: bold;
-}
-/* 安全区适配 */
-.tabbar-safe-area {
-  width: 100%;
-  height: env(safe-area-inset-bottom);
-  min-height: 0;
-  background: #fff;
-}
+  .custom-tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-top: 1rpx solid #eee;
+  }
+  .tabbar-content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    height: 100rpx;
+    width: 100%;
+  }
+  .tabbar-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10rpx 0;
+  }
+  .tabbar-icon {
+    width: 48rpx;
+    height: 48rpx;
+  }
+  .tabbar-text {
+    font-size: 24rpx;
+    color: #999;
+    margin-top: 4rpx;
+  }
+  .tabbar-text.active {
+    color: #f39c3e;
+    font-weight: bold;
+  }
+  /* 安全区适配 */
+  .tabbar-safe-area {
+    width: 100%;
+    height: env(safe-area-inset-bottom);
+    min-height: 0;
+    background: #fff;
+  }
 </style>
 <script type="application/json">
-{
+  {
     "component": true
   }
 </script>
