@@ -30,13 +30,15 @@ export const useCommonStore = defineStore('common', {
             pagePath: "/pages/tabs/notice/index",
             iconPath: "https://cbs-worker-wxapp.oss-cn-hangzhou.aliyuncs.com/static/tabs/notice.png",
             selectedIconPath: "https://cbs-worker-wxapp.oss-cn-hangzhou.aliyuncs.com/static/tabs/notice-active.png",
-            text: "公告"
+            text: "公告",
+            info: 3
         },
         {
             pagePath: "/pages/tabs/mine/index",
             iconPath: "https://cbs-worker-wxapp.oss-cn-hangzhou.aliyuncs.com/static/tabs/my.png",
             selectedIconPath: "https://cbs-worker-wxapp.oss-cn-hangzhou.aliyuncs.com/static/tabs/my-active.png",
-            text: "我的"
+            text: "我的",
+            dot: true,
         }
      ]
     }

@@ -1,25 +1,31 @@
 <template>
-    <view class="mine-page">仓库页面</view>
+  <view>仓库页面</view>
 </template>
 
 <script>
 import mpx, { createPage } from '@mpxjs/core'
 
-createPage({
 
+createPage({
+  data: {
+  
+  },
+  methods: {
+  
+  }
 })
 </script>
-
 
 <script type="application/json">
   {
     "usingComponents": {},
-    "navigationBarTitleText": "仓库"
+    "navigationBarTitleText": "仓库",
+    "disableScroll": true
   }
 </script>
 <style lang="scss" scoped>
-.mine-page {
+  .mine-page {
     font-size: 20px;
-    font-weight: bold
-}
+    font-weight: bold;
+  }
 </style>

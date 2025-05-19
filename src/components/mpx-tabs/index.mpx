@@ -1,0 +1,201 @@
+<template>
+  <view>
+      <scroll-view
+        scroll-x
+        class="mpx-tabs"
+        scroll-left="{{scrollLeft}}"
+        scroll-with-animation
+      >
+        <view
+          id="tab-{{index}}"
+          class="mpx-tab {{active == index ? 'mpx-tab-active' : ''}}"
+          wx:for="{{tabList}}"
+          wx:for-item="item"
+          wx:for-index="index"
+          wx:key="title"
+          data-index="{{index}}"
+          bindtap="onTabTap"
+        >
+          <text>{{ item.title }}</text>
+          <view wx:if="{{item.num || item.num === 0}}" class="mpx-badge">{{ item.num }}</view>
+        </view>
+      </scroll-view>
+  </view>
+</template>
+
+<script>
+import mpx, { createComponent } from "@mpxjs/core";
+
+createComponent({
+  properties: {
+    currentIndex: {
+      type: Number,
+      value: 0,
+    },
+    tabList: {
+      type: Array,
+      value: [
+        { title: "待预约", num: 0 },
+        { title: "待上门", num: 3 },
+        { title: "服务中", num: 4 },
+        { title: "待支付", num: 5 },
+        { title: "未交款", num: 3 },
+        { title: "驳回待处理", num: 0 },
+        { title: "完工待确认", num: 0 },
+        { title: "挂起", num: 9 },
+      ],
+    },
+  },
+  data: {
+    scrollLeft: 0,
+    active: 0,
+  },
+  watch: {
+    currentIndex: {
+      handler(newVal) {
+        this.active = newVal;
+        this.$nextTick(() => {
+          if(this.currentIndex) {
+            this.scrollTabToCenter(this.currentIndex);
+          }
+        });
+      },
+      immediate: true,
+    }
+  },
+  methods: {
+  onTabTap(e) {
+      let index
+      // 兼容多端事件参数
+      if (e && e.currentTarget && typeof e.currentTarget.dataset.index !== 'undefined') {
+        index = Number(e.currentTarget.dataset.index)
+      } else if (typeof e.detail === 'number') {
+        index = e.detail
+      }
+      if (index === this.active) return
+      this.active = index
+      this.$nextTick(() => {
+        this.scrollTabToCenter(index)
+      })
+    },
+    scrollTabToCenter(index) {
+      if (__mpx_mode__ === 'wx') {
+          const query = wx.createSelectorQuery().in(this)
+          query.select('.mpx-tabs').scrollOffset()
+          query.select('.mpx-tabs').boundingClientRect()
+          query.selectAll('.mpx-tab').boundingClientRect()
+          query.exec(res => {
+            const scrollInfo = res[0]
+            const svRect = res[1]
+            const tabRects = res[2]
+            if (!svRect || !tabRects || !tabRects.length) return
+            
+            const tabRect = tabRects[index]
+            
+            // 优化滚动位置计算
+            const tabOffset = tabRect.left - svRect.left + scrollInfo.scrollLeft
+            const targetScrollLeft = tabOffset - (svRect.width - tabRect.width) / 2
+            
+            // 使用 nextTick 确保状态更新
+            this.$nextTick(() => {
+              this.scrollLeft = Math.max(0, targetScrollLeft)
+            })
+          })
+      } else {
+        // 阿里平台保持原来的逻辑
+        mpx.createSelectorQuery()
+          .selectAll(".mpx-tab")
+          .boundingClientRect()
+          .exec((res) => {
+            const tabs = res[0]
+            if (!tabs || !tabs.length) return
+            const tab = tabs[index]
+            const firstTab = tabs[0]
+            
+            mpx.createSelectorQuery()
+              .select(".mpx-tabs")
+              .boundingClientRect()
+              .exec((svRes) => {
+                const sv = svRes[0]
+                if (!sv) return
+                const tabCenter = tab.left - firstTab.left + tab.width / 2
+                const scrollLeft = tabCenter - sv.width / 2
+                this.scrollLeft = scrollLeft < 0 ? 0 : scrollLeft
+              })
+          })
+      }
+    },
+  },
+});
+</script>
+
+<script type="application/json">
+  {
+    "component": true
+  }
+</script>
+<style lang="scss" scoped>
+.mpx-tabs {
+  white-space: nowrap;
+  background: #fff;
+  height: 40px;                   
+  position: relative;
+  overflow: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mpx-tab {
+  display: inline-block;
+  padding: 0 16px;               
+  height: 40px;                  
+  line-height: 40px;             
+  font-size: 14px;               
+  color: #333;
+  position: relative;
+  text-align: center;
+  cursor: pointer;
+  transition: color 0.2s;
+  vertical-align: top;
+  box-sizing: border-box;
+  max-width: 150px;              
+  white-space: nowrap;
+}
+
+.mpx-tab-active {
+  color: #f39c3e;
+  font-weight: bold;
+  position: relative;
+}
+
+.mpx-tab-active::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 4px;                   
+  transform: translateX(-50%);
+  width: 60%;
+  height: 3px;                   
+  background: #f39c3e;
+  border-radius: 3px 3px 0 0;    
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+.mpx-badge {
+  position: absolute;
+  top: 6px;                      
+  right: -5px;                   
+  min-width: 20px;               
+  padding: 0 4px;                
+  background: #ee0a24;
+  color: #fff;
+  font-size: 10px;               
+  border-radius: 16px;           
+  line-height: 14px;             
+  text-align: center;
+  box-sizing: border-box;
+  z-index: 2;
+  font-weight: normal;
+}
+</style>

@@ -1,6 +1,7 @@
 <template>
-    <view class="mine-page">{{ title }}</view>
-    <van-button type="primary" block bindtap="setNavigationBarColor">setNavigationBarColor</van-button>
+    <mpx-tabs currentIndex="{{active}}" />
+    <!-- <view class="mine-page">{{ title }}</view>
+    <van-button type="primary" block bindtap="setNavigationBarColor">setNavigationBarColor</van-button> -->
 </template>
 
 <script>
@@ -8,6 +9,7 @@ import mpx, { createPage } from '@mpxjs/core'
 
 createPage({
   data: {
+    active: 5,
     title: '工单页面'
   },
   onLoad() {

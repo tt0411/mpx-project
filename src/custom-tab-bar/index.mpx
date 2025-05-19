@@ -1,43 +1,25 @@
 <template>
-  <van-tabbar
-    @wx
-    active="{{activeTabbarIndex}}"
-    active-color="#F39C3E"
-    inactive-color="#999999"
-    bind:change="onChange"
-  >
-    <van-tabbar-item wx:for="{{filteredTabBarList}}" wx:for-item="item" wx:key="index">
-      <image
-        slot="icon"
-        src="{{item.iconPath}}"
-        mode="aspectFit"
-        style="width: 25px; height: 25px"
-      />
-      <image
-        slot="icon-active"
-        src="{{item.selectedIconPath}}"
-        mode="aspectFit"
-        style="width: 25px; height: 25px"
-      />
-      {{ item.text }}
-    </van-tabbar-item>
-  </van-tabbar>
-  <view @ali class="custom-tabbar">
+  <view class="custom-tabbar">
     <view class="tabbar-content">
       <view
         class="tabbar-item"
-        a:for="{{filteredTabBarList}}"
-        a:for-item="item"
-        a:for-index="index"
-        a:key="index"
+        wx:for="{{filteredTabBarList}}"
+        wx:for-item="item"
+        wx:for-index="index"
+        wx:key="index"
         data-index="{{index}}"
-        onTap="onChange"
+        bindtap="onChange"
       >
-        <image
-          src="{{activeTabbarIndex === index ? item.selectedIconPath : item.iconPath}}"
-          mode="aspectFit"
-          class="tabbar-icon"
-        />
+        <view class="tabbar-icon-wrap">
+          <image
+            src="{{activeTabbarIndex === index ? item.selectedIconPath : item.iconPath}}"
+            class="tabbar-icon"
+          />
+          <!-- 小红点 -->
+          <view wx:if="{{item.dot}}" class="tabbar-dot"></view>
+          <!-- 提示信息 -->
+          <view wx:if="{{item.info}}" class="tabbar-info">{{item.info}}</view>
+        </view>
         <text class="tabbar-text {{activeTabbarIndex === index ? 'active' : ''}}">
           {{ item.text }}
         </text>
@@ -61,9 +43,10 @@
       ...mapActions(useCommonStore, ['setActiveTabbarIndex']),
       onChange(e) {
         let index
-        if (__mpx_mode__ === 'ali') {
-          index = e.currentTarget.dataset.index
-        } else {
+        // 兼容多端事件参数
+        if (e && e.currentTarget && typeof e.currentTarget.dataset.index !== 'undefined') {
+          index = Number(e.currentTarget.dataset.index)
+        } else if (typeof e.detail === 'number') {
           index = e.detail
         }
         this.setActiveTabbarIndex(index)
@@ -72,6 +55,11 @@
     }
   })
 </script>
+<script type="application/json">
+  {
+    "component": true
+  }
+</script>
 <style lang="scss" scoped>
   .custom-tabbar {
     position: fixed;
@@ -79,18 +67,18 @@
     right: 0;
     bottom: 0;
     z-index: 999;
-    width: 100vw;
+    width: 100%;
     display: flex;
     flex-direction: column;
     background: #fff;
-    border-top: 1rpx solid #eee;
+    border-top: 1px solid #eee;
   }
   .tabbar-content {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
-    align-items: center;
-    height: 100rpx;
+    align-items: stretch;
+    height: 60px;
     width: 100%;
   }
   .tabbar-item {
@@ -99,20 +87,65 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 10rpx 0;
+    // padding: 10px 0;
+    position: relative;
   }
+
+  .tabbar-icon-wrap {
+    position: relative;
+    display: inline-block;
+  }
+
   .tabbar-icon {
-    width: 48rpx;
-    height: 48rpx;
+    width: 30px;
+    height: 30px;
+    display: inline-block;
+    margin: 0 auto;
   }
   .tabbar-text {
-    font-size: 24rpx;
+    font-size: 12px;
     color: #999;
-    margin-top: 4rpx;
+    line-height: 0.5;
+    /* @mpx-if (__mpx_mode__ === 'wx') */
+    margin-top: -2px;
+    /* @mpx-else */
+    margin-top: 6px;
+    /* @mpx-endif */
   }
+
   .tabbar-text.active {
     color: #f39c3e;
-    font-weight: bold;
+    font-weight: 500;
+  }
+
+  .tabbar-dot {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 6px;
+    height: 6px;
+    background-color: #ee0a24;
+    border-radius: 100%;
+    transform: translate(50%, -50%);
+  }
+
+  .tabbar-info {
+    position: absolute;
+    top: 0;
+    right: 0;
+    box-sizing: border-box;
+    min-width: 16px;
+    padding: 0 3px;
+    color: #fff;
+    font-weight: 500;
+    font-size: 12px;
+    font-family: -apple-system-font, Helvetica Neue, Arial, sans-serif;
+    line-height: 14px;
+    text-align: center;
+    background-color: #ee0a24;
+    border-radius: 16px;
+    transform: translate(50%, -50%);
+    white-space: nowrap;
   }
   /* 安全区适配 */
   .tabbar-safe-area {
@@ -122,8 +155,3 @@
     background: #fff;
   }
 </style>
-<script type="application/json">
-  {
-    "component": true
-  }
-</script>

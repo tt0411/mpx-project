@@ -32,6 +32,7 @@
     },
     "tabBar": {
       "custom": true,
+      "overlay": true,
       "color": "#999999",
       "selectedColor": "#F39C3E",
       "backgroundColor": "#ffffff",
@@ -59,12 +60,11 @@
       ]
     },
     "usingComponents": {
+      "mpx-tabs": "./components/mpx-tabs/index.mpx",
       "van-checkbox": "@vant/weapp/checkbox/index",
       "van-checkbox-group": "@vant/weapp/checkbox-group/index",
       "van-field": "@vant/weapp/field/index",
-      "van-button": "@vant/weapp/button/index",
-      "van-tabbar": "@vant/weapp/tabbar/index",
-      "van-tabbar-item": "@vant/weapp/tabbar-item/index"
+      "van-button": "@vant/weapp/button/index"
     }
   }
 </script>
