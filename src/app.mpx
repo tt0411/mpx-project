@@ -14,7 +14,8 @@
 </script>
 
 <style lang="scss">
-  /*此处编写全局样式*/
+// /*此处编写全局样式*/
+@import '@/styles/common.scss';
 </style>
 
 <script type="application/json">
@@ -25,6 +26,9 @@
       "./pages/tabs/warehouse/index",
       "./pages/tabs/notice/index",
       "./pages/tabs/knowledge/index"
+    ],
+    "packages": [
+      "./pagesWork/app.mpx?root=pagesWork"
     ],
     "window": {
       "backgroundTextStyle": "light",
@@ -61,16 +65,14 @@
     },
     "usingComponents": {
       "mpx-tabs": "./components/mpx-tabs/index.mpx",
+      "mpx-custom-nav-ali": "./components/mpx-custom-nav-ali/index.mpx",
       "van-checkbox": "@vant/weapp/checkbox/index",
       "van-checkbox-group": "@vant/weapp/checkbox-group/index",
       "van-field": "@vant/weapp/field/index",
-      "van-button": "@vant/weapp/button/index"
+      "van-button": "@vant/weapp/button/index",
+      "van-nav-bar": "@vant/weapp/nav-bar/index",
+      "van-row": "@vant/weapp/row/index",
+      "van-col": "@vant/weapp/col/index"
     }
   }
 </script>
-
-<!--也可以通过以下形式用js输出json，便于书写注释和使用条件编译-->
-
-<!-- <script name="json">
-   // 可以写注释，通过defs注入的常量做一些判断之类的操作
-</script> -->

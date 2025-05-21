@@ -1,5 +1,4 @@
 <template>
-  <list name="{{value}}"></list>
   <view class="w-100px h-100px bg-red"></view>
   <van-button type="primary" block bindtap="handleClick">按钮</van-button>
   <van-checkbox wx:model="{{ checked }}" wx:model-value-path="[]">复选框</van-checkbox>
@@ -58,12 +57,4 @@ createPage({
     }
   },
 })
-</script>
-
-<script type="application/json">
-  {
-    "usingComponents": {
-      "list": "../components/list"
-    }
-  }
 </script>

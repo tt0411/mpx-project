@@ -78,8 +78,9 @@
     flex-direction: row;
     justify-content: space-around;
     align-items: stretch;
-    height: 60px;
+    height: 50px;
     width: 100%;
+    padding-top: 8px;
   }
   .tabbar-item {
     flex: 1;
@@ -87,7 +88,6 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    // padding: 10px 0;
     position: relative;
   }
 
@@ -97,19 +97,21 @@
   }
 
   .tabbar-icon {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     display: inline-block;
     margin: 0 auto;
   }
   .tabbar-text {
-    font-size: 12px;
     color: #999;
-    line-height: 0.5;
     /* @mpx-if (__mpx_mode__ === 'wx') */
-    margin-top: -2px;
+    font-size: 12px;
+    line-height: 0.7;
+    margin-top: -4px;
     /* @mpx-else */
-    margin-top: 6px;
+    font-size: 14px;
+    line-height: 1;
+    margin-top: 2px;
     /* @mpx-endif */
   }
 

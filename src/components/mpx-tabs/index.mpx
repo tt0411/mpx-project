@@ -17,9 +17,16 @@
           bindtap="onTabTap"
         >
           <text>{{ item.title }}</text>
-          <view wx:if="{{item.num || item.num === 0}}" class="mpx-badge">{{ item.num }}</view>
+          <view wx:if="{{item.num || item.num === 0}}" class="mpx-badge absolute top-12rpx right-0">{{ item.num }}</view>
         </view>
       </scroll-view>
+      <slot></slot>
+      <!-- 内容区域 -->
+      <view class="mpx-tabs-content">
+        <view wx:for="{{tabList}}" wx:key="title" class="tab-content {{active === index ? 'active' : ''}}">
+          <slot name="{{item.name}}"></slot>
+        </view>
+      </view>
   </view>
 </template>
 
@@ -27,6 +34,9 @@
 import mpx, { createComponent } from "@mpxjs/core";
 
 createComponent({
+  options: {
+    multipleSlots: true
+  },
   properties: {
     currentIndex: {
       type: Number,
@@ -35,14 +45,14 @@ createComponent({
     tabList: {
       type: Array,
       value: [
-        { title: "待预约", num: 0 },
-        { title: "待上门", num: 3 },
-        { title: "服务中", num: 4 },
-        { title: "待支付", num: 5 },
-        { title: "未交款", num: 3 },
-        { title: "驳回待处理", num: 0 },
-        { title: "完工待确认", num: 0 },
-        { title: "挂起", num: 9 },
+        { title: "待预约", num: 0, name: 'aa' },
+        { title: "待上门", num: 3, name: 'bb' },
+        { title: "服务中", num: 4, name: 'cc' },
+        { title: "待支付", num: 5, name: 'dd' },
+        { title: "未交款", num: 3, name: 'ee' },
+        { title: "驳回待处理", num: 0, name: 'ff' },
+        { title: "完工待确认", num: 0, name: 'gg' },
+        { title: "挂起", num: 9, name: 'hh' },
       ],
     },
   },
@@ -74,6 +84,8 @@ createComponent({
       }
       if (index === this.active) return
       this.active = index
+       // 触发自定义事件
+      this.triggerEvent('change', index)
       this.$nextTick(() => {
         this.scrollTabToCenter(index)
       })
@@ -135,30 +147,30 @@ createComponent({
   }
 </script>
 <style lang="scss" scoped>
+@import "@/styles/common.scss";
 .mpx-tabs {
   white-space: nowrap;
-  background: #fff;
-  height: 40px;                   
+  background: #fff;               
   position: relative;
   overflow: hidden;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+  padding: 10rpx 0;
 }
 
 .mpx-tab {
   display: inline-block;
-  padding: 0 16px;               
-  height: 40px;                  
-  line-height: 40px;             
-  font-size: 14px;               
+  padding: 0 32rpx;               
+  height: 80rpx;                  
+  line-height: 80rpx;             
+  font-size: 28rpx;               
   color: #333;
   position: relative;
   text-align: center;
   cursor: pointer;
   transition: color 0.2s;
   vertical-align: top;
-  box-sizing: border-box;
-  max-width: 150px;              
+  box-sizing: border-box;            
   white-space: nowrap;
 }
 
@@ -172,30 +184,27 @@ createComponent({
   content: "";
   position: absolute;
   left: 50%;
-  bottom: 4px;                   
+  bottom: 2rpx;                   
   transform: translateX(-50%);
-  width: 60%;
-  height: 3px;                   
+  width: 40%;
+  height: 4rpx;                   
   background: #f39c3e;
-  border-radius: 3px 3px 0 0;    
+  border-radius: 6rpx;    
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
 
-.mpx-badge {
-  position: absolute;
-  top: 6px;                      
-  right: -5px;                   
-  min-width: 20px;               
-  padding: 0 4px;                
-  background: #ee0a24;
-  color: #fff;
-  font-size: 10px;               
-  border-radius: 16px;           
-  line-height: 14px;             
-  text-align: center;
-  box-sizing: border-box;
-  z-index: 2;
-  font-weight: normal;
+.mpx-tabs-content {
+  position: relative;
+  width: 100%;
+}
+
+.tab-content {
+  display: none;
+  width: 100%;
+}
+
+.tab-content.active {
+  display: block;
 }
 </style>

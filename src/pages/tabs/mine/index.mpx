@@ -1,5 +1,10 @@
 <template>
-    <view class="mine-page">我的页面</view>
+    <van-nav-bar
+    @wx
+    title="我的"
+    custom-class="nav-bar"
+  />
+  <mpx-custom-nav-ali title="我的" @ali />
 </template>
 
 <script>
@@ -11,15 +16,24 @@ createPage({
 </script>
 
 
-<script type="application/json">
-  {
+<script name="json">
+const obj = __mpx_mode__  === 'ali' ? 
+{
+ "transparentTitle": "always",
+  "titlePenetrate": "YES", // 允许点击穿透后，才能触发导航栏上的 onTap 事件
+  "defaultTitle": "", // 将导航栏默认的 title 置空
+  "titleBarColor": "#000000", // 虽然设置导航栏背景色不生效，但可以影响前景色为白色
+  "disabledScroll": true,
+} : {
+    "navigationBarTitleText": "我的",
+    "disabledScroll": true,
+    "navigationStyle": "custom"
+}
+  module.exports =   {
     "usingComponents": {},
-    "navigationBarTitleText": "我的"
+     ...obj
   }
 </script>
 <style lang="scss" scoped>
-.mine-page {
-    font-size: 20px;
-    font-weight: bold
-}
+
 </style>

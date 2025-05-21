@@ -1,0 +1,66 @@
+<template>
+    <view class="bg-#fff px-30rpx py-20rpx">
+    <view class="flex items-center justify-between">
+        <text class="text-#333 text-28rpx font-500">我的日程</text>
+        <!-- <view class="flex-center text-primary text-22rpx"> 
+            路径规划 >
+        </view> -->
+    </view>
+    <view class="schedule-scroll py-20rpx pl-10rpx">
+    <view wx:for="{{weekList}}" wx:key="date" wx:for-item="item" class="flex-col-center schedule-item">
+        <view class="relative text-#333 text-24rpx mb-20rpx">
+            {{ item.name }}
+        <view class="absolute -top-20rpx -right-30rpx mpx-badge" wx:if="{{item.orderNum}}">{{ item.orderNum }}</view>
+        </view>
+        <view class="text-primary text-24rpx">{{ item.date }}</view>
+    </view>
+    </view>
+    </view>
+</template>
+<script>
+  import { createComponent } from '@mpxjs/core'
+
+  createComponent({
+    data: {
+        weekList: [
+            { name: '周一', date: '16', orderNum: 12 },
+            { name: '周二', date: '17', orderNum: 2 },
+            { name: '周三', date: '18', orderNum: 8 },
+            { name: '周四', date: '19', orderNum: 0 },
+            { name: '周五', date: '20', orderNum: 10 },
+            { name: '周六', date: '21', orderNum: 0 },
+            { name: '周日', date: '22', orderNum: 9 },
+            { name: '周一', date: '23', orderNum: 0 },
+            { name: '周二', date: '24', orderNum: 0 },
+            { name: '周三', date: '25', orderNum: 8 },
+            { name: '周四', date: '26', orderNum: 0 },
+            { name: '周五', date: '27', orderNum: 0 },
+            { name: '周六', date: '28', orderNum: 0 },
+            { name: '周日', date: '29', orderNum: 0 },
+        ]
+    }
+  })
+</script>
+<style lang="scss" scoped>
+.schedule-scroll {
+  overflow-x: auto;
+  white-space: nowrap;
+  display: flex;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.schedule-item {
+  flex-shrink: 0;
+  margin-right: 55rpx;
+  &:last-child {
+    margin-right: 0;
+  }
+}
+</style>
+<script type="application/json">
+  {
+    "component": true
+  }
+</script>

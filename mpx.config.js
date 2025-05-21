@@ -1,4 +1,5 @@
 const { defineConfig } = require("@vue/cli-service");
+const path = require("path");
 module.exports = defineConfig({
   outputDir: `dist/${process.env.MPX_CURRENT_TARGET_MODE}`,
   pluginOptions: {
@@ -7,7 +8,6 @@ module.exports = defineConfig({
         srcMode: "wx",
         writeMode: "change",
         hackResolveBuildDependencies: ({ files, resolveDependencies }) => {
-          const path = require("path");
           const packageJSONPath = path.resolve("package.json");
           if (files.has(packageJSONPath)) files.delete(packageJSONPath);
           if (resolveDependencies.files.has(packageJSONPath)) {

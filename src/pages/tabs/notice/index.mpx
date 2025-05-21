@@ -19,7 +19,7 @@ createPage({
 </script>
 <style lang="scss" scoped>
 .mine-page {
-    font-size: 20px;
+    font-size: 40rpx;
     font-weight: bold
 }
 </style>

@@ -1,42 +1,81 @@
 <template>
-    <mpx-tabs currentIndex="{{active}}" />
-    <!-- <view class="mine-page">{{ title }}</view>
-    <van-button type="primary" block bindtap="setNavigationBarColor">setNavigationBarColor</van-button> -->
+  <van-nav-bar @wx title="工单" custom-class="nav-bar" border="{{false}}"/>
+  <mpx-custom-nav-ali @ali />
+  <van-row custom-class="main-order-list mb-20rpx">
+    <van-col
+      wx:for="{{list}}"
+      wx:for-item="item"
+      wx:key="index"
+      span="6"
+      bindtap="goOrderList(item)"
+    >
+      <view class="flex-col-center pb-20rpx">
+        <view class="text-#333 text-40rpx py-20rpx">{{ item.count }}</view>
+        <view class="text-#333 text-24rpx">{{ item.title }}</view>
+      </view>
+    </van-col>
+  </van-row>
+  <!-- 我的日程 -->
+  <my-schedule />
 </template>
 
 <script>
-import mpx, { createPage } from '@mpxjs/core'
+  import mpx, { createPage } from '@mpxjs/core'
 
-createPage({
-  data: {
-    active: 5,
-    title: '工单页面'
-  },
-  onLoad() {
-  },
-  onShow() {
-  },
-  methods: {
-    setNavigationBarColor() {
-      mpx.setNavigationBarColor({
-        frontColor: '#000000',
-        backgroundColor: '#ffffff'
-      })
+  createPage({
+    data: {
+      active: 0,
+      title: '工单',
+      list: [
+        { type: 1, title: '待预约', count: 0 },
+        { type: 2, title: '待上门', count: 2 },
+        { type: 3, title: '服务中', count: 6 },
+        { type: 4, title: '待支付', count: 0 },
+        { type: 5, title: '未交款', count: 1 },
+        { type: 6, title: '驳回待处理', count: 0 },
+        { type: 7, title: '完工待确认', count: 0 },
+        { type: 8, title: '挂起单', count: 0 },
+        { type: 9, title: '催单', count: 0 },
+        { type: 10, title: '将超期', count: 0 },
+        { type: 11, title: '已超期', count: 9 }
+      ]
     },
-  }
-})
+    onLoad() {},
+    onShow() {},
+    methods: {
+      goOrderList(item) {
+        mpx.navigateTo({
+          url: `/pagesWork/work/index?type=${item.type}`
+        })
+      }
+    }
+  })
 </script>
 
-
-<script type="application/json">
-  {
-    "usingComponents": {},
-    "navigationBarTitleText": "工单"
-  }
-</script>
 <style lang="scss" scoped>
-.mine-page {
-  font-size: 20px;
-  font-weight: bold
+.van-hairline--bottom {
+  border: none !important;
 }
 </style>
+<script name="json">
+  const obj =
+    __mpx_mode__ === 'ali'
+      ? {
+          transparentTitle: 'always',
+          titlePenetrate: 'YES', // 允许点击穿透后，才能触发导航栏上的 onTap 事件
+          defaultTitle: '', // 将导航栏默认的 title 置空
+          titleBarColor: '#000000', // 虽然设置导航栏背景色不生效，但可以影响前景色为白色
+          allowsBounceVertical: 'NO'
+        }
+      : {
+          navigationBarTitleText: '工单',
+          disableScroll: true,
+          navigationStyle: 'custom'
+        }
+  module.exports = {
+    usingComponents: {
+      "my-schedule": "../components/my-schedule/index"
+    },
+    ...obj
+  }
+</script>
