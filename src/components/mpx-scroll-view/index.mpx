@@ -1,0 +1,309 @@
+<template>
+  <scroll-view
+    class="h-100%"
+    scroll-with-animation="{{true}}"
+    refresher-enabled="{{refresherEnabled}}"
+    refresher-triggered="{{refresherTriggered}}"
+    scroll-animation-duration="{{500}}"
+    bindscrolltolower="onScrolltolower"
+    bindrefresherpulling="onRefresherpulling"
+    bindrefresherrefresh="onRefresherrefresh"
+    binddragend="onDragend"
+    scroll-y
+    scroll-top="{{scrollTop}}"
+    enhanced="{{true}}"
+  >
+    <slot wx:if="{{list.length > 0}}"></slot>
+    <view
+      wx:elif="{{list.length === 0 && isLoading}}"
+      class="absolute top-0 left-50% -translate-x-50% text-#666 text-28rpx z-9999"
+    >
+      <view class="loading-wave-text">
+        <text
+          wx:for="{{bounceList}}"
+          wx:for-index="index"
+          wx:key="index"
+          class="wave-char"
+          wx:class="{{'delay-' + index}}"
+          >{{ item }}</text
+        >
+      </view>
+    </view>
+    <mpx-empty wx:else></mpx-empty>
+      <view
+      class="text-#666 text-26rpx py-25rpx text-center"
+      v-if="isTolower && list.length > 0"
+    >
+      {{ loadingText }}
+    </view>
+  </scroll-view>
+</template>
+<script>
+  import mpx, { createComponent } from '@mpxjs/core'
+  import { get } from '@/api/request'
+  createComponent({
+    properties: {
+      refresherEnabled: {
+        type: Boolean,
+        value: true
+      },
+      module: {
+        type: Object,
+        value: () => ({})
+      },
+      searchApi: {
+        type: Function
+      }
+    },
+    data: {
+      bounceList: ['正', '在', '加', '载', '数', '据', '.', '.', '.'],
+      refresherTriggered: false,
+      isTolower: false,
+      list: [],
+      params: {},
+      isLoading: false,
+      scrollTop: 0,
+      cacheScrollTop: 0,
+      scrollStatus: 0, // 0 默认状态 1 开始加载更多数据 2 无更多数据
+      fakeList: [
+        {
+          time: '08:00-10:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+        {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+        {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+        {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+        {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+        {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+        {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '九阳',
+          deviceName: '九阳净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        }
+      ]
+    },
+    computed: {
+        loadingText() {
+            const obj = {
+                0: '',
+                1: '正在加载数据...',
+                2: "无更多数据"
+            }
+            return obj[this.scrollStatus]
+        }
+    },
+    created() {
+      this.params = this.module.parmas ?? { currentPage: 1, pageSize: 10 }
+    },
+    methods: {
+      onRefresherpulling() {
+        this.refresherTriggered = true
+      },
+      async onRefresherrefresh() {
+        try {
+          await this.search()
+        } catch (error) {
+          this.refresherTriggered = false
+        } finally {
+          this.params.currentPage = 1
+          this.refresherTriggered = false
+        }
+      },
+      async search(reload = true, currentPage = 0) {
+        let { url } = this.module || {}
+        this.scrollStatus = 1
+        if (reload) {
+          this.params.currentPage = 1
+        }
+        if (!url && !(typeof this.searchApi === 'function')) {
+          console.log('请正确传入接口请求api');
+          return
+        }
+        let pageSize = 0
+        if (currentPage && currentPage > 0) {
+          this.params.currentPage = 1
+          pageSize = this.params.pageSize
+          this.params.pageSize = currentPage * this.params.pageSize
+        }
+        let promise = undefined
+        if (typeof this.searchApi === 'function') {
+          promise = this.searchApi({ params: this.params })
+        } else {
+          promise = get(url, { params: this.params })
+        }
+        try {
+          this.isLoading = true
+          const rsp = (await promise) || {}
+          if (rsp.code === 0) {
+            const list = rsp.data.result || rsp.data.list || rsp.data || []
+            if (list.length === 0) {
+              this.scrollStatus = 2
+            } else {
+              this.scrollStatus = 0
+            }
+            if (reload) {
+              this.list = []
+              this.triggerEvent('updateList', { list: this.list })
+            }
+            this.list = [...this.list, ...list]
+            this.triggerEvent('updateList', { list: this.list })
+            this.isLoading = false
+            if (currentPage) {
+              this.params.currentPage = currentPage
+              this.params.pageSize = pageSize
+            }
+            return
+          }
+        } catch (error) {
+          this.scrollStatus = 0
+          this.isLoading = false
+        }
+      },
+      // 回到上次滚动位置
+      async setScrollTop(top) {
+        let currentPage = this.params.currentPage
+        mpx.showLoading({
+          mask: true,
+          title: '加载中'
+        })
+        await this.search(true, currentPage).finally(() => {
+          mpx.hideLoading()
+        })
+        this.scrollTop = this.cacheScrollTop
+        if (top !== undefined) {
+          this.$nextTick(() => {
+            this.scrollTop = top
+          })
+        }
+      },
+      async onScrolltolower() {
+        this.isTolower = true
+        if (this.scrollStatus === 0) {
+          ++this.params.currentPage
+          await this.search(false)
+        }
+      },
+      onDragend(e) {
+        this.cacheScrollTop = e.detail.scrollTop
+      },
+      render() {
+        this.list = this.list.slice(0)
+      }
+    }
+  })
+</script>
+<script type="application/json">
+  {
+    "components": true
+  }
+</script>
+<style lang="scss" scoped>
+  .loading-wave-text {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28rpx;
+    color: #666;
+    height: 60rpx;
+    letter-spacing: 2rpx;
+  }
+  .wave-char {
+    display: inline-block;
+    animation: wave-bounce 1.2s infinite;
+  }
+  @keyframes wave-bounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-16rpx);
+    }
+    60% {
+      transform: translateY(-8rpx);
+    }
+  }
+  // 生成不同延迟的 class
+  @for $i from 0 through 8 {
+    .delay-#{$i} {
+      animation-delay: #{0.1 * $i}s;
+    }
+  }
+</style>

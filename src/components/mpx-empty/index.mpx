@@ -1,0 +1,14 @@
+<template>
+  <view class="w-100% h-100% flex-col-center">
+    <view class="w-246rpx h-296rpx">
+    <image src="https://cbs-worker-wxapp.oss-cn-hangzhou.aliyuncs.com/static/pic/cbs-empty.png" class="w-100% h-100%"></image>
+    </view>
+    <slot></slot>
+  </view>
+</template>
+
+<script type="application/json">
+  {
+    "components": true
+  }
+</script>

@@ -64,15 +64,20 @@
       ]
     },
     "usingComponents": {
-      "mpx-tabs": "./components/mpx-tabs/index.mpx",
-      "mpx-custom-nav-ali": "./components/mpx-custom-nav-ali/index.mpx",
+      "mpx-tabs-page": "./components/mpx-tabs-page/index",
+      "mpx-custom-nav-ali": "./components/mpx-custom-nav-ali/index",
+      "mpx-empty": "./components/mpx-empty/index",
       "van-checkbox": "@vant/weapp/checkbox/index",
       "van-checkbox-group": "@vant/weapp/checkbox-group/index",
       "van-field": "@vant/weapp/field/index",
       "van-button": "@vant/weapp/button/index",
       "van-nav-bar": "@vant/weapp/nav-bar/index",
       "van-row": "@vant/weapp/row/index",
-      "van-col": "@vant/weapp/col/index"
+      "van-col": "@vant/weapp/col/index",
+      "van-cell": "@vant/weapp/cell/index",
+      "van-cell-group": "@vant/weapp/cell-group/index",
+      "van-skeleton": "@vant/weapp/skeleton/index",
+      "van-loading": "@vant/weapp/loading/index"
     }
   }
 </script>

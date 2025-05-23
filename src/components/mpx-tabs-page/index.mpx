@@ -1,0 +1,82 @@
+<template>
+  <view class="mpx-tabs-container" wx:style="{{ { height } }}">
+    <mpx-tabs bindchange="onTabChange" currentIndex="{{currentIndex}}" tabList="{{tabList}}" />
+    <slot></slot>
+    <!-- 内容区域 -->
+    <view class="mpx-tabs-content">
+     <view class="mpx-tabs-content">
+       <slot name="{{tabList[activeIndex].name}}"></slot>
+    </view>
+    </view>
+  </view>
+</template>
+<script>
+  import mpx, { createComponent } from '@mpxjs/core'
+
+  createComponent({
+    options: {
+      multipleSlots: true
+    },
+    properties: {
+      currentIndex: {
+        type: Number,
+        value: 0
+      },
+      height: {
+        type: String,
+        value: '100vh'
+      },
+      tabList: {
+        type: Array,
+        value: [
+          { title: '待预约', num: 0, name: 'aa' },
+          { title: '待上门', num: 3, name: 'bb' },
+          { title: '服务中', num: 4, name: 'cc' },
+          { title: '待支付', num: 5, name: 'dd' },
+          { title: '未交款', num: 3, name: 'ee' },
+          { title: '驳回待处理', num: 0, name: 'ff' },
+          { title: '完工待确认', num: 0, name: 'gg' },
+          { title: '挂起', num: 9, name: 'hh' }
+        ]
+      }
+    },
+    data: {
+      activeIndex: 0
+    },
+    created() {
+      this.activeIndex = this.currentIndex
+    },
+    methods: {
+      onTabChange(e) {
+        console.log(e.detail, '===e===');
+        
+        this.activeIndex = e.detail
+      }
+    }
+  })
+</script>
+<script type="application/json">
+  {
+    "component": true,
+    "usingComponents": {
+      "mpx-tabs": "../mpx-tabs/index.mpx"
+    }
+  }
+</script>
+<style lang="scss" scoped>
+  @import '@/styles/common.scss';
+  .mpx-tabs-container {
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mpx-tabs-content {
+    position: relative;
+    width: 100%;
+    flex: 1;
+    overflow-y: auto;
+  }
+</style>

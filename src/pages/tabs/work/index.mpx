@@ -45,7 +45,7 @@
     methods: {
       goOrderList(item) {
         mpx.navigateTo({
-          url: `/pagesWork/work/index?type=${item.type}`
+          url: `/pagesWork/work-list/index?type=${item.type}`
         })
       }
     }

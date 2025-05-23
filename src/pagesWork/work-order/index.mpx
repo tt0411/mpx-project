@@ -1,0 +1,13 @@
+<template>
+    <view>
+      <text>Hello World</text>
+    </view>
+</template>
+</template>
+<script>
+  import { createPage } from '@mpxjs/core'
+
+  createPage({
+  
+  })
+</script>

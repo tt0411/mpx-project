@@ -1,210 +1,190 @@
 <template>
-  <view>
-      <scroll-view
-        scroll-x
-        class="mpx-tabs"
-        scroll-left="{{scrollLeft}}"
-        scroll-with-animation
+    <scroll-view scroll-x class="mpx-tabs" scroll-left="{{scrollLeft}}" scroll-with-animation>
+      <view
+        id="tab-{{index}}"
+        class="mpx-tab {{active == index ? 'mpx-tab-active' : ''}}"
+        wx:for="{{tabList}}"
+        wx:for-item="item"
+        wx:for-index="index"
+        wx:key="title"
+        data-index="{{index}}"
+        bindtap="onTabTap"
       >
-        <view
-          id="tab-{{index}}"
-          class="mpx-tab {{active == index ? 'mpx-tab-active' : ''}}"
-          wx:for="{{tabList}}"
-          wx:for-item="item"
-          wx:for-index="index"
-          wx:key="title"
-          data-index="{{index}}"
-          bindtap="onTabTap"
-        >
-          <text>{{ item.title }}</text>
-          <view wx:if="{{item.num || item.num === 0}}" class="mpx-badge absolute top-12rpx right-0">{{ item.num }}</view>
-        </view>
-      </scroll-view>
-      <slot></slot>
-      <!-- 内容区域 -->
-      <view class="mpx-tabs-content">
-        <view wx:for="{{tabList}}" wx:key="title" class="tab-content {{active === index ? 'active' : ''}}">
-          <slot name="{{item.name}}"></slot>
-        </view>
+        <text>{{ item.title }}</text>
+        <view wx:if="{{item.num || item.num === 0}}" class="mpx-badge absolute top-12rpx right-0">{{
+          item.num
+        }}</view>
       </view>
+    </scroll-view>
   </view>
 </template>
-
 <script>
-import mpx, { createComponent } from "@mpxjs/core";
+  import mpx, { createComponent } from '@mpxjs/core'
 
-createComponent({
-  options: {
-    multipleSlots: true
-  },
-  properties: {
-    currentIndex: {
-      type: Number,
-      value: 0,
-    },
-    tabList: {
-      type: Array,
-      value: [
-        { title: "待预约", num: 0, name: 'aa' },
-        { title: "待上门", num: 3, name: 'bb' },
-        { title: "服务中", num: 4, name: 'cc' },
-        { title: "待支付", num: 5, name: 'dd' },
-        { title: "未交款", num: 3, name: 'ee' },
-        { title: "驳回待处理", num: 0, name: 'ff' },
-        { title: "完工待确认", num: 0, name: 'gg' },
-        { title: "挂起", num: 9, name: 'hh' },
-      ],
-    },
-  },
-  data: {
-    scrollLeft: 0,
-    active: 0,
-  },
-  watch: {
-    currentIndex: {
-      handler(newVal) {
-        this.active = newVal;
-        this.$nextTick(() => {
-          if(this.currentIndex) {
-            this.scrollTabToCenter(this.currentIndex);
-          }
-        });
+  createComponent({
+    properties: {
+      currentIndex: {
+        type: Number,
+        value: 0
       },
-      immediate: true,
-    }
-  },
-  methods: {
-  onTabTap(e) {
-      let index
-      // 兼容多端事件参数
-      if (e && e.currentTarget && typeof e.currentTarget.dataset.index !== 'undefined') {
-        index = Number(e.currentTarget.dataset.index)
-      } else if (typeof e.detail === 'number') {
-        index = e.detail
+      tabList: {
+        type: Array,
+        value: [
+          { title: '待预约', num: 0, name: 'aa' },
+          { title: '待上门', num: 3, name: 'bb' },
+          { title: '服务中', num: 4, name: 'cc' },
+          { title: '待支付', num: 5, name: 'dd' },
+          { title: '未交款', num: 3, name: 'ee' },
+          { title: '驳回待处理', num: 0, name: 'ff' },
+          { title: '完工待确认', num: 0, name: 'gg' },
+          { title: '挂起', num: 9, name: 'hh' }
+        ]
       }
-      if (index === this.active) return
-      this.active = index
-       // 触发自定义事件
-      this.triggerEvent('change', index)
-      this.$nextTick(() => {
-        this.scrollTabToCenter(index)
-      })
     },
-    scrollTabToCenter(index) {
-      if (__mpx_mode__ === 'wx') {
+    data: {
+      scrollLeft: 0,
+      active: 0
+    },
+    watch: {
+      currentIndex: {
+        handler(newVal) {
+          this.active = newVal
+          this.$nextTick(() => {
+            if (this.currentIndex) {
+              this.scrollTabToCenter(this.currentIndex)
+            }
+          })
+        },
+        immediate: true
+      }
+    },
+    methods: {
+      onTabTap(e) {
+        let index
+        // 兼容多端事件参数
+        if (e && e.currentTarget && typeof e.currentTarget.dataset.index !== 'undefined') {
+          index = Number(e.currentTarget.dataset.index)
+        } else if (typeof e.detail === 'number') {
+          index = e.detail
+        }
+        if (index === this.active) return
+        this.active = index
+        // 触发自定义事件
+        this.triggerEvent('change', index)
+        this.$nextTick(() => {
+          this.scrollTabToCenter(index)
+        })
+      },
+      scrollTabToCenter(index) {
+        if (__mpx_mode__ === 'wx') {
           const query = wx.createSelectorQuery().in(this)
           query.select('.mpx-tabs').scrollOffset()
           query.select('.mpx-tabs').boundingClientRect()
           query.selectAll('.mpx-tab').boundingClientRect()
-          query.exec(res => {
+          query.exec((res) => {
             const scrollInfo = res[0]
             const svRect = res[1]
             const tabRects = res[2]
             if (!svRect || !tabRects || !tabRects.length) return
-            
+
             const tabRect = tabRects[index]
-            
+
             // 优化滚动位置计算
             const tabOffset = tabRect.left - svRect.left + scrollInfo.scrollLeft
             const targetScrollLeft = tabOffset - (svRect.width - tabRect.width) / 2
-            
+
             // 使用 nextTick 确保状态更新
             this.$nextTick(() => {
               this.scrollLeft = Math.max(0, targetScrollLeft)
             })
           })
-      } else {
-        // 阿里平台保持原来的逻辑
-        mpx.createSelectorQuery()
-          .selectAll(".mpx-tab")
-          .boundingClientRect()
-          .exec((res) => {
-            const tabs = res[0]
-            if (!tabs || !tabs.length) return
-            const tab = tabs[index]
-            const firstTab = tabs[0]
-            
-            mpx.createSelectorQuery()
-              .select(".mpx-tabs")
-              .boundingClientRect()
-              .exec((svRes) => {
-                const sv = svRes[0]
-                if (!sv) return
-                const tabCenter = tab.left - firstTab.left + tab.width / 2
-                const scrollLeft = tabCenter - sv.width / 2
-                this.scrollLeft = scrollLeft < 0 ? 0 : scrollLeft
-              })
-          })
-      }
-    },
-  },
-});
-</script>
+        } else {
+          // 阿里平台保持原来的逻辑
+          mpx
+            .createSelectorQuery()
+            .selectAll('.mpx-tab')
+            .boundingClientRect()
+            .exec((res) => {
+              const tabs = res[0]
+              if (!tabs || !tabs.length) return
+              const tab = tabs[index]
+              const firstTab = tabs[0]
 
+              mpx
+                .createSelectorQuery()
+                .select('.mpx-tabs')
+                .boundingClientRect()
+                .exec((svRes) => {
+                  const sv = svRes[0]
+                  if (!sv) return
+                  const tabCenter = tab.left - firstTab.left + tab.width / 2
+                  const scrollLeft = tabCenter - sv.width / 2
+                  this.scrollLeft = scrollLeft < 0 ? 0 : scrollLeft
+                })
+            })
+        }
+      }
+    }
+  })
+</script>
 <script type="application/json">
   {
     "component": true
   }
 </script>
 <style lang="scss" scoped>
-@import "@/styles/common.scss";
-.mpx-tabs {
-  white-space: nowrap;
-  background: #fff;               
-  position: relative;
-  overflow: hidden;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-  padding: 10rpx 0;
-}
+  @import '@/styles/common.scss';
+  .mpx-tabs {
+    width: 100%;
+    white-space: nowrap;
+    background: #fff;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    padding: 10rpx 0;
+  }
 
-.mpx-tab {
-  display: inline-block;
-  padding: 0 32rpx;               
-  height: 80rpx;                  
-  line-height: 80rpx;             
-  font-size: 28rpx;               
-  color: #333;
-  position: relative;
-  text-align: center;
-  cursor: pointer;
-  transition: color 0.2s;
-  vertical-align: top;
-  box-sizing: border-box;            
-  white-space: nowrap;
-}
+  .mpx-tab {
+    display: inline-block;
+    padding: 0 32rpx;
+    height: 80rpx;
+    line-height: 80rpx;
+    font-size: 28rpx;
+    color: #333;
+    position: relative;
+    text-align: center;
+    cursor: pointer;
+    transition: color 0.2s;
+    vertical-align: top;
+    box-sizing: border-box;
+    white-space: nowrap;
+  }
 
-.mpx-tab-active {
-  color: #f39c3e;
-  font-weight: bold;
-  position: relative;
-}
+  .mpx-tab-active {
+    color: #f39c3e;
+    font-weight: bold;
+    position: relative;
+  }
 
-.mpx-tab-active::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: 2rpx;                   
-  transform: translateX(-50%);
-  width: 40%;
-  height: 4rpx;                   
-  background: #f39c3e;
-  border-radius: 6rpx;    
-  pointer-events: none;
-  transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
-}
+  .mpx-tab-active::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 2rpx;
+    transform: translateX(-50%);
+    width: 40%;
+    height: 4rpx;
+    background: #f39c3e;
+    border-radius: 6rpx;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+  }
 
-.mpx-tabs-content {
-  position: relative;
-  width: 100%;
-}
-
-.tab-content {
-  display: none;
-  width: 100%;
-}
-
-.tab-content.active {
-  display: block;
-}
+  .tab-content {
+    display: none;
+    width: 100%;
+  }
+  .tab-content.active {
+    display: block;
+  }
 </style>

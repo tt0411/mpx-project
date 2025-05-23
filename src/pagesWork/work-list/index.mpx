@@ -1,0 +1,303 @@
+<template>
+    <mpx-tabs-page currentIndex="{{active}}" bind:change="handleTabChange">
+      <view>搜索栏插槽</view>
+      <view class="schedule-order-list" slot="aa">
+          <mpx-scroll-view id="mpx-scroll-view" bindupdateList="onUpdateListChange">
+          <view class="schedule-order-item" wx:for="{{orderList}}" wx:key="time">
+              <view class="mr-50rpx flex-col-center">
+                <view class="text-#666 text-22rpx">{{ item.time }}</view>
+                <view class="w-2rpx h-20rpx bg-#666"></view>
+              </view>
+              <view class="item-right">
+                <view class="text-24rpx text-#333 font-500">
+                  {{ item.deviceBrandCode_t }}，{{ item.deviceName }}，{{ item.deviceModel }}，{{
+                    item.serviceTypeCode_t
+                  }}，{{ item.serviceSubclassCode_t }}
+                </view>
+                <view class="text-#999 text-22rpx mt-15rpx">
+                  {{ item.customerName }}，{{ item.provinceName }}{{ item.cityName }}{{ item.areaName
+                  }}{{ item.address }}
+                </view>
+              </view>
+            </view>
+          </mpx-scroll-view>
+      </view>
+      <view slot="bb">待上门内容</view>
+      <view slot="cc">服务中内容</view>
+      <view slot="dd">待支付内容</view>
+      <view slot="ee">未交款内容</view>
+      <view slot="ff">驳回待处理内容</view>
+      <view slot="gg">完工待确认内容</view>
+      <view slot="hh">挂起内容</view>
+    </mpx-tabs-page>
+</template>
+
+<script>
+import { createPage } from '@mpxjs/core'
+
+createPage({
+  data: {
+    active: 0,
+    orderList: [
+      {
+          time: '08:00-10:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+        {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+        {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+          {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+          {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+          {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+          {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+          {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+
+          {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+          {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },  {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+          {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+          {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+          {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+
+    ],
+  },
+  onLoad(options) {
+    this.active = Number(options.type) - 1    
+  },
+  methods: {
+    handleTabChange(e) {
+      this.active = e.detail
+    },
+    onUpdateListChange(e) {
+      this.orderList = e.detail.list
+    }
+  },
+})
+</script>
+<style lang="scss" scoped>
+.scroll-view::-webkit-scrollbar {
+    display: none;
+  }
+  .schedule-scroll {
+    overflow-x: auto;
+    white-space: nowrap;
+    display: flex;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+  .schedule-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    /* @mpx-if (__mpx_mode__ === 'ali') */
+    margin-right: 54rpx;
+    /* @mpx-else */
+    margin-right: 58rpx;
+    /* @mpx-endif */
+    &:last-child {
+      margin-right: 0;
+    }
+    .checked-date {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 46rpx;
+      height: 46rpx;
+      border-radius: 50%;
+      color: #fff;
+      background-color: #f39c3e;
+      flex-shrink: 0;
+    }
+  }
+
+  .schedule-order-list {
+    padding-left: 10rpx;
+    background-color: #fff;
+    .schedule-order-item {
+      display: flex;
+      padding: 30rpx 0;
+      border-bottom: 1rpx solid #eff0f2;
+      &:first-child {
+        padding-top: 10rpx;
+      }
+      &:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+    }
+  }
+</style>
+<script type="application/json">
+  {
+    "usingComponents": {},
+    "navigationBarTitleText": "工单列表",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black"
+    
+  }
+</script>

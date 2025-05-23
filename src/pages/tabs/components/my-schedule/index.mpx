@@ -1,66 +1,211 @@
 <template>
-    <view class="bg-#fff px-30rpx py-20rpx">
+  <view class="bg-#fff px-30rpx py-20rpx h-800rpx flex flex-col overflow-hidden">
     <view class="flex items-center justify-between">
-        <text class="text-#333 text-28rpx font-500">我的日程</text>
-        <!-- <view class="flex-center text-primary text-22rpx"> 
+      <text class="text-#333 text-28rpx font-500">我的日程</text>
+      <!-- <view class="flex-center text-primary text-22rpx"> 
             路径规划 >
         </view> -->
     </view>
-    <view class="schedule-scroll py-20rpx pl-10rpx">
-    <view wx:for="{{weekList}}" wx:key="date" wx:for-item="item" class="flex-col-center schedule-item">
-        <view class="relative text-#333 text-24rpx mb-20rpx">
-            {{ item.name }}
-        <view class="absolute -top-20rpx -right-30rpx mpx-badge" wx:if="{{item.orderNum}}">{{ item.orderNum }}</view>
+    <view class="schedule-scroll py-20rpx pl-10rpx" animation="{{animation}}">
+      <view
+        wx:for="{{weekList}}"
+        wx:key="date"
+        wx:for-item="item"
+        class="schedule-item"
+        bindtap="scheduleItemClick(item)"
+      >
+        <view class="relative text-#333 text-24rpx mb-10rpx">
+          {{ item.name }}
+          <!-- <view class="absolute -top-20rpx -right-30rpx mpx-badge" wx:if="{{item.orderNum}}">{{
+            item.orderNum
+          }}</view> -->
         </view>
-        <view class="text-primary text-24rpx">{{ item.date }}</view>
+        <view
+          class="text-primary text-24rpx"
+          wx:class="{{checkDate === item.date ? 'checked-date' : 'mt-6rpx'}}"
+          >{{ item.date }}</view
+        >
+      </view>
     </view>
+    <view wx:if="{{orderList.length > 0}}" class="schedule-order-list">
+      <view class="schedule-order-item" wx:for="{{formatOrderList}}" wx:key="time">
+          <view class="mr-50rpx flex-col-center">
+            <view class="text-#666 text-22rpx">{{ item.timeStart }}</view>
+            <view class="w-2rpx h-20rpx bg-#666"></view>
+            <view class="text-#666 text-22rpx">{{ item.timeEnd }}</view>
+          </view>
+          <view class="item-right">
+            <view class="text-24rpx text-#333 font-500">
+              {{ item.deviceBrandCode_t }}，{{ item.deviceName }}，{{ item.deviceModel }}，{{
+                item.serviceTypeCode_t
+              }}，{{ item.serviceSubclassCode_t }}
+            </view>
+            <view class="text-#999 text-22rpx mt-15rpx">
+              {{ item.customerName }}，{{ item.provinceName }}{{ item.cityName }}{{ item.areaName
+              }}{{ item.address }}
+            </view>
+          </view>
+        </view>
     </view>
-    </view>
+    <view wx:else class="h-100% flex-center text-#999 text-24rpx"> 当日没有预约上门的工单 </view>
+  </view>
 </template>
 <script>
   import { createComponent } from '@mpxjs/core'
-
   createComponent({
     data: {
-        weekList: [
-            { name: '周一', date: '16', orderNum: 12 },
-            { name: '周二', date: '17', orderNum: 2 },
-            { name: '周三', date: '18', orderNum: 8 },
-            { name: '周四', date: '19', orderNum: 0 },
-            { name: '周五', date: '20', orderNum: 10 },
-            { name: '周六', date: '21', orderNum: 0 },
-            { name: '周日', date: '22', orderNum: 9 },
-            { name: '周一', date: '23', orderNum: 0 },
-            { name: '周二', date: '24', orderNum: 0 },
-            { name: '周三', date: '25', orderNum: 8 },
-            { name: '周四', date: '26', orderNum: 0 },
-            { name: '周五', date: '27', orderNum: 0 },
-            { name: '周六', date: '28', orderNum: 0 },
-            { name: '周日', date: '29', orderNum: 0 },
-        ]
+      refresherTriggered: false,
+      checkDate: new Date().getDate(),
+      weekList: [],
+      orderList: [
+        {
+          time: '08:00-10:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+        {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+        {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+      ]
+    },
+    computed: {
+      formatOrderList() {
+        if (this.orderList.length) {
+          return this.orderList.map((item) => {
+            const [start, end] = item.time.split('-')
+            return {
+              ...item,
+              timeStart: start,
+              timeEnd: end
+            }
+          })
+        } else {
+          return []
+        }
+      }
+    },
+    created() {
+      const weekObj = {
+        0: '周日',
+        1: '周一',
+        2: '周二',
+        3: '周三',
+        4: '周四',
+        5: '周五',
+        6: '周六'
+      }
+      // 生成今天往后的15天的数据
+      for (let i = 0; i < 15; i++) {
+        let date = new Date()
+        date.setDate(date.getDate() + i)
+        this.weekList.push({
+          name: weekObj[date.getDay()],
+          date: date.getDate(),
+          orderNum: Math.floor(Math.random() * 10)
+        })
+      }
+    },
+    methods: {
+      scheduleItemClick(item) {
+        this.checkDate = item.date
+      },
     }
   })
 </script>
 <style lang="scss" scoped>
-.schedule-scroll {
-  overflow-x: auto;
-  white-space: nowrap;
-  display: flex;
-  &::-webkit-scrollbar {
+  @import '@/styles/common.scss';
+  .scroll-view::-webkit-scrollbar {
     display: none;
   }
-}
-
-.schedule-item {
-  flex-shrink: 0;
-  margin-right: 55rpx;
-  &:last-child {
-    margin-right: 0;
+  .schedule-scroll {
+    overflow-x: auto;
+    white-space: nowrap;
+    display: flex;
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
-}
+  .schedule-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    /* @mpx-if (__mpx_mode__ === 'ali') */
+    margin-right: 54rpx;
+    /* @mpx-else */
+    margin-right: 58rpx;
+    /* @mpx-endif */
+    &:last-child {
+      margin-right: 0;
+    }
+    .checked-date {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 46rpx;
+      height: 46rpx;
+      border-radius: 50%;
+      color: #fff;
+      background-color: #f39c3e;
+      flex-shrink: 0;
+    }
+  }
+
+  .schedule-order-list {
+    flex: 1;
+    overflow-y: auto;
+    // padding-bottom: 20rpx;
+    padding-left: 10rpx;
+    .schedule-order-item {
+      display: flex;
+      padding: 30rpx 0;
+      border-bottom: 1rpx solid #eff0f2;
+      &:first-child {
+        padding-top: 10rpx;
+      }
+      &:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+    }
+  }
 </style>
 <script type="application/json">
   {
-    "component": true
+    "component": true,
+    "usingComponents": {
+      "mpx-scroll-view": "@/components/mpx-scroll-view/index.mpx"
+    }
   }
 </script>
