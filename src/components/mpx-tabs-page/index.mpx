@@ -4,9 +4,7 @@
     <slot></slot>
     <!-- 内容区域 -->
     <view class="mpx-tabs-content">
-     <view class="mpx-tabs-content">
        <slot name="{{tabList[activeIndex].name}}"></slot>
-    </view>
     </view>
   </view>
 </template>
@@ -47,9 +45,7 @@
       this.activeIndex = this.currentIndex
     },
     methods: {
-      onTabChange(e) {
-        console.log(e.detail, '===e===');
-        
+      onTabChange(e) {  
         this.activeIndex = e.detail
       }
     }

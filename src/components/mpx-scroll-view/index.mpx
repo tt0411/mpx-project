@@ -29,7 +29,7 @@
         >
       </view>
     </view>
-    <mpx-empty wx:else></mpx-empty>
+    <mpx-empty class="h-100%" wx:else></mpx-empty>
       <view
       class="text-#666 text-26rpx py-25rpx text-center"
       v-if="isTolower && list.length > 0"
@@ -53,7 +53,7 @@
       },
       searchApi: {
         type: Function
-      }
+      },
     },
     data: {
       bounceList: ['正', '在', '加', '载', '数', '据', '.', '.', '.'],
@@ -132,6 +132,97 @@
           address: '华业大厦1701室'
         },
         {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+          {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+          {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+          {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+          {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+          {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+          {
+          time: '10:00-12:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+          {
           time: '10:00-12:00',
           deviceBrandCode_t: '沁园',
           deviceName: '沁园净水机',
@@ -254,6 +345,9 @@
         }
       },
       async onScrolltolower() {
+        if(!this.list.length) {
+          return
+        }
         this.isTolower = true
         if (this.scrollStatus === 0) {
           ++this.params.currentPage

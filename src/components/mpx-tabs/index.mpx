@@ -141,7 +141,7 @@
     overflow-x: hidden;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
-    padding: 10rpx 0;
+    padding: 10rpx 10rpx 10rpx 0;
   }
 
   .mpx-tab {
@@ -158,6 +158,9 @@
     vertical-align: top;
     box-sizing: border-box;
     white-space: nowrap;
+    &:last-child {
+      margin-right: 20rpx;
+    }
   }
 
   .mpx-tab-active {

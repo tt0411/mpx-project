@@ -66,6 +66,7 @@
     "usingComponents": {
       "mpx-tabs-page": "./components/mpx-tabs-page/index",
       "mpx-custom-nav-ali": "./components/mpx-custom-nav-ali/index",
+      "mpx-scroll-view": "./components/mpx-scroll-view/index",
       "mpx-empty": "./components/mpx-empty/index",
       "van-checkbox": "@vant/weapp/checkbox/index",
       "van-checkbox-group": "@vant/weapp/checkbox-group/index",
