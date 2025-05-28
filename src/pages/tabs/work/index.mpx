@@ -1,7 +1,7 @@
 <template>
-  <van-nav-bar @wx title="工单" custom-class="nav-bar" border="{{false}}"/>
+  <van-nav-bar @wx title="工单" custom-class="gradient-primary-bg" border="{{false}}"/>
   <mpx-custom-nav-ali @ali />
-  <van-row custom-class="main-order-list mb-20rpx">
+  <van-row custom-class="gradient-primary-bg mb-20rpx">
     <van-col
       wx:for="{{list}}"
       wx:for-item="item"
@@ -52,11 +52,6 @@
   })
 </script>
 
-<style lang="scss" scoped>
-.van-hairline--bottom {
-  border: none !important;
-}
-</style>
 <script name="json">
   const obj =
     __mpx_mode__ === 'ali'

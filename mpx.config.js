@@ -5,6 +5,10 @@ module.exports = defineConfig({
   pluginOptions: {
     mpx: {
       plugin: {
+        // 全局变量
+        defs: {
+          __env__: 'mini',
+        },
         srcMode: "wx",
         writeMode: "change",
         hackResolveBuildDependencies: ({ files, resolveDependencies }) => {
@@ -35,6 +39,14 @@ module.exports = defineConfig({
       unocss: {},
     },
   },
+   css: {
+      // sourceMap: true,
+      loaderOptions: {
+          scss: {
+            additionalData: '@import "@/styles/common.scss";'
+          }
+      }
+    },
   /**
    * 如果希望node_modules下的文件时对应的缓存可以失效，
    * 可以将configureWebpack.snap.managedPaths修改为 []

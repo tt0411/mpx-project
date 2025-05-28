@@ -65,190 +65,6 @@
       scrollTop: 0,
       cacheScrollTop: 0,
       scrollStatus: 0, // 0 默认状态 1 开始加载更多数据 2 无更多数据
-      fakeList: [
-        {
-          time: '08:00-10:00',
-          deviceBrandCode_t: '沁园',
-          deviceName: '沁园净水机',
-          deviceModel: 'RO-185',
-          serviceTypeCode_t: '安装',
-          serviceSubclassCode_t: '常规安装',
-          customerName: '张三',
-          provinceName: '浙江省',
-          cityName: '杭州市',
-          areaName: '滨江区',
-          address: '华业大厦1701室'
-        },
-        {
-          time: '10:00-12:00',
-          deviceBrandCode_t: '沁园',
-          deviceName: '沁园净水机',
-          deviceModel: 'RO-185',
-          serviceTypeCode_t: '安装',
-          serviceSubclassCode_t: '常规安装',
-          customerName: '张三',
-          provinceName: '浙江省',
-          cityName: '杭州市',
-          areaName: '滨江区',
-          address: '华业大厦1701室'
-        },
-        {
-          time: '10:00-12:00',
-          deviceBrandCode_t: '沁园',
-          deviceName: '沁园净水机',
-          deviceModel: 'RO-185',
-          serviceTypeCode_t: '安装',
-          serviceSubclassCode_t: '常规安装',
-          customerName: '张三',
-          provinceName: '浙江省',
-          cityName: '杭州市',
-          areaName: '滨江区',
-          address: '华业大厦1701室'
-        },
-        {
-          time: '10:00-12:00',
-          deviceBrandCode_t: '沁园',
-          deviceName: '沁园净水机',
-          deviceModel: 'RO-185',
-          serviceTypeCode_t: '安装',
-          serviceSubclassCode_t: '常规安装',
-          customerName: '张三',
-          provinceName: '浙江省',
-          cityName: '杭州市',
-          areaName: '滨江区',
-          address: '华业大厦1701室'
-        },
-        {
-          time: '10:00-12:00',
-          deviceBrandCode_t: '沁园',
-          deviceName: '沁园净水机',
-          deviceModel: 'RO-185',
-          serviceTypeCode_t: '安装',
-          serviceSubclassCode_t: '常规安装',
-          customerName: '张三',
-          provinceName: '浙江省',
-          cityName: '杭州市',
-          areaName: '滨江区',
-          address: '华业大厦1701室'
-        },
-        {
-          time: '10:00-12:00',
-          deviceBrandCode_t: '沁园',
-          deviceName: '沁园净水机',
-          deviceModel: 'RO-185',
-          serviceTypeCode_t: '安装',
-          serviceSubclassCode_t: '常规安装',
-          customerName: '张三',
-          provinceName: '浙江省',
-          cityName: '杭州市',
-          areaName: '滨江区',
-          address: '华业大厦1701室'
-        },
-          {
-          time: '10:00-12:00',
-          deviceBrandCode_t: '沁园',
-          deviceName: '沁园净水机',
-          deviceModel: 'RO-185',
-          serviceTypeCode_t: '安装',
-          serviceSubclassCode_t: '常规安装',
-          customerName: '张三',
-          provinceName: '浙江省',
-          cityName: '杭州市',
-          areaName: '滨江区',
-          address: '华业大厦1701室'
-        },
-          {
-          time: '10:00-12:00',
-          deviceBrandCode_t: '沁园',
-          deviceName: '沁园净水机',
-          deviceModel: 'RO-185',
-          serviceTypeCode_t: '安装',
-          serviceSubclassCode_t: '常规安装',
-          customerName: '张三',
-          provinceName: '浙江省',
-          cityName: '杭州市',
-          areaName: '滨江区',
-          address: '华业大厦1701室'
-        },
-          {
-          time: '10:00-12:00',
-          deviceBrandCode_t: '沁园',
-          deviceName: '沁园净水机',
-          deviceModel: 'RO-185',
-          serviceTypeCode_t: '安装',
-          serviceSubclassCode_t: '常规安装',
-          customerName: '张三',
-          provinceName: '浙江省',
-          cityName: '杭州市',
-          areaName: '滨江区',
-          address: '华业大厦1701室'
-        },
-          {
-          time: '10:00-12:00',
-          deviceBrandCode_t: '沁园',
-          deviceName: '沁园净水机',
-          deviceModel: 'RO-185',
-          serviceTypeCode_t: '安装',
-          serviceSubclassCode_t: '常规安装',
-          customerName: '张三',
-          provinceName: '浙江省',
-          cityName: '杭州市',
-          areaName: '滨江区',
-          address: '华业大厦1701室'
-        },
-          {
-          time: '10:00-12:00',
-          deviceBrandCode_t: '沁园',
-          deviceName: '沁园净水机',
-          deviceModel: 'RO-185',
-          serviceTypeCode_t: '安装',
-          serviceSubclassCode_t: '常规安装',
-          customerName: '张三',
-          provinceName: '浙江省',
-          cityName: '杭州市',
-          areaName: '滨江区',
-          address: '华业大厦1701室'
-        },
-          {
-          time: '10:00-12:00',
-          deviceBrandCode_t: '沁园',
-          deviceName: '沁园净水机',
-          deviceModel: 'RO-185',
-          serviceTypeCode_t: '安装',
-          serviceSubclassCode_t: '常规安装',
-          customerName: '张三',
-          provinceName: '浙江省',
-          cityName: '杭州市',
-          areaName: '滨江区',
-          address: '华业大厦1701室'
-        },
-          {
-          time: '10:00-12:00',
-          deviceBrandCode_t: '沁园',
-          deviceName: '沁园净水机',
-          deviceModel: 'RO-185',
-          serviceTypeCode_t: '安装',
-          serviceSubclassCode_t: '常规安装',
-          customerName: '张三',
-          provinceName: '浙江省',
-          cityName: '杭州市',
-          areaName: '滨江区',
-          address: '华业大厦1701室'
-        },
-        {
-          time: '10:00-12:00',
-          deviceBrandCode_t: '九阳',
-          deviceName: '九阳净水机',
-          deviceModel: 'RO-185',
-          serviceTypeCode_t: '安装',
-          serviceSubclassCode_t: '常规安装',
-          customerName: '张三',
-          provinceName: '浙江省',
-          cityName: '杭州市',
-          areaName: '滨江区',
-          address: '华业大厦1701室'
-        }
-      ]
     },
     computed: {
         loadingText() {
@@ -279,14 +95,14 @@
       },
       async search(reload = true, currentPage = 0) {
         let { url } = this.module || {}
-        this.scrollStatus = 1
-        if (reload) {
-          this.params.currentPage = 1
-        }
         if (!url && !(typeof this.searchApi === 'function')) {
           console.log('请正确传入接口请求api');
           return
         }
+        if (reload) {
+          this.params.currentPage = 1
+        }
+        this.scrollStatus = 1
         let pageSize = 0
         if (currentPage && currentPage > 0) {
           this.params.currentPage = 1
@@ -311,7 +127,6 @@
             }
             if (reload) {
               this.list = []
-              this.triggerEvent('updateList', { list: this.list })
             }
             this.list = [...this.list, ...list]
             this.triggerEvent('updateList', { list: this.list })

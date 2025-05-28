@@ -1,39 +1,59 @@
 <template>
-    <van-nav-bar
-    @wx
-    title="我的"
-    custom-class="nav-bar"
-  />
+  <van-nav-bar custom-class="gradient-primary-bg" @wx title="我的" border="{{false}}" />
   <mpx-custom-nav-ali title="我的" @ali />
+  <view></view>
+  <view class="px-20rpx py-20rpx">
+    <van-button type="primary" round block bindtap="logout">退出登录</van-button>
+  </view>
 </template>
 
 <script>
-import mpx, { createPage } from '@mpxjs/core'
+  import mpx, { createPage } from '@mpxjs/core'
 
-createPage({
-
-})
+  createPage({
+    data: {
+      userInfo: {
+        userName: ''
+      }
+    },
+    methods: {
+      logout() {
+        mpx.showModal({
+          title: '提示',
+          content: '确定退出登录吗？',
+          success: function (res) {
+            if (res.confirm) {
+              mpx.reLaunch({
+                url: '/pages/login/index'
+              })
+            }
+          }
+        })
+      }
+    }
+  })
 </script>
 
 
 <script name="json">
-const obj = __mpx_mode__  === 'ali' ? 
-{
- "transparentTitle": "always",
-  "titlePenetrate": "YES", // 允许点击穿透后，才能触发导航栏上的 onTap 事件
-  "defaultTitle": "", // 将导航栏默认的 title 置空
-  "titleBarColor": "#000000", // 虽然设置导航栏背景色不生效，但可以影响前景色为白色
-  "disabledScroll": true,
-} : {
-    "navigationBarTitleText": "我的",
-    "disabledScroll": true,
-    "navigationStyle": "custom"
-}
-  module.exports =   {
-    "usingComponents": {},
-     ...obj
+  const obj =
+    __mpx_mode__ === 'ali'
+      ? {
+          transparentTitle: 'always',
+          titlePenetrate: 'YES',
+          defaultTitle: '',
+          titleBarColor: '#000000',
+          disabledScroll: true
+        }
+      : {
+          navigationBarTitleText: '我的',
+          disabledScroll: true,
+          navigationStyle: 'custom'
+        }
+  module.exports = {
+    usingComponents: {},
+    ...obj
   }
 </script>
 <style lang="scss" scoped>
-
 </style>

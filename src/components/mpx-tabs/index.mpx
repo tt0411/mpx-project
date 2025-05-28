@@ -133,7 +133,7 @@
   }
 </script>
 <style lang="scss" scoped>
-  @import '@/styles/common.scss';
+  @import '@/styles/var.scss';
   .mpx-tabs {
     width: 100%;
     white-space: nowrap;
@@ -164,7 +164,7 @@
   }
 
   .mpx-tab-active {
-    color: #f39c3e;
+    color: $primary-color;
     font-weight: bold;
     position: relative;
   }
@@ -177,7 +177,7 @@
     transform: translateX(-50%);
     width: 40%;
     height: 4rpx;
-    background: #f39c3e;
+    background: $primary-color;
     border-radius: 6rpx;
     pointer-events: none;
     transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);

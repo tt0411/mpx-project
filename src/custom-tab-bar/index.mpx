@@ -61,6 +61,8 @@
   }
 </script>
 <style lang="scss" scoped>
+  @import '@/styles/var.scss';
+
   .custom-tabbar {
     position: fixed;
     left: 0;
@@ -116,7 +118,7 @@
   }
 
   .tabbar-text.active {
-    color: #f39c3e;
+    color: $primary-color;
     font-weight: 500;
   }
 

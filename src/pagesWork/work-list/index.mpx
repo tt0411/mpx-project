@@ -1,6 +1,6 @@
 <template>
   <mpx-tabs-page currentIndex="{{active}}" bind:change="handleTabChange">
-    <view>搜索栏插槽</view>
+    <view>搜索栏插槽1</view>
     <view class="schedule-order-list" slot="aa">
       <mpx-scroll-view id="mpx-scroll-view" bindupdateList="onUpdateListChange">
         <view class="schedule-order-item" wx:for="{{orderList}}" wx:key="time">
