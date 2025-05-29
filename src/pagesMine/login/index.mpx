@@ -109,6 +109,8 @@
 
 <script>
   import mpx, { createPage } from '@mpxjs/core'
+  import { mapActions } from '@mpxjs/pinia'
+  import { useAuthStore } from '@/store'
 
   createPage({
     data: {
@@ -137,6 +139,7 @@
       }
     },
     methods: {
+      ...mapActions(useAuthStore, ['setIsLogin']),
       togglePassword() {
         this.isPassword = !this.isPassword
       },
@@ -186,6 +189,7 @@
         mpx.login({
           success: (res) => {
             if (res.code) {
+              this.setIsLogin(true)
               mpx.switchTab({
                 url: '/pages/tabs/work/index'
               })
@@ -193,7 +197,7 @@
           }
         })
       },
-      // 验证
+      // 登录验证
       loginValidate() {
         if (this.loading) {
           return false

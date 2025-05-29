@@ -21,6 +21,8 @@
 
 <script>
   import mpx, { createPage } from '@mpxjs/core'
+  import { mapState } from '@mpxjs/pinia'
+  import { useAuthStore } from '@/store'
 
   createPage({
     data: {
@@ -40,7 +42,14 @@
         { type: 11, title: '已超期', count: 9 }
       ]
     },
-    onLoad() {},
+    computed: {
+      ...mapState(useAuthStore, ['isLogin'])
+    },
+    onLoad() {
+      if(!this.isLogin) {
+        mpx.reLaunch({ url: '/pagesMine/login/index' });
+      }
+    },
     onShow() {},
     methods: {
       goOrderList(item) {

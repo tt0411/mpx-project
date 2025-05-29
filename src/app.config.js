@@ -1,6 +1,5 @@
 module.exports = {
     "pages": [
-      "./pages/login/index",
       "./pages/tabs/work/index",
       "./pages/tabs/mine/index",
       "./pages/tabs/warehouse/index",
@@ -8,11 +7,13 @@ module.exports = {
       "./pages/tabs/knowledge/index",
     ],
     "packages": [
-      "./pagesWork/app.mpx?root=pagesWork"
+      "./pagesWork/app.mpx?root=pagesWork",
+      "./pagesMine/app.mpx?root=pagesMine",
+      "./pagesCommon/app.mpx?root=pagesCommon",
     ],
     "window": {
-      "backgroundTextStyle": "light",
-      "navigationBarBackgroundColor": "#f39c3e"
+      "navigationBarTextStyle": "black",
+      "navigationBarBackgroundColor": "#ffffff"
     },
     "tabBar": {
       "custom": true,

@@ -1,0 +1,94 @@
+<template>
+    <map
+      class="w-100% h-100vh"
+      :scale="17"
+      :longitude="longitude"
+      :latitude="latitude"
+      :markers="markers"
+      id="map"
+    >
+    </map>
+    <view class="w-94% absolute bottom-40rpx ml-3%">
+        <van-button type="primary" block round bindtap="onNavigation">导航</van-button>
+    </view>
+</template>
+
+<script>
+  import mpx, { createPage } from '@mpxjs/core'
+  const BMapWX = require('@/utils/bmap-wx.min')
+  const baiduMap = new BMapWX.BMapWX({
+    ak: 'p4tbRdQZR6nKi63eCHkmfwwmAV9A42eN'
+  })
+  createPage({
+    data: {
+      longitude: '',
+      latitude: '',
+      address: '浙江省杭州市滨江区华业大厦',
+      markers: [],
+      label: '测试地址'
+    },
+    onLoad(options) {
+      const { provinceName, cityName, areaName, address } = options || {}
+      const address1 = `${provinceName}${cityName}${areaName}`
+      let address2 = address
+      const len1 = address1.length
+      const maxLen = 50
+      if (address2.length >= maxLen - len1) {
+        address2 = address2.slice(address2.length - (maxLen - len1))
+      }
+      console.log('截取的地址：', `${address1}${address2}`)
+      this.address = `${address1}${address2}`
+      this.label = address
+      this.geocoder()
+    },
+    methods: {
+      geocoder() {
+        baiduMap.geocoding({
+          address: this.address,
+          ret_coordtype: 'gcj02ll',
+          success: (res) => {
+            const { lat, lng } = res.result.location
+            this.longitude = lng
+            this.latitude = lat
+
+            let m = {
+              id: 1001,
+              longitude: this.longitude,
+              latitude: this.latitude,
+              iconPath: 'http://cbs-worker-wxapp.oss-cn-hangzhou.aliyuncs.com/prod/dingwei2.png',
+              height: 30,
+              width: 24,
+              label: {
+                content: this.label,
+                textAlign: 'center',
+                fontSize: '18px',
+                color: '#f39c3e'
+              }
+            }
+            this.markers.push(m)
+          }
+        })
+      },
+      onNavigation() {
+        const ctx = mpx.createMapContext('map', this)
+        ctx.openMapApp({
+          longitude: this.longitude,
+          latitude: this.latitude,
+          destination: this.address,
+          success: () => {},
+          fail: (err) => {}
+        })
+      }
+    }
+  })
+</script>
+
+<style lang="scss">
+</style>
+
+<script type="application/json">
+  {
+    "usingComponents": {},
+    "navigationBarTitleText": "工单地址"
+  }
+</script>

@@ -5,10 +5,15 @@
   <view class="px-20rpx py-20rpx">
     <van-button type="primary" round block bindtap="logout">退出登录</van-button>
   </view>
+    <view class="px-20rpx py-20rpx">
+    <van-button type="primary" round block bindtap="goMap">百度地图页面</van-button>
+  </view>
 </template>
 
 <script>
   import mpx, { createPage } from '@mpxjs/core'
+  import { useCommonStore } from '@/store'
+  import { mapActions } from '@mpxjs/pinia'
 
   createPage({
     data: {
@@ -17,17 +22,24 @@
       }
     },
     methods: {
+      ...mapActions(useCommonStore, ['setActiveTabbarIndex']),
       logout() {
         mpx.showModal({
           title: '提示',
           content: '确定退出登录吗？',
-          success: function (res) {
+          success: (res) => {
             if (res.confirm) {
+              this.setActiveTabbarIndex(0)
               mpx.reLaunch({
-                url: '/pages/login/index'
+                url: '/pagesMine/login/index'
               })
             }
           }
+        })
+      },
+      goMap() {
+        mpx.navigateTo({
+          url: '/pagesCommon/map/index'
         })
       }
     }
