@@ -16,6 +16,7 @@
 <style lang="scss">
 // /*此处编写全局样式*/
 @import '@/styles/common.scss';
+@import "@/static/iconfont/iconfont.css";
 
 </style>
 

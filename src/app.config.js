@@ -1,11 +1,11 @@
 module.exports = {
-      "pages": [
+    "pages": [
+      "./pages/login/index",
       "./pages/tabs/work/index",
       "./pages/tabs/mine/index",
       "./pages/tabs/warehouse/index",
       "./pages/tabs/notice/index",
       "./pages/tabs/knowledge/index",
-      "./pages/login/index"
     ],
     "packages": [
       "./pagesWork/app.mpx?root=pagesWork"
@@ -57,7 +57,7 @@ module.exports = {
       "van-col": "@vant/weapp/col/index",
       "van-cell": "@vant/weapp/cell/index",
       "van-cell-group": "@vant/weapp/cell-group/index",
-      "van-skeleton": "@vant/weapp/skeleton/index",
-      "van-loading": "@vant/weapp/loading/index"
+      "van-icon": "@vant/weapp/icon/index",
+      "van-radio": "@vant/weapp/radio/index",
     }
 }

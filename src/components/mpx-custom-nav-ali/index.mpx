@@ -1,12 +1,13 @@
 <template>
   <view @ali class="custom-nav" style="
   height:{{titleBarHeight + statusBarHeight}}px;
-  background: {{background}}
+  background: {{background}};
+  color: {{color}};
   ">
     <view
       @ali
       class="custom-titleBar"
-      style="height:{{titleBarHeight}}px;padding-top:{{statusBarHeight}}px;"
+      style="height:{{titleBarHeight}}px;padding-top:{{statusBarHeight}}px;color: {{color}}"
     >
      {{ title }}
     </view>
@@ -25,6 +26,10 @@
       background: {
         type: String,
         value: 'linear-gradient(270deg, #f7b643 0%, #ffd563 100%)'
+      },
+      color: {
+        type: String,
+        value: 'white'
       }
     },
     data: {
@@ -42,7 +47,6 @@
   .custom-titleBar {
     display: flex;
     align-items: center;
-    color: white;
     font-size: 32rpx;
     margin-left: 80rpx;
   }

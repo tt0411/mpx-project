@@ -34,4 +34,10 @@ page {
 
   --button-primary-background-color: #{$primary-color};
   --button-primary-border-color: #{$primary-color};
+  --checkbox-checked-icon-color: #{$primary-color};
+  --checkbox-label-color: #{$default-text-color};
+
+  .van-cell:after {
+    border-bottom: 2rpx solid #d3d2d2;
+  }
 }

@@ -1,4 +1,5 @@
 const { defineConfig } = require("@vue/cli-service");
+// const MpxWebpackPlugin = require('@mpxjs/webpack-plugin')
 const path = require("path");
 module.exports = defineConfig({
   outputDir: `dist/${process.env.MPX_CURRENT_TARGET_MODE}`,
@@ -18,12 +19,6 @@ module.exports = defineConfig({
             resolveDependencies.files.delete(packageJSONPath);
           }
         },
-        rules: [
-          {
-            test: /\.scss$/,
-            use: ["css-loader", "sass-loader"],
-          },
-        ],
       },
       resolve: {
         alias: {
@@ -39,14 +34,6 @@ module.exports = defineConfig({
       unocss: {},
     },
   },
-   css: {
-      // sourceMap: true,
-      loaderOptions: {
-          scss: {
-            additionalData: '@import "@/styles/common.scss";'
-          }
-      }
-    },
   /**
    * 如果希望node_modules下的文件时对应的缓存可以失效，
    * 可以将configureWebpack.snap.managedPaths修改为 []
