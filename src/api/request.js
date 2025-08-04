@@ -2,7 +2,7 @@ import mpx from "@mpxjs/core";
 
 const baseURL =
   process.env.NODE_ENV === "development"
-    ? "https://xxx.dev.xxx.com" // 测试环境
+    ? "https://cbs-gateway.dev.ebsfw.com" // 测试环境
     : "https://xxx.xxx.com"; // 线上环境
 let loadingCount = 0;
 
@@ -23,10 +23,14 @@ function hideLoading() {
 
 // 添加请求拦截器
 mpx.xfetch.interceptors.request.use((config) => {
-  if (config.showLoading === true) {
+  if (config.showLoading !== false) {
     showLoading();
   }
-  // 可在此添加 token 等
+  let cookies = mpx.getStorageSync("cookies");
+  if (cookies && cookies.length) {
+    if (!config.headers) config.headers = {};
+    config.headers.cookie = cookies.join(";");
+  }
   return config;
 });
 
@@ -36,14 +40,47 @@ mpx.xfetch.interceptors.response.use(
     if (response.requestConfig.showLoading) {
       hideLoading();
     }
+    if (response.cookies.length) {
+      console.log("response.cookies", response.cookies);
+      let cookies = [];
+      const cookie = response.cookies[0];
+      let c = cookie.split(";");
+      if (c) cookies = c;
+      let expired = true;
+      for (let i = 0; i < cookies.length; i++) {
+        let key = cookies[i].split("=")[0];
+        let value = cookies[i].split("=")[1];
+        if (key === "SESSION") {
+          expired = false;
+          if (!value) {
+            expired = true;
+          }
+        }
+      }
+      if (expired) {
+        mpx.removeStorageSync("cookies");
+      } else {
+        mpx.setStorageSync("cookies", cookies);
+      }
+    }
+
     if (response.data.code !== 0) {
-      if (response.requestConfig.showToastMsg === true) {
+      if (response.data.code === 101) {
+        mpx.removeStorageSync("cookies");
+        mpx.reLaunch({
+          url: "/pagesMine/login/index",
+        });
+        return;
+      }
+      if (
+        response.requestConfig.showToastMsg !== false &&
+        response.requestConfig.method !== "get"
+      ) {
         mpx.showToast({
           title: response.data.message || "网络异常",
           icon: "none",
         });
       }
-      return Promise.reject(response.data);
     }
     return response.data;
   },
@@ -79,16 +116,16 @@ function request({ url, config = {} }) {
       ...config,
       timeout: config.timeout ?? 10000,
     })
-    .then((res) => res.data);
+    .then((res) => res);
 }
 
 // GET
 export function get(url, parameter = {}) {
-  const { config = {}, showLoading, showToastMsg, params } = parameter;
+  const { showLoading, params } = parameter;
+  let config = {};
   config.method = "GET";
   config.params = params;
   config.showLoading = showLoading;
-  config.showToastMsg = showToastMsg;
   config.headers = config.headers || {};
   config.timeout = config.timeout;
   return request({ url, config });
@@ -96,7 +133,8 @@ export function get(url, parameter = {}) {
 
 // POST
 export function post(url, parameter = {}) {
-  const { config = {}, showLoading, showToastMsg, data, params } = parameter;
+  const { showLoading, showToastMsg, data, params } = parameter;
+  let config = {};
   config.method = "POST";
   config.params = params;
   config.data = data;
@@ -107,9 +145,26 @@ export function post(url, parameter = {}) {
   return request({ url, config });
 }
 
+// POST form
+export function postForm(url, parameter = {}) {
+  const { headers, showLoading, showToastMsg, data, params } = parameter;
+  let config = {};
+  config.method = "POST";
+  config.params = params;
+  config.data = data;
+  config.showLoading = showLoading;
+  config.showToastMsg = showToastMsg;
+  config.headers = headers
+    ? { ...headers, "Content-Type": "application/x-www-form-urlencoded" }
+    : { "Content-Type": "application/x-www-form-urlencoded" };
+  config.timeout = config.timeout;
+  return request({ url, config });
+}
+
 // PUT
 export function put(url, parameter = {}) {
-  const { config = {}, showLoading, showToastMsg, data, params } = parameter;
+  const { showLoading, showToastMsg, data, params } = parameter;
+  let config = {};
   config.method = "PUT";
   config.data = data;
   config.params = params;
@@ -122,7 +177,8 @@ export function put(url, parameter = {}) {
 
 // DELETE
 export function del(url, parameter = {}) {
-  const { config = {}, showLoading, showToastMsg, data, params } = parameter;
+  const { showLoading, showToastMsg, data, params } = parameter;
+  let config = {};
   config.method = "DELETE";
   config.data = data;
   config.params = params;
@@ -135,17 +191,12 @@ export function del(url, parameter = {}) {
 
 // 上传文件
 export function uploadFile(url, parameter = {}) {
-  const {
-    config = {},
-    formData = {},
-    params,
-    showLoading,
-    showToastMsg,
-  } = parameter;
+  const { formData = {}, params, showLoading, showToastMsg } = parameter;
   config.method = "POST";
   config.headers = {
     "Content-Type": "multipart/form-data",
   };
+  let config = {};
   config.formData = formData;
   config.params = params;
   config.showToastMsg = showToastMsg;

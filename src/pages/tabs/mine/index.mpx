@@ -1,13 +1,38 @@
 <template>
   <van-nav-bar custom-class="gradient-primary-bg" @wx title="我的" border="{{false}}" />
   <mpx-custom-nav-ali title="我的" @ali />
-  <view></view>
-  <view class="px-20rpx py-20rpx">
+  <view class="gradient-primary-bg pl-20rpx py-20rpx flex items-center justify-between">
+    <view class="bg-#fff rounded-50% w-100rpx h-100rpx flex-center mr-20rpx">
+        <van-image width="40" height="40" src="{{pictureUrl}}" mode="aspectFill" />
+    </view>
+    <view class="flex-1 flex-col items-center justify-around text-28rpx text-#333">
+      <view class="mb-10rpx">{{workerInfo.workerName}}</view>
+      <view class="mb-10rpx">{{workerInfo.phone}}</view>
+      <view>{{workerInfo.outletsCodes_t}}</view>
+    </view>
+    <view class="flex-col items-center justify-around">
+      <view class="flex-center bg-#fbe1b3 rounded-l-24rpx pl-5rpx">
+        <view class="bg-#fff rounded-50% flex-center px-8rpx py-8rpx">
+          <text class="iconfont icon-zhima-shenfenzheng text-#ed7814"></text>
+        </view>
+        <view class="px-30rpx text-#333 text-26rpx">工牌</view>
+      </view>
+    </view>
+  </view>
+  <view class="flex items-center justify-evenly py-20rpx bg-#fff">
+    <view wx:for="{{menuList}}" wx:key="index" class="flex-col-center"> 
+      <text wx:class="{{'text-40rpx text-center text-#333 iconfont ' + item.icon}}"></text>
+      <view class="text-#333 text-28rpx mt-8rpx">{{item.label}}</view>
+    </view>
+  </view>
+  <!-- 更多功能 -->
+  <more-function />
+  <!-- <view class="px-20rpx py-20rpx">
     <van-button type="primary" round block bindtap="logout">退出登录</van-button>
   </view>
     <view class="px-20rpx py-20rpx">
     <van-button type="primary" round block bindtap="goMap">百度地图页面</van-button>
-  </view>
+  </view> -->
 </template>
 
 <script>
@@ -17,9 +42,22 @@
 
   createPage({
     data: {
-      userInfo: {
-        userName: ''
-      }
+      workerInfo: {
+        workerName: '测试师傅',
+        phone: '13912345678',
+        outletsCodes_t: '滨江服务站',
+      },
+      menuList: [
+        { label: '提现账户', icon: 'icon-qianbao1', path: '' },
+        { label: '商城订单', icon: 'icon-jifenshangcheng', path: '' },
+        { label: '完工工单', icon: 'icon-wancheng', path: '' },
+        { label: '对账单', icon: 'icon-tixian', path: '' },
+        { label: '资料', icon: 'icon-zerenren', path: '' },
+      ],
+      pictureUrl: 'https://cbs-worker-wxapp.oss-cn-hangzhou.aliyuncs.com/prod/E.png'
+    },
+    computed: {
+  
     },
     methods: {
       ...mapActions(useCommonStore, ['setActiveTabbarIndex']),
@@ -30,6 +68,7 @@
           success: (res) => {
             if (res.confirm) {
               this.setActiveTabbarIndex(0)
+              mpx.removeStorageSync('cookies')
               mpx.reLaunch({
                 url: '/pagesMine/login/index'
               })
@@ -41,11 +80,13 @@
         mpx.navigateTo({
           url: '/pagesCommon/map/index'
         })
+      },
+      changeImg() {
+
       }
     }
   })
 </script>
-
 
 <script name="json">
   const obj =
@@ -63,9 +104,13 @@
           navigationStyle: 'custom'
         }
   module.exports = {
-    usingComponents: {},
+    usingComponents: {
+      'more-function': './components/more-function.mpx'
+    },
     ...obj
   }
 </script>
 <style lang="scss" scoped>
+  @use '../../../styles/common.scss' as *;
+
 </style>

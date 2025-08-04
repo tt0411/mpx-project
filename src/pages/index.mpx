@@ -7,9 +7,9 @@
 
 <script>
 import { createPage } from '@mpxjs/core'
-import { storeToRefs, mapState, mapActions } from '@mpxjs/pinia'
+import { mapState, mapActions } from '@mpxjs/pinia'
 import { useOrderStore, useCommonStore } from '@/store'
-import { getTest, postTest } from '@/api'
+import { postTest } from '@/api'
 
 createPage({
   data: {

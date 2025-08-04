@@ -1,8 +1,8 @@
 @font-face {
   font-family: 'iconfont';
-  src: url('//at.alicdn.com/t/c/font_2575413_oxgomyio5ja.woff2?t=1685588555110') format('woff2'),
-       url('//at.alicdn.com/t/c/font_2575413_oxgomyio5ja.woff?t=1685588555110') format('woff'),
-       url('//at.alicdn.com/t/c/font_2575413_oxgomyio5ja.ttf?t=1685588555110') format('truetype');
+  src: url('https://bh-cbs-prod.oss-cn-hangzhou.aliyuncs.com/template/iconfont.woff2') format('woff2'),
+       url('https://bh-cbs-prod.oss-cn-hangzhou.aliyuncs.com/template/iconfont.woff') format('woff'),
+       url('https://bh-cbs-prod.oss-cn-hangzhou.aliyuncs.com/template/iconfont.ttf') format('truetype');
 }
 
 .iconfont {

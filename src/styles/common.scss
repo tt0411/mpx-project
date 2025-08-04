@@ -1,4 +1,4 @@
-@import './var.scss';
+@use './var.scss' as *;
 
 page {
   background-color: #F4F5F7;
@@ -30,6 +30,15 @@ page {
     box-sizing: border-box;
     z-index: 2;
     font-weight: normal;
+  }
+
+  .main-title {
+    font-size: 30rpx;
+    color: $default-text-color;
+    font-weight: 800;
+    line-height: 26rpx;
+    border-left: 4rpx solid $primary-color;
+    padding-left: 10rpx;
   }
 
   --button-primary-background-color: #{$primary-color};

@@ -8,26 +8,12 @@
         <text>即享无忧</text>
       </view>
     </view>
-    <view wx:if="{{ loginMode === 1}}" class="w-100% mt-60rpx">
-      <van-field
-        wx:model="{{ form.username }}"
-        wx:model-value-path="[]"
-        placeholder="输入账号/手机号"
-        clearable
-      />
+    <view wx:if="{{loginMode === 1}}" class="w-100% mt-60rpx">
+      <van-field wx:model="{{ form.username }}" wx:model-value-path="[]" placeholder="输入账号/手机号" clearable />
       <view class="mt-20rpx">
-        <van-field
-          wx:model="{{ form.password }}"
-          wx:model-value-path="[]"
-          password="{{isPassword}}"
-          placeholder="输入登录密码"
-        >
-          <van-icon
-            wx:if="{{isPassword}}"
-            name="closed-eye"
-            slot="right-icon"
-            bindtap="togglePassword"
-          />
+        <van-field wx:model="{{ form.password }}" wx:model-value-path="[]" password="{{ isPassword }}"
+          placeholder="输入登录密码">
+          <van-icon wx:if="{{isPassword}}" name="closed-eye" slot="right-icon" bindtap="togglePassword" />
           <van-icon wx:else name="eye-o" slot="right-icon" bindtap="togglePassword" />
         </van-field>
       </view>
@@ -37,50 +23,21 @@
       </view>
     </view>
     <view wx:else class="w-100% mt-60rpx">
-      <van-field
-        wx:model="{{ form.phone }}"
-        maxlength="{{11}}"
-        type="number"
-        wx:model-value-path="[]"
-        placeholder="输入手机号"
-        clearable
-      />
+      <van-field wx:model="{{ form.phone }}" maxlength="{{ 11 }}" type="number" wx:model-value-path="[]"
+        placeholder="输入手机号" clearable />
       <view class="mt-20rpx">
-        <van-field
-          wx:model="{{ form.code }}"
-          maxlength="{{6}}"
-          type="number"
-          wx:model-value-path="[]"
-          placeholder="输入验证码"
-        >
-          <text
-            slot="button"
-            class="text-primary"
-            bindtap="sendCode"
-            style="user-select:none;cursor:pointer;opacity:{{codeDisabled ? 0.5 : 1}}"
-            wx:if="{{!codeDisabled}}"
-            >{{ codeText }}</text
-          >
-          <text
-            slot="button"
-            class="text-primary"
-            style="user-select: none; cursor: not-allowed"
-            wx:else
-            >{{ codeText }}</text
-          >
+        <van-field wx:model="{{ form.code }}" maxlength="{{ 6 }}" type="number" wx:model-value-path="[]"
+          placeholder="输入验证码">
+          <text slot="button" class="text-primary" bindtap="sendCode"
+            style="user-select:none;cursor:pointer;opacity:{{codeDisabled ? 0.5 : 1}}" wx:if="{{!codeDisabled}}">{{
+            codeText }}</text>
+          <text slot="button" class="text-primary" style="user-select: none; cursor: not-allowed" wx:else>{{ codeText
+            }}</text>
         </van-field>
       </view>
     </view>
     <view class="w-94% mt-80rpx mx-3%">
-      <van-button
-        type="primary"
-        block
-        round
-        loading="{{loading}}"
-        loading-text="登录中..."
-        bindtap="login"
-        >登录</van-button
-      >
+      <van-button type="primary" block round loading="{{ loading }}" loading-text="登录中..." bindtap="login">登录</van-button>
     </view>
     <view class="flex-center mt-30rpx">
       <van-checkbox wx:model="{{ isRead }}" wx:model-value-path="[]">我已阅读并同意</van-checkbox>
@@ -100,7 +57,7 @@
         </view>
         <text class="pt-15rpx text-#999 text-24rpx">{{
           loginMode === 1 ? '验证码登录' : '账号登录'
-        }}</text>
+          }}</text>
         <text class="mt-20rpx text-#999 tracking-5rpx">仅供e帮手内容人员使用</text>
       </view>
     </view>
@@ -108,188 +65,196 @@
 </template>
 
 <script>
-  import mpx, { createPage } from '@mpxjs/core'
-  import { mapActions } from '@mpxjs/pinia'
-  import { useAuthStore } from '@/store'
+import mpx, { createPage } from '@mpxjs/core'
+import { mapActions } from '@mpxjs/pinia'
+import { useAuthStore } from '@/store'
+import { passwordRsa } from '@/utils'
+import { login } from '@/api'
 
-  createPage({
-    data: {
-      isPassword: true,
-      rememberPwd: true,
-      isRead: true,
-      loginMode: 1, // 1: 密码登录 2: 验证码登录
-      form: {
-        username: '',
-        password: '',
-        phone: '',
-        code: ''
-      },
-      codeTimer: 0,
-      codeText: '发送验证码',
-      codeDisabled: false,
-      loading: false
+createPage({
+  data: {
+    isPassword: true,
+    rememberPwd: true,
+    isRead: true,
+    loginMode: 1, // 1: 密码登录 2: 验证码登录
+    form: {
+      username: '',
+      password: '',
+      phone: '',
+      code: ''
     },
-    onLoad() {},
-    onUnload() {
-      if (this.codeTimer) clearInterval(this.codeTimer)
+    codeTimer: 0,
+    codeText: '发送验证码',
+    codeDisabled: false,
+    loading: false
+  },
+  onLoad() { },
+  onUnload() {
+    if (this.codeTimer) clearInterval(this.codeTimer)
+  },
+  onShow() {
+    if (__mpx_mode__ === 'ali') {
+      mpx.hideBackHome()
+    }
+  },
+  methods: {
+    ...mapActions(useAuthStore, ['']),
+    togglePassword() {
+      this.isPassword = !this.isPassword
     },
-    onShow() {
-      if (__mpx_mode__ === 'ali') {
-        mpx.hideBackHome()
+    changeLoginMode() {
+      if (this.loginMode === 1) {
+        mpx.showModal({
+          title: '提示',
+          content:
+            '是否授权e帮手需获取您的手机号以用于登录和身份验证？e帮手承诺不会将您的手机号用于其他未声明用途。若您需要注销和删除手机号，可联系客服人员处理。',
+          success: (res) => {
+            if (res.confirm) {
+              this.loginMode = 2
+            }
+          }
+        })
+      } else {
+        this.loginMode = 1
       }
     },
-    methods: {
-      ...mapActions(useAuthStore, ['setIsLogin']),
-      togglePassword() {
-        this.isPassword = !this.isPassword
-      },
-      changeLoginMode() {
-        if (this.loginMode === 1) {
-          mpx.showModal({
-            title: '提示',
-            content:
-              '是否授权e帮手需获取您的手机号以用于登录和身份验证？e帮手承诺不会将您的手机号用于其他未声明用途。若您需要注销和删除手机号，可联系客服人员处理。',
-            success: (res) => {
-              if (res.confirm) {
-                this.loginMode = 2
-              }
-            }
-          })
+    sendCode() {
+      if (this.codeDisabled) return
+      if (this.form.phone.length !== 11) return
+      let count = 10
+      this.codeDisabled = true
+      this.codeText = `${count}秒后重新发送`
+      this.codeTimer = setInterval(() => {
+        count--
+        if (count > 0) {
+          this.codeText = `${count}秒后重新发送`
         } else {
-          this.loginMode = 1
+          clearInterval(this.codeTimer)
+          this.codeText = '重新发送'
+          this.codeDisabled = false
         }
-      },
-      sendCode() {
-        if (this.codeDisabled) return
-        if (this.form.phone.length !== 11) return
-        let count = 10
-        this.codeDisabled = true
-        this.codeText = `${count}秒后重新发送`
-        this.codeTimer = setInterval(() => {
-          count--
-          if (count > 0) {
-            this.codeText = `${count}秒后重新发送`
-          } else {
-            clearInterval(this.codeTimer)
-            this.codeText = '重新发送'
-            this.codeDisabled = false
-          }
-        }, 1000)
-        // 这里可以添加实际发送验证码的逻辑
-      },
-      login() {
-        if (!this.loginValidate()) {
-          return
-        }
-        this.loading = true
-        mpx.showLoading({
-          title: '登录中...',
-          mask: true
-        })
-        mpx.login({
-          success: (res) => {
-            if (res.code) {
-              this.setIsLogin(true)
-              mpx.switchTab({
-                url: '/pages/tabs/work/index'
-              })
-            }
+      }, 1000)
+      // 这里可以添加实际发送验证码的逻辑
+    },
+    async login() {
+      if (!this.loginValidate()) {
+        return
+      }
+      this.loading = true
+      try {
+        const { code, data } = await login({
+          data: {
+            username: this.form.username,
+            password: passwordRsa(this.form.password),
+            systemCode: 'WC'
           }
         })
-      },
-      // 登录验证
-      loginValidate() {
-        if (this.loading) {
-          return false
+        if (code === 0) {
+          mpx.switchTab({
+            url: '/pages/tabs/work/index'
+          })
         }
-        if (!this.isRead) {
+      } catch (error) {
+
+      } finally {
+        this.loading = false
+      }
+    },
+    // 登录验证
+    loginValidate() {
+      if (this.loading) {
+        return false
+      }
+      if (!this.isRead) {
+        mpx.showToast({
+          title: '请先阅读并同意用户服务协议及隐私政策',
+          icon: 'none'
+        })
+        return false
+      }
+      if (this.loginMode === 1) {
+        if (!this.form.username) {
           mpx.showToast({
-            title: '请先阅读并同意用户服务协议及隐私政策',
+            title: '请输入账号',
             icon: 'none'
           })
           return false
         }
-        if (this.loginMode === 1) {
-          if (!this.form.username) {
-            mpx.showToast({
-              title: '请输入账号',
-              icon: 'none'
-            })
-            return false
-          }
-          if (!this.form.password) {
-            mpx.showToast({
-              title: '请输入密码',
-              icon: 'none'
-            })
-            return false
-          }
-          return true
-        } else {
-          if (!this.form.phone) {
-            mpx.showToast({
-              title: '请输入手机号',
-              icon: 'none'
-            })
-            return false
-          }
-          if (!this.form.code) {
-            mpx.showToast({
-              title: '请输入验证码',
-              icon: 'none'
-            })
-            return false
-          }
-          return true
+        if (!this.form.password) {
+          mpx.showToast({
+            title: '请输入密码',
+            icon: 'none'
+          })
+          return false
         }
+        return true
+      } else {
+        if (!this.form.phone) {
+          mpx.showToast({
+            title: '请输入手机号',
+            icon: 'none'
+          })
+          return false
+        }
+        if (!this.form.code) {
+          mpx.showToast({
+            title: '请输入验证码',
+            icon: 'none'
+          })
+          return false
+        }
+        return true
       }
     }
-  })
+  }
+})
 </script>
 
-</style>
 <script name="json">
   const obj =
     __mpx_mode__ === 'ali'
       ? {
-          navigationBarBackgroundColor: '#ffffff',
-          navigationBarFrontColor: 'black',
-          allowsBounceVertical: false,
-          defaultTitle: '登录'
-        }
+        navigationBarBackgroundColor: '#ffffff',
+        navigationBarFrontColor: 'black',
+        allowsBounceVertical: false,
+        defaultTitle: '登录'
+      }
       : {
-          navigationBarTitleText: '登录',
-          disableScroll: true,
-          navigationStyle: 'custom'
-        }
+        navigationBarTitleText: '登录',
+        disableScroll: true,
+        navigationStyle: 'custom'
+      }
   module.exports = {
     usingComponents: {},
     ...obj
   }
 </script>
 <style lang="scss" scoped>
-  .other-login {
-    border-top: solid 1px rgba(230, 230, 230, 0.6);
-    text-align: center;
-    text {
-      display: inline-block;
-      position: relative;
-      top: -20rpx;
-      padding: 0 50rpx;
-      background: #ffffff;
-    }
+.other-login {
+  border-top: solid 1px rgba(230, 230, 230, 0.6);
+  text-align: center;
+
+  text {
+    display: inline-block;
+    position: relative;
+    top: -20rpx;
+    padding: 0 50rpx;
+    background: #ffffff;
   }
-  .login-mode {
-    width: 90rpx;
-    height: 90rpx;
-    background: linear-gradient(328deg, #ffae57 0%, #f3873e 100%);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    .iconfont {
-      font-size: 50rpx;
-      color: #ffffff;
-    }
+}
+
+.login-mode {
+  width: 90rpx;
+  height: 90rpx;
+  background: linear-gradient(328deg, #ffae57 0%, #f3873e 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .iconfont {
+    font-size: 50rpx;
+    color: #ffffff;
   }
+}
 </style>

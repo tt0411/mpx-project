@@ -16,7 +16,6 @@
         }}</view>
       </view>
     </scroll-view>
-  </view>
 </template>
 <script>
   import mpx, { createComponent } from '@mpxjs/core'
@@ -133,7 +132,7 @@
   }
 </script>
 <style lang="scss" scoped>
-  @import '@/styles/var.scss';
+  @use '../../styles/var.scss' as *;
   .mpx-tabs {
     width: 100%;
     white-space: nowrap;

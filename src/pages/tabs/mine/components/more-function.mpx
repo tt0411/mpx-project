@@ -1,0 +1,113 @@
+<template>
+    <view class="px-20rpx py-20rpx mt-20rpx bg-#fff">
+        <view class="main-title">更多功能</view>
+        <van-grid border="{{ false }}" :column-num="4">
+            <van-grid-item use-slot wx:for="{{list}}" wx:key="index">
+                <view class="flex-col-center">
+                    <text wx:class="{{ 'text-center text-#333 iconfont ' + item.icon }}"></text>
+                    <view class="text-#333 text-28rpx mt-8rpx">{{ item.name }}</view>
+                </view>
+            </van-grid-item>
+        </van-grid>
+    </view>
+</template>
+<script>
+import mpx, { createComponent } from '@mpxjs/core'
+const isTestApp = mpx.env.isTestApp
+createComponent({
+    data: {
+        showAgreement: true,
+        showAgreementRedPoint: true,
+        list: []
+    },
+    computed: {
+        filteredList() {
+            return this.list.filter(item => item.show)
+        }
+    },
+    created() {
+        this.initList()
+    },
+    methods: {
+        initList() {
+            this.list = [
+                {
+                    code: "envelope",
+                    icon: "icon-qianbao1",
+                    name: "我的红包",
+                    show: true,
+                    url: 'envelope-record'
+                },
+                {
+                    code: "exam",
+                    icon: "icon-kaoshi",
+                    name: "我的考试",
+                    show: true,
+                    url: 'exam-list'
+                },
+                {
+                    code: 'myInsurance',
+                    icon: 'icon-gongdanxinxi',
+                    name: '我的保单',
+                    show: true,
+                    url: 'my-insurance'
+                },
+                {
+                    code: "store",
+                    icon: "icon-jifenshangcheng1",
+                    name: "e帮手商城",
+                    show: true,
+                    url: 'store'
+                },
+                {
+                    code: "query",
+                    icon: "icon-jichouqingdan",
+                    name: "BOM查询",
+                    show: true,
+                    url: 'bom'
+                },
+                {
+                    code: "baodan",
+                    icon: "icon-gongdan1",
+                    name: "报 单",
+                    show: true,
+                    url: 'work-order-declaration'
+                },
+                {
+                    code: "message",
+                    icon: "icon-xiaoxi",
+                    name: "消 息",
+                    show: true,
+                    url: 'message'
+                },
+                {
+                    code: "partner",
+                    icon: "icon-hehuoren1",
+                    name: "合伙人",
+                    show: true,
+                    url: 'partner'
+                },
+                {
+                    code: "agreement",
+                    icon: "icon-yonghuzhucexieyi",
+                    name: "师傅协议",
+                    show: this.showAgreement,
+                    showRedPoint: this.showAgreementRedPoint,
+                    url: 'license'
+                },
+                {
+                    code: "test",
+                    icon: "icon-huojian",
+                    name: "测 试",
+                    show: isTestApp,
+                    url: 'test'
+                }
+            ]
+        }
+    }
+})
+</script>
+<style lang="scss" scoped>
+@use "../../../../static/iconfont/iconfont.css" as *;
+
+</style>

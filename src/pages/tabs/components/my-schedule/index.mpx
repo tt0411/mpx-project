@@ -2,9 +2,6 @@
   <view class="bg-#fff px-30rpx py-20rpx h-800rpx flex flex-col overflow-hidden">
     <view class="flex items-center justify-between">
       <text class="text-#333 text-28rpx font-500">我的日程</text>
-      <!-- <view class="flex-center text-primary text-22rpx"> 
-            路径规划 >
-        </view> -->
     </view>
     <view class="schedule-scroll py-20rpx pl-10rpx" animation="{{animation}}">
       <view
@@ -144,7 +141,7 @@
   })
 </script>
 <style lang="scss" scoped>
-  @import '@/styles/common.scss';
+  @use '../../../../styles/common.scss' as *;
   .scroll-view::-webkit-scrollbar {
     display: none;
   }

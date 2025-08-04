@@ -61,7 +61,7 @@
   }
 </script>
 <style lang="scss" scoped>
-  @import '@/styles/var.scss';
+  @use '../styles/var.scss' as *;
 
   .custom-tabbar {
     position: fixed;

@@ -60,7 +60,7 @@
   }
 </script>
 <style lang="scss" scoped>
-  @import '@/styles/common.scss';
+  @use '../../styles/common.scss' as *;
   .mpx-tabs-container {
     width: 100%;
     position: relative;

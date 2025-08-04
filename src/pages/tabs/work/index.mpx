@@ -1,5 +1,5 @@
 <template>
-  <van-nav-bar @wx title="工单" custom-class="gradient-primary-bg" border="{{false}}"/>
+  <van-nav-bar @wx title="工单" custom-class="gradient-primary-bg" border="{{false}}" />
   <mpx-custom-nav-ali @ali />
   <van-row custom-class="gradient-primary-bg mb-20rpx">
     <van-col
@@ -10,7 +10,7 @@
       bindtap="goOrderList(item)"
     >
       <view class="flex-col-center pb-20rpx">
-        <view class="text-#333 text-40rpx py-20rpx">{{ item.count }}</view>
+        <view class="text-#333 text-40rpx py-20rpx font-500">{{ item.count }}</view>
         <view class="text-#333 text-24rpx">{{ item.title }}</view>
       </view>
     </van-col>
@@ -21,8 +21,7 @@
 
 <script>
   import mpx, { createPage } from '@mpxjs/core'
-  import { mapState } from '@mpxjs/pinia'
-  import { useAuthStore } from '@/store'
+  import { getUserInfo } from '@/api'
 
   createPage({
     data: {
@@ -42,16 +41,13 @@
         { type: 11, title: '已超期', count: 9 }
       ]
     },
-    computed: {
-      ...mapState(useAuthStore, ['isLogin'])
-    },
     onLoad() {
-      if(!this.isLogin) {
-        mpx.reLaunch({ url: '/pagesMine/login/index' });
-      }
+      // this.getInfo()
     },
-    onShow() {},
     methods: {
+      async getInfo() {
+        await getUserInfo('WOK00153057', { showLoading: true })
+      },
       goOrderList(item) {
         mpx.navigateTo({
           url: `/pagesWork/work-list/index?type=${item.type}`
@@ -78,7 +74,7 @@
         }
   module.exports = {
     usingComponents: {
-      "my-schedule": "../components/my-schedule/index"
+      'my-schedule': '../components/my-schedule/index'
     },
     ...obj
   }

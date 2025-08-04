@@ -60,5 +60,8 @@ module.exports = {
       "van-cell-group": "@vant/weapp/cell-group/index",
       "van-icon": "@vant/weapp/icon/index",
       "van-radio": "@vant/weapp/radio/index",
+      "van-image": "@vant/weapp/image/index",
+      "van-grid": "@vant/weapp/grid/index",
+      "van-grid-item": "@vant/weapp/grid-item/index"
     }
 }
