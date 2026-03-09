@@ -1,6 +1,6 @@
 const { defineConfig } = require("@vue/cli-service");
-const MpxWebpackPlugin = require('@mpxjs/webpack-plugin')
 const path = require("path");
+
 module.exports = defineConfig({
   outputDir: `dist/${process.env.MPX_CURRENT_TARGET_MODE}`,
   pluginOptions: {

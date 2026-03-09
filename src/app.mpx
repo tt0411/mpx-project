@@ -1,23 +1,22 @@
 <script>
-  import mpx, { createApp } from '@mpxjs/core'
-  import { createPinia } from '@mpxjs/pinia'
-  import apiProxy from '@mpxjs/api-proxy'
-  import mpxFetch from '@mpxjs/fetch'
+import mpx, { createApp } from '@mpxjs/core'
+import { createPinia } from '@mpxjs/pinia'
+import apiProxy from '@mpxjs/api-proxy'
+import mpxFetch from '@mpxjs/fetch'
 
-  mpx.use(mpxFetch)
-  mpx.use(apiProxy, { usePromise: true })
-  createPinia()
+mpx.use(mpxFetch)
+mpx.use(apiProxy, { usePromise: false })
+createPinia()
 
-  createApp({
-    onLaunch() {}
-  })
+createApp({
+  onLaunch() { }
+})
 </script>
 
 <style lang="scss">
 // /*此处编写全局样式*/
-@use './styles/common.scss' as *;
-@use "./static/iconfont/iconfont.css" as *;
-
+@use '@/styles/common.scss' as *;
+@use "@/styles/iconfont.css" as *;
 </style>
 
 <script name="json" src="./app.config.js">

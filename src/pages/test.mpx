@@ -1,6 +1,6 @@
 <template>
   <view class="w-100px h-100px bg-red"></view>
-  <van-button type="primary" block bindtap="handleClick">按钮</van-button>
+  <van-button type="primary" block bind:tap="handleClick">按钮</van-button>
   <van-checkbox wx:model="{{ checked }}" wx:model-value-path="[]">复选框</van-checkbox>
   <van-field wx:model="{{ value }}" placeholder="请输入用户名" wx:model-value-path="[]" /> 
 </template>
@@ -23,14 +23,13 @@ createPage({
   },
   computed: {
    ...mapState(useOrderStore, ['name', 'count']),
-   ...mapState(useCommonStore, ['title', 'num']),
   },
   methods: {
      ...mapActions(useCommonStore, ['increment']),
      handleClick() {
       this.increment()
       this.fetchData()
-      console.log('click', this.name, this.count, this.title, this.num);
+      console.log('click', this.name, this.count);
       this.loading = true
       setTimeout(() => {
         this.loading = false

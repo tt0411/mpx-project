@@ -1,14 +1,8 @@
 <template>
-  <van-nav-bar @wx title="工单" custom-class="gradient-primary-bg" border="{{false}}" />
-  <mpx-custom-nav-ali @ali />
-  <van-row custom-class="gradient-primary-bg mb-20rpx">
-    <van-col
-      wx:for="{{list}}"
-      wx:for-item="item"
-      wx:key="index"
-      span="6"
-      bindtap="goOrderList(item)"
-    >
+  <view class="h-100vh flex-col overflow-hidden">
+  <van-nav-bar title="工单" custom-class="gradient-primary-bg" border="{{ false }}" />
+  <van-row custom-class="gradient-primary-bg">
+    <van-col wx:for="{{list}}" wx:for-item="item" wx:key="index" span="6" bind:tap="goOrderList(item)">
       <view class="flex-col-center pb-20rpx">
         <view class="text-#333 text-40rpx py-20rpx font-500">{{ item.count }}</view>
         <view class="text-#333 text-24rpx">{{ item.title }}</view>
@@ -16,66 +10,84 @@
     </van-col>
   </van-row>
   <!-- 我的日程 -->
-  <my-schedule />
+  <my-schedule class="flex-1"/>
+  </view>
 </template>
 
 <script>
-  import mpx, { createPage } from '@mpxjs/core'
-  import { getUserInfo } from '@/api'
+import mpx, { createPage } from '@mpxjs/core'
+import { getWorkerInfo, getWorkOrderCount } from '@/api'
+import { workOrderMap } from '@/utils'
+createPage({
+  data: {
+    list: [
+      { type: 1, title: '待预约', count: 0 },
+      { type: 2, title: '待上门', count: 0 },
+      { type: 3, title: '服务中', count: 0 },
+      { type: 4, title: '待支付', count: 0 },
+      { type: 5, title: '未交款', count: 0 },
+      { type: 6, title: '驳回待处理', count: 0 },
+      { type: 7, title: '完工待确认', count: 0 },
+      { type: 8, title: '挂起单', count: 0 },
+      { type: 9, title: '催单', count: 0 },
+      { type: 10, title: '将超期', count: 0 },
+      { type: 11, title: '已超期', count: 0 },
+      { type: 12, title: '补录TDS', count: 0 },
+    ]
+  },
+  onLoad() {
+    // this.getInfo()
+    this.fetchWorkOrderCount()
+  },
+  methods: {
+    async fetchWorkOrderCount() {
+      const { code, data } = await getWorkOrderCount({ showLoading: true })
+      if(code === 0) {
+        let titleCountMap = {}
+        data.forEach(item => {
+          const title = workOrderMap[item.backlogType]
+          if (title) {
+            if (titleCountMap[title]) {
+              titleCountMap[title] += item.quantity
+            } else {
+              titleCountMap[title] = item.quantity
+            }
+          }
+        });
 
-  createPage({
-    data: {
-      active: 0,
-      title: '工单',
-      list: [
-        { type: 1, title: '待预约', count: 0 },
-        { type: 2, title: '待上门', count: 2 },
-        { type: 3, title: '服务中', count: 6 },
-        { type: 4, title: '待支付', count: 0 },
-        { type: 5, title: '未交款', count: 1 },
-        { type: 6, title: '驳回待处理', count: 0 },
-        { type: 7, title: '完工待确认', count: 0 },
-        { type: 8, title: '挂起单', count: 0 },
-        { type: 9, title: '催单', count: 0 },
-        { type: 10, title: '将超期', count: 0 },
-        { type: 11, title: '已超期', count: 9 }
-      ]
-    },
-    onLoad() {
-      // this.getInfo()
-    },
-    methods: {
-      async getInfo() {
-        await getUserInfo('WOK00153057', { showLoading: true })
-      },
-      goOrderList(item) {
-        mpx.navigateTo({
-          url: `/pagesWork/work-list/index?type=${item.type}`
-        })
+        let arr = Object.keys(titleCountMap).map(title => ({
+          title: title,
+          count: titleCountMap[title]
+        }));
+
+        this.list.forEach(listItem => {
+          const matchedArrItem = arr.find(arrItem => arrItem.title === listItem.title)
+          if (matchedArrItem) {
+            listItem.count = matchedArrItem.count
+          }
+        });
       }
+    },
+    async getInfo() {
+      await getWorkerInfo('WOK00153057', { showLoading: true })
+    },
+    goOrderList(item) {
+      mpx.navigateTo({
+        url: `/pagesWork/work-order-list/index?type=${item.type}`
+      })
     }
-  })
+  }
+})
 </script>
 
 <script name="json">
-  const obj =
-    __mpx_mode__ === 'ali'
-      ? {
-          transparentTitle: 'always',
-          titlePenetrate: 'YES', // 允许点击穿透后，才能触发导航栏上的 onTap 事件
-          defaultTitle: '', // 将导航栏默认的 title 置空
-          titleBarColor: '#000000', // 虽然设置导航栏背景色不生效，但可以影响前景色为白色
-          allowsBounceVertical: 'NO'
-        }
-      : {
-          navigationBarTitleText: '工单',
-          disableScroll: true,
-          navigationStyle: 'custom'
-        }
   module.exports = {
     usingComponents: {
       'my-schedule': '../components/my-schedule/index'
     },
-    ...obj
+    navigationBarTitleText: '工单',
+    navigationStyle: 'custom'
   }
 </script>
+<style lang="scss" scoped>
+</style>

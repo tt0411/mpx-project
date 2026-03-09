@@ -1,0 +1,32 @@
+<template>
+  <view class="h-100vh bg-#fff">
+    <van-skeleton class="w-100%" wx:if="{{loading}}" title row="24" />
+    <web-view wx:else src="{{url}}" ></web-view>
+  </view>
+</template>
+
+<script>
+import mpx, { createPage } from '@mpxjs/core'
+createPage({
+  data: {
+    url: '',
+    loading: true
+  },
+  onLoad(options) {
+    const { url } = options
+    this.url = url ? decodeURIComponent(url) : 'https://ca.ebsfw.com/#/home'
+    if(this.url) {
+      setTimeout(() => {
+        this.loading = false
+      }, 1000)
+    }
+  }
+})
+</script>
+<script type="application/json">
+{
+  "usingComponents": {},
+  "navigationBarTitleText": "webview",
+  "disableScroll": true
+}
+</script>

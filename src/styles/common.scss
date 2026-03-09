@@ -19,13 +19,12 @@ page {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    width: 30rpx;
+    width: 40rpx;
     height: 30rpx;
-    padding: 0;
     background: #ee0a24;
     color: #fff;
     font-size: 20rpx;
-    border-radius: 50%;
+    border-radius: 50rpx;
     text-align: center;
     box-sizing: border-box;
     z-index: 2;
@@ -45,6 +44,14 @@ page {
   --button-primary-border-color: #{$primary-color};
   --checkbox-checked-icon-color: #{$primary-color};
   --checkbox-label-color: #{$default-text-color};
+
+  .van-dialog__header {
+    padding-top: 0;
+  }
+
+  .van-grid-item__content {
+    padding: 16rpx !important;
+  }
 
   .van-cell:after {
     border-bottom: 2rpx solid #d3d2d2;

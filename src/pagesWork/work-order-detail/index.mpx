@@ -1,0 +1,39 @@
+<template>
+  <view>工单号: <text class="text-red" bind:tap="onTapDialog">{{ workOrderNo }}</text> </view>
+  <van-dialog use-slot use-title-slot show="{{ show }}" show-cancel-button bind:close="onClose">
+    <view slot="title" class="flex-center py-20rpx font-400 text-#fff bg-red">自定义标题</view>
+    <image src="https://img.yzcdn.cn/1.jpg" />
+  </van-dialog>
+</template>
+<script>
+import mpx, { createPage } from '@mpxjs/core'
+
+createPage({
+  data: {
+    workOrderNo: '',
+    show: false
+  },
+  onLoad(options) {
+    this.workOrderNo = options.workOrderNo
+    const eventChannel = this.getOpenerEventChannel()
+    eventChannel.on('workOrderDetail', function (data) {
+      console.log(data, '==data===');
+    })
+  },
+  methods: {
+    onTapDialog() {
+      this.show = true
+    },
+    onClose() {
+      this.show = false
+    }
+  }
+})
+</script>
+<script type="application/json">
+{
+  "navigationBarTitleText": "工单详情",
+  "navigationBarBackgroundColor": "#ffffff",
+  "navigationBarTextStyle": "black",
+}
+</script>

@@ -1,8 +1,8 @@
 {
   "appid": "wx43ed82bf04e8a3b7",
-  "projectname": "wx",
+  "projectname": "微信小程序-测试版",
   "compileType": "miniprogram",
-  "libVersion": "3.9.0",
+  "libVersion": "3.11.3",
   "packOptions": {
     "ignore": [],
     "include": []

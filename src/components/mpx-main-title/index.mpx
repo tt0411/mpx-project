@@ -1,0 +1,52 @@
+<template>
+  <view class="main-title">
+    <view class="title flex-center">
+      <view class="sign" wx:if="{{ showSign }}"></view> {{ title }}
+    </view>
+    <slot></slot>
+  </view>
+</template>
+<script>
+import { createComponent } from "@mpxjs/core";
+
+createComponent({
+  properties: {
+    title: {
+      type: String,
+      value: ""
+    },
+    showSign: {
+      type: Boolean,
+      value: true
+    }
+  },
+});
+</script>
+<script type="application/json">
+  {
+    "components": true
+  }
+</script>
+<style lang="scss" scoped>
+@use "@/styles/var.scss" as *;
+
+.main-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10rpx;
+
+  .title {
+    color: #333;
+    font-weight: 500;
+    .sign {
+      width: 4rpx;
+      height: 30rpx;
+      margin-top: -1rpx;
+      background: $primary-color;
+      margin-right: 10rpx;
+      border-radius: 5rpx;
+    }
+  }
+}
+</style>

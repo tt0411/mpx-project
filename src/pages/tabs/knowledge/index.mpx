@@ -1,5 +1,5 @@
 <template>
-    <view class="mine-page">e帮手仓库页面</view>
+    <view class="mine-page">e帮手学堂</view>
 </template>
 
 <script>
@@ -14,7 +14,7 @@ createPage({
 <script type="application/json">
   {
     "usingComponents": {},
-    "navigationBarTitleText": "e帮手仓库"
+    "navigationBarTitleText": "e帮手学堂"
   }
 </script>
 <style lang="scss" scoped>

@@ -1,8 +1,8 @@
 <script type="application/json">
   {
     "pages": [
-      "./work-list/index",
-      "./work-order/index"
+      "./work-order-list/index",
+      "./work-order-detail/index"
     ]
   }
 </script>

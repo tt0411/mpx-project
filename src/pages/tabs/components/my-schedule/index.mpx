@@ -1,59 +1,71 @@
 <template>
-  <view class="bg-#fff px-30rpx py-20rpx h-800rpx flex flex-col overflow-hidden">
-    <view class="flex items-center justify-between">
-      <text class="text-#333 text-28rpx font-500">我的日程</text>
-    </view>
-    <view class="schedule-scroll py-20rpx pl-10rpx" animation="{{animation}}">
-      <view
-        wx:for="{{weekList}}"
-        wx:key="date"
-        wx:for-item="item"
-        class="schedule-item"
-        bindtap="scheduleItemClick(item)"
-      >
-        <view class="relative text-#333 text-24rpx mb-10rpx">
-          {{ item.name }}
-          <!-- <view class="absolute -top-20rpx -right-30rpx mpx-badge" wx:if="{{item.orderNum}}">{{
-            item.orderNum
-          }}</view> -->
-        </view>
+  <view class="schedule-container">
+    <view class="schedule-header">
+      <view class="flex items-center justify-between">
+        <text class="text-#333 text-28rpx font-500">我的日程</text>
+      </view>
+      <view class="schedule-scroll py-20rpx pl-10rpx" animation="{{animation}}">
         <view
-          class="text-primary text-24rpx"
-          wx:class="{{checkDate === item.date ? 'checked-date' : 'mt-6rpx'}}"
-          >{{ item.date }}</view
+          wx:for="{{weekList}}"
+          wx:key="date"
+          wx:for-item="item"
+          class="schedule-item"
+          bind:tap="scheduleItemClick(item)"
         >
+          <view class="relative text-#333 text-24rpx mb-10rpx">
+            {{ item.name }}
+            <!-- <view class="absolute -top-20rpx -right-30rpx mpx-badge" wx:if="{{item.orderNum}}">{{
+              item.orderNum
+            }}</view> -->
+          </view>
+          <view
+            class="text-primary text-24rpx"
+            wx:class="{{checkDate === item.date ? 'checked-date' : 'mt-6rpx'}}"
+            >{{ item.date }}</view
+          >
+        </view>
       </view>
     </view>
-    <view wx:if="{{orderList.length > 0}}" class="schedule-order-list">
-      <view class="schedule-order-item" wx:for="{{formatOrderList}}" wx:key="time">
-          <view class="mr-50rpx flex-col-center">
-            <view class="text-#666 text-22rpx">{{ item.timeStart }}</view>
-            <view class="w-2rpx h-20rpx bg-#666"></view>
-            <view class="text-#666 text-22rpx">{{ item.timeEnd }}</view>
-          </view>
-          <view class="item-right">
-            <view class="text-24rpx text-#333 font-500">
-              {{ item.deviceBrandCode_t }}，{{ item.deviceName }}，{{ item.deviceModel }}，{{
-                item.serviceTypeCode_t
-              }}，{{ item.serviceSubclassCode_t }}
+    <view class="schedule-content">
+      <scroll-view
+        wx:if="{{orderList.length > 0}}"
+        class="schedule-scroll-view"
+        scroll-y="{{true}}"
+        style="height: {{scrollViewHeight}}rpx"
+      >
+        <view class="schedule-order-list">
+          <view class="schedule-order-item" wx:for="{{formatOrderList}}" wx:key="index">
+              <view class="mr-50rpx flex-col-center">
+                <view class="text-#666 text-22rpx">{{ item.timeStart }}</view>
+                <view class="w-2rpx h-20rpx bg-#666"></view>
+                <view class="text-#666 text-22rpx">{{ item.timeEnd }}</view>
+              </view>
+              <view class="item-right">
+                <view class="text-24rpx text-#333 font-500">
+                  {{ item.deviceBrandCode_t }}，{{ item.deviceName }}，{{ item.deviceModel }}，{{
+                    item.serviceTypeCode_t
+                  }}，{{ item.serviceSubclassCode_t }}
+                </view>
+                <view class="text-#999 text-22rpx mt-15rpx">
+                  {{ item.customerName }}，{{ item.provinceName }}{{ item.cityName }}{{ item.areaName
+                  }}{{ item.address }}
+                </view>
+              </view>
             </view>
-            <view class="text-#999 text-22rpx mt-15rpx">
-              {{ item.customerName }}，{{ item.provinceName }}{{ item.cityName }}{{ item.areaName
-              }}{{ item.address }}
-            </view>
-          </view>
         </view>
+      </scroll-view>
+      <view wx:else class="empty-content"> 当日没有预约上门的工单 </view>
     </view>
-    <view wx:else class="h-100% flex-center text-#999 text-24rpx"> 当日没有预约上门的工单 </view>
   </view>
 </template>
 <script>
-  import { createComponent } from '@mpxjs/core'
+  import mpx, { createComponent } from '@mpxjs/core'
   createComponent({
     data: {
       refresherTriggered: false,
       checkDate: new Date().getDate(),
       weekList: [],
+      scrollViewHeight: 500,
       orderList: [
         {
           time: '08:00-10:00',
@@ -82,7 +94,72 @@
           address: '华业大厦1701室'
         },
         {
-          time: '10:00-12:00',
+          time: '12:00-14:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+        {
+          time: '12:00-14:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+        {
+          time: '12:00-14:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+        {
+          time: '12:00-14:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+        {
+          time: '12:00-14:00',
+          deviceBrandCode_t: '沁园',
+          deviceName: '沁园净水机',
+          deviceModel: 'RO-185',
+          serviceTypeCode_t: '安装',
+          serviceSubclassCode_t: '常规安装',
+          customerName: '张三',
+          provinceName: '浙江省',
+          cityName: '杭州市',
+          areaName: '滨江区',
+          address: '华业大厦1701室'
+        },
+        {
+          time: '22:00-24:00',
           deviceBrandCode_t: '沁园',
           deviceName: '沁园净水机',
           deviceModel: 'RO-185',
@@ -132,19 +209,68 @@
           orderNum: Math.floor(Math.random() * 10)
         })
       }
+      this.$nextTick(() => {
+        this.calculateScrollHeight()
+      })
     },
     methods: {
       scheduleItemClick(item) {
         this.checkDate = item.date
       },
+      calculateScrollHeight() {
+        const query = mpx.createSelectorQuery().in(this)
+        query.select('.schedule-container').boundingClientRect()
+        query.select('.schedule-header').boundingClientRect()
+        query.exec((res) => {
+          if (res[0] && res[1]) {
+            const containerHeight = res[0].height
+            const headerHeight = res[1].height
+            const availableHeight = containerHeight - headerHeight - 120 - (res[0].top - 318)*2
+            this.scrollViewHeight = availableHeight
+          } else {
+            console.warn('未获取到容器或头部高度')
+          }
+        })
+      }
     }
   })
 </script>
 <style lang="scss" scoped>
-  @use '../../../../styles/common.scss' as *;
-  .scroll-view::-webkit-scrollbar {
-    display: none;
+  @use '@/styles/common.scss' as *;
+
+  .schedule-container {
+    height: 100%;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
   }
+
+  .schedule-header {
+    flex-shrink: 0;
+    padding: 20rpx 30rpx 0 30rpx;
+    border-bottom: 1rpx solid #eff0f2;
+  }
+
+  .schedule-content {
+    flex: 1;
+    height: 100%;
+    padding: 0 10rpx 30rpx 30rpx;
+    overflow: hidden;
+  }
+
+  .schedule-scroll-view {
+    width: 100%;
+  }
+
+  .empty-content {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 24rpx;
+  }
+
   .schedule-scroll {
     overflow-x: auto;
     white-space: nowrap;
@@ -153,16 +279,13 @@
       display: none;
     }
   }
+
   .schedule-item {
     display: flex;
     flex-direction: column;
     align-items: center;
     flex-shrink: 0;
-    /* @mpx-if (__mpx_mode__ === 'ali') */
-    margin-right: 54rpx;
-    /* @mpx-else */
     margin-right: 58rpx;
-    /* @mpx-endif */
     &:last-child {
       margin-right: 0;
     }
@@ -180,16 +303,13 @@
   }
 
   .schedule-order-list {
-    flex: 1;
-    overflow-y: auto;
-    // padding-bottom: 20rpx;
     padding-left: 10rpx;
     .schedule-order-item {
       display: flex;
-      padding: 30rpx 0;
+      padding: 20rpx 0;
       border-bottom: 1rpx solid #eff0f2;
       &:first-child {
-        padding-top: 10rpx;
+        padding-top: 20rpx;
       }
       &:last-child {
         border-bottom: none;
@@ -200,7 +320,6 @@
 </style>
 <script type="application/json">
   {
-    "component": true,
     "usingComponents": {
       "mpx-scroll-view": "@/components/mpx-scroll-view/index.mpx"
     }

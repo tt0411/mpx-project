@@ -8,7 +8,7 @@
         wx:for-index="index"
         wx:key="index"
         data-index="{{index}}"
-        bindtap="onChange"
+        bind:tap="onChange"
       >
         <view class="tabbar-icon-wrap">
           <image
@@ -31,12 +31,18 @@
 
 <script>
   import mpx, { createComponent } from '@mpxjs/core'
-  import { mapState, mapGetters, mapActions } from '@mpxjs/pinia'
-  import { useCommonStore } from '@/store'
+  import { mapState, mapActions } from '@mpxjs/pinia'
+  import { useAuthStore, useCommonStore } from '@/store'
   createComponent({
     computed: {
-      ...mapState(useCommonStore, ['activeTabbarIndex']),
-      ...mapGetters(useCommonStore, ['filteredTabBarList'])
+      ...mapState(useCommonStore, ['activeTabbarIndex', 'tabBarList']),
+      ...mapState(useAuthStore, ['userInfo']),
+      filteredTabBarList() {
+        if(this.userInfo.workerState === 2) {
+        return this.tabBarList.filter(item => item.text !== 'e帮手学堂')
+      }
+      return this.tabBarList
+      }
     },
 
     methods: {
@@ -55,13 +61,8 @@
     }
   })
 </script>
-<script type="application/json">
-  {
-    "component": true
-  }
-</script>
 <style lang="scss" scoped>
-  @use '../styles/var.scss' as *;
+  @use '@/styles/var.scss' as *;
 
   .custom-tabbar {
     position: fixed;
@@ -105,7 +106,7 @@
     margin: 0 auto;
   }
   .tabbar-text {
-    color: #999;
+    color: #333;
     /* @mpx-if (__mpx_mode__ === 'wx') */
     font-size: 12px;
     line-height: 0.7;

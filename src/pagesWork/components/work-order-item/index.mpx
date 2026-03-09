@@ -1,7 +1,0 @@
-<script>
-  import { createComponent } from '@mpxjs/core'
-
-  createComponent({
-
-  })
-</script>

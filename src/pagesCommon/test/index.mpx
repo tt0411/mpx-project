@@ -1,0 +1,36 @@
+<template>
+  <view class="container">
+     测试页面
+  </view>
+</template>
+
+<script>
+import mpx, { createPage } from '@mpxjs/core'
+
+createPage({
+  data() {
+    return {
+
+    }
+  },
+
+  methods: {
+
+  },
+  onMounted() {
+
+  }
+})
+</script>
+
+<style lang="scss">
+
+</style>
+
+<script type="application/json">
+{
+  "usingComponents": {},
+  "navigationBarTitleText": "测试页面",
+  "disableScroll": true
+}
+</script>

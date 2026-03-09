@@ -30,14 +30,15 @@
           placeholder="输入验证码">
           <text slot="button" class="text-primary" bindtap="sendCode"
             style="user-select:none;cursor:pointer;opacity:{{codeDisabled ? 0.5 : 1}}" wx:if="{{!codeDisabled}}">{{
-            codeText }}</text>
+              codeText }}</text>
           <text slot="button" class="text-primary" style="user-select: none; cursor: not-allowed" wx:else>{{ codeText
-            }}</text>
+          }}</text>
         </van-field>
       </view>
     </view>
     <view class="w-94% mt-80rpx mx-3%">
-      <van-button type="primary" block round loading="{{ loading }}" loading-text="登录中..." bindtap="login">登录</van-button>
+      <van-button type="primary" block round loading="{{ loading }}" loading-text="登录中..."
+        bindtap="login">登录</van-button>
     </view>
     <view class="flex-center mt-30rpx">
       <van-checkbox wx:model="{{ isRead }}" wx:model-value-path="[]">我已阅读并同意</van-checkbox>
@@ -57,7 +58,7 @@
         </view>
         <text class="pt-15rpx text-#999 text-24rpx">{{
           loginMode === 1 ? '验证码登录' : '账号登录'
-          }}</text>
+        }}</text>
         <text class="mt-20rpx text-#999 tracking-5rpx">仅供e帮手内容人员使用</text>
       </view>
     </view>
@@ -92,13 +93,8 @@ createPage({
   onUnload() {
     if (this.codeTimer) clearInterval(this.codeTimer)
   },
-  onShow() {
-    if (__mpx_mode__ === 'ali') {
-      mpx.hideBackHome()
-    }
-  },
   methods: {
-    ...mapActions(useAuthStore, ['']),
+    ...mapActions(useAuthStore, ['setUserInfo']),
     togglePassword() {
       this.isPassword = !this.isPassword
     },
@@ -150,6 +146,7 @@ createPage({
           }
         })
         if (code === 0) {
+          this.setUserInfo(data)
           mpx.switchTab({
             url: '/pages/tabs/work/index'
           })
@@ -211,22 +208,11 @@ createPage({
 </script>
 
 <script name="json">
-  const obj =
-    __mpx_mode__ === 'ali'
-      ? {
-        navigationBarBackgroundColor: '#ffffff',
-        navigationBarFrontColor: 'black',
-        allowsBounceVertical: false,
-        defaultTitle: '登录'
-      }
-      : {
-        navigationBarTitleText: '登录',
-        disableScroll: true,
-        navigationStyle: 'custom'
-      }
   module.exports = {
     usingComponents: {},
-    ...obj
+    navigationBarTitleText: '登录',
+    disableScroll: true,
+    navigationStyle: 'custom'
   }
 </script>
 <style lang="scss" scoped>

@@ -1,9 +1,7 @@
 import mpx from "@mpxjs/core";
+import { envConfig, reLaunch } from '@/utils'
 
-const baseURL =
-  process.env.NODE_ENV === "development"
-    ? "https://cbs-gateway.dev.ebsfw.com" // 测试环境
-    : "https://xxx.xxx.com"; // 线上环境
+const baseURL = envConfig.baseURL
 let loadingCount = 0;
 
 // 全局 loading 控制
@@ -23,7 +21,7 @@ function hideLoading() {
 
 // 添加请求拦截器
 mpx.xfetch.interceptors.request.use((config) => {
-  if (config.showLoading !== false) {
+  if (config.method === "GET" && config.showLoading === true) {
     showLoading();
   }
   let cookies = mpx.getStorageSync("cookies");
@@ -37,11 +35,10 @@ mpx.xfetch.interceptors.request.use((config) => {
 // 添加响应拦截器
 mpx.xfetch.interceptors.response.use(
   (response) => {
-    if (response.requestConfig.showLoading) {
+    if (response.requestConfig.showLoading === true) {
       hideLoading();
     }
     if (response.cookies.length) {
-      console.log("response.cookies", response.cookies);
       let cookies = [];
       const cookie = response.cookies[0];
       let c = cookie.split(";");
@@ -67,9 +64,7 @@ mpx.xfetch.interceptors.response.use(
     if (response.data.code !== 0) {
       if (response.data.code === 101) {
         mpx.removeStorageSync("cookies");
-        mpx.reLaunch({
-          url: "/pagesMine/login/index",
-        });
+        reLaunch('login');
         return;
       }
       if (
@@ -147,16 +142,14 @@ export function post(url, parameter = {}) {
 
 // POST form
 export function postForm(url, parameter = {}) {
-  const { headers, showLoading, showToastMsg, data, params } = parameter;
+  const { showLoading, showToastMsg, data, params } = parameter;
   let config = {};
   config.method = "POST";
   config.params = params;
   config.data = data;
   config.showLoading = showLoading;
   config.showToastMsg = showToastMsg;
-  config.headers = headers
-    ? { ...headers, "Content-Type": "application/x-www-form-urlencoded" }
-    : { "Content-Type": "application/x-www-form-urlencoded" };
+  config.emulateJSON = true;
   config.timeout = config.timeout;
   return request({ url, config });
 }
@@ -190,17 +183,50 @@ export function del(url, parameter = {}) {
 }
 
 // 上传文件
-export function uploadFile(url, parameter = {}) {
-  const { formData = {}, params, showLoading, showToastMsg } = parameter;
-  config.method = "POST";
-  config.headers = {
-    "Content-Type": "multipart/form-data",
-  };
-  let config = {};
-  config.formData = formData;
-  config.params = params;
-  config.showToastMsg = showToastMsg;
-  config.timeout = config.timeout;
-  config.showLoading = showLoading;
-  return request({ url, config });
+export function upload(url, parameter = {}) {
+  // 使用小程序内置的上传方法
+  const { formData = {}, showLoading, showToastMsg, filePath, name } = parameter;
+  console.log("upload", parameter);
+
+  return new Promise((resolve, reject) => {
+    if (showLoading) {
+      mpx.showLoading({ title: "上传中..." });
+    }
+    let cookies = mpx.getStorageSync("cookies");
+    let header = {};
+    if (cookies && cookies.length) {
+      header.cookie = cookies.join(";");
+    }
+    mpx.uploadFile({
+      url: url.includes("http") ? url : baseURL + url,
+      filePath: filePath,
+      name: name,
+      formData: formData,
+      header: header,
+      success(res) {
+        if (showLoading) {
+          mpx.hideLoading();
+        }
+        let data = JSON.parse(res.data);
+        if (data.code !== 0) {
+          if (showToastMsg !== false) {
+            mpx.showToast({
+              title: data.message || "网络异常",
+              icon: "none",
+            });
+          }
+          reject(data);
+        } else {
+          resolve(data);
+        }
+      },
+      fail(err) {
+        if (showLoading) {
+          mpx.hideLoading();
+        }
+        mpx.showToast({ title: "上传失败", icon: "error" });
+        reject(err);
+      },
+    });
+  });
 }

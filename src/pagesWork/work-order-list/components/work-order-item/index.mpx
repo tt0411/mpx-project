@@ -1,0 +1,249 @@
+<template>
+  <!-- <wxs module="format">
+    // 小程序不支持filter，用wxs或computed实现
+    var formatPhone = function (info, key) {
+      var val = info && info[key];
+      if (val === undefined || val === null) return '';
+      var str = '' + val;
+      if (str.length >= 7) {
+        var start = str.slice(0, 3);
+        var end = str.slice(-4);
+        return start + '****' + end;
+      }
+      return str;
+    }
+    module.exports = {
+      formatPhone: formatPhone
+    };
+  </wxs> -->
+  <view class="bg-#fff mb-20rpx pt-20rpx pb-20rpx" wx:if="{{ loading }}">
+    <!-- <view class="skeleton-customer-info">
+      <view class="skeleton-item w-40% h-40rpx mb-24rpx"></view>
+      <view class="skeleton-item w-80% h-32rpx"></view>
+    </view>
+    <view class="skeleton-info-box">
+      <view class="skeleton-item w-34rpx h-34rpx rounded-full"></view>
+      <view class="skeleton-item w-60% h-32rpx ml-20rpx"></view>
+    </view>
+    <view class="skeleton-info-box">
+      <view class="skeleton-item w-34rpx h-34rpx rounded-full"></view>
+      <view class="skeleton-item w-50% h-32rpx ml-20rpx"></view>
+    </view>
+    <view class="skeleton-info-box">
+      <view class="skeleton-item w-34rpx h-34rpx rounded-full"></view>
+      <view class="skeleton-item w-70% h-32rpx ml-20rpx"></view>
+    </view> -->
+    <van-skeleton title row="5" />
+  </view>
+
+  <view class="bg-#fff mb-20rpx pt-20rpx" bind:tap="toWorkOrderInfo" wx:else>
+    <view class="customer-info">
+      <view class="flex items-center mb-20rpx">
+        <view class="flex items-center flex-wrap">
+          <text class="label">{{ info.customerName }}</text>
+          <text class="label">{{ phoneMasked }}</text>
+          <text class="label" wx:if="{{ info.linkPhone1 }}">{{ linkPhone1Masked }}</text>
+          <text class="label" wx:if="{{ info.linkPhone2 }}">{{ linkPhone2Masked }}</text>
+        </view>
+        <view class="flex items-center ml-20rpx">
+          <text class="iconfont icon icon-GroupCopy ml-10rpx"></text>
+          <view class="gap-line"></view>
+          <text class="iconfont icon icon-dianhua1"></text>
+        </view>
+      </view>
+      <view class="flex">
+        <text class="text-#333 text-26rpx mr-10rpx">{{ info.provinceName }}，{{ info.cityName }}，{{ info.areaName }}，{{
+          info.address }}</text>
+        <mpx-copy
+          value="{{ (info.provinceName || '') + (info.cityName || '') + (info.areaName || '') + (info.address || '') }}"></mpx-copy>
+        <text class="iconfont icon-dingwei2 -mt-5rpx" catch:tap="workOrderNavigation"></text>
+      </view>
+    </view>
+    <view class="info-box">
+      <text class="iconfont icon-shebeiguanli"></text>
+      <view class="label -mt-8rpx">
+        <view class="mr-10rpx mb-10rpx">{{ info.deviceName }}</view>
+        <view class="mr-10rpx mb-10rpx">{{ info.deviceModel }}</view>
+        <view class="flex mb-10rpx">
+          <view class="mr-10rpx">{{ info.deviceBrandCode_t }}</view>
+          <view class="mr-10rpx">{{ info.deviceCategoryCode_t }}</view>
+          <view class="mr-10rpx text-primary">{{ info.serviceTypeCode_t }}</view>
+          <view class="mr-10rpx text-primary">{{ info.serviceSubclassCode_t }}</view>
+        </view>
+      </view>
+    </view>
+    <view class="info-box">
+      <text class="iconfont icon-shijian1"></text>
+      <view class="label -mt-5rpx">
+        <view wx:if="{{ info.factoryExpectedTime }}" class="mr-10rpx mb-10rpx">厂家期望：{{ info.factoryExpectedTime }}
+        </view>
+        <view wx:if="{{ info.expectedDate || info.expectedPeriod }}" class="mr-10rpx mb-10rpx">期望：{{ info.expectedDate
+        }} {{ info.expectedPeriod }}</view>
+        <view wx:if="{{ info.state === 30 }}" class="mr-10rpx mb-10rpx">预约超期：{{ info.appointmentOverdueTime || '-' }}
+        </view>
+        <view wx:if="{{ [40, 50].includes(info.state) }}" class="mr-10rpx mb-10rpx">预约：{{ info.reservationDate }} {{
+          info.reservationPeriod || '' }}</view>
+        <view wx:if="{{ info.rejectPrepareTime }}" class="mr-10rpx mb-10rpx">驳回：{{ info.rejectPrepareTime }}</view>
+        <view wx:if="{{ info.recoveryTime }}" class="mr-10rpx mb-10rpx">恢复：{{ info.recoveryTime }}</view>
+        <view wx:if="{{ info.completeTime }}" class="mr-10rpx mb-10rpx">完工：{{ info.completeTime }}</view>
+      </view>
+    </view>
+    <view class="info-box">
+      <text class="iconfont icon-zhengjianhaoma"></text>
+      <view class="label -mt-5rpx">
+        <view class="mr-10rpx mb-10rpx flex items-center">
+          {{ info.workOrderNo }}
+          <mpx-copy class="ml-10rpx" value="{{ info.workOrderNo || '' }}"></mpx-copy>
+        </view>
+        <view wx:if="{{ info.factoryNo }}" class="mr-10rpx mb-10rpx flex items-center text-primary">
+          {{ info.factoryNo }}
+          <mpx-copy class="ml-10rpx" value="{{ info.factoryNo || '' }}"></mpx-copy>
+        </view>
+        <view wx:if="{{ info.billSource }}" class="mr-10rpx mb-10rpx flex items-center text-primary">
+          {{ info.billSource }}
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+import mpx, { createComponent } from '@mpxjs/core'
+import { navigateTo } from '@/utils'
+
+createComponent({
+  properties: {
+    info: {
+      type: Object,
+      value: {}
+    },
+    loading: {
+      type: Boolean,
+      value: false
+    }
+  },
+  computed: {
+    phoneMasked() {
+      return this.formatPhone(this.info && this.info.customerPhone)
+    },
+    linkPhone1Masked() {
+      return this.formatPhone(this.info && this.info.linkPhone1)
+    },
+    linkPhone2Masked() {
+      return this.formatPhone(this.info && this.info.linkPhone2)
+    },
+  },
+  methods: {
+    formatPhone(val) {
+      if (!val && val !== 0) return ''
+      const str = String(val)
+      const reg = /(\d{3})\d{4}(\d{4})/
+      return reg.test(str) ? str.replace(reg, '$1****$2') : str
+    },
+    toWorkOrderInfo() {
+      navigateTo({
+        name: 'work-order-detail',
+        params: {
+          workOrderNo: this.info.workOrderNo
+        },
+        success: (res) => {
+          res.eventChannel.emit('workOrderDetail', this.info)
+        }
+      })
+    },
+    // 工单地址导航
+    workOrderNavigation() {
+
+    }
+  }
+})
+</script>
+<style lang="scss" scoped>
+@use "@/styles/iconfont.css" as *;
+@use "@/styles/common.scss" as *;
+@use "@/styles/var.scss" as *;
+
+.customer-info {
+  padding: 20rpx 30rpx;
+  margin: 0 20rpx 20rpx 20rpx;
+  background-color: #f7f8fa;
+  border-radius: 20rpx;
+
+  .label {
+    font-weight: 600;
+    color: #000;
+    font-size: 30rpx;
+    margin-right: 10rpx;
+  }
+
+  .gap-line {
+    width: 1rpx;
+    height: 30rpx;
+    border-left: 1rpx solid #e3e4e6;
+    margin: 0 20rpx;
+  }
+
+  .icon {
+    border-radius: 50%;
+    color: #fff;
+    background-color: $primary-color;
+    padding: 10rpx;
+  }
+
+  .icon-dingwei2 {
+    color: #508ed6;
+    font-size: 40rpx;
+    padding-left: 20rpx;
+    margin-right: 20rpx;
+  }
+}
+
+.info-box {
+  padding: 0 30rpx 10rpx 30rpx;
+  display: flex;
+
+  .iconfont {
+    font-size: 34rpx;
+  }
+
+  .icon-shebeiguanli {
+    color: #333;
+  }
+
+  .label {
+    color: #333;
+    font-size: 28rpx;
+    margin-left: 20rpx;
+    word-break: break-all;
+    margin-right: 20rpx;
+  }
+}
+
+.skeleton-customer-info {
+  padding: 20rpx 30rpx;
+  margin: 0 20rpx 20rpx 20rpx;
+  background-color: #f7f8fa;
+  border-radius: 20rpx;
+}
+
+.skeleton-info-box {
+  padding: 10rpx 30rpx;
+  display: flex;
+  align-items: center;
+}
+
+.skeleton-item {
+  background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 37%, #f2f2f2 63%);
+  background-size: 400% 100%;
+  animation: skeleton-animation 1.4s ease infinite;
+}
+
+@keyframes skeleton-animation {
+  0% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0 50%;
+  }
+}
+</style>

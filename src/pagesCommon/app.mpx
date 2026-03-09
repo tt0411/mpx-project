@@ -1,7 +1,11 @@
 <script type="application/json">
   {
     "pages": [
-      "./map/index"
+      "./login/index",
+      "./map/index",
+      "./signature/index",
+      "./web-view/index",
+      "./test/index"
     ]
   }
 </script>

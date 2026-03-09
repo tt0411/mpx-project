@@ -1,0 +1,245 @@
+<template>
+  <view class="h-100vh overflow-hidden">
+    <mpx-tabs-page currentIndex="{{ active }}" tabList="{{ tabList }}" bind:change="handleTabChange">
+      <work-order-search id="searchRef" showBottomFilter="{{ (active < 6 && active !== 4) || active === 7 }}"
+        showDispatchTime="{{ activeItem.showDispatchTime }}" showReservationDate="{{ activeItem.showReservationDate }}"
+        showCompletionTime="{{ activeItem.showCompletionTime }}" showRecoveryTime="{{ activeItem.showRecoveryTime }}"
+        showExpectedDate="{{ activeItem.showExpectedDate }}"
+        showFactoryExpectedDate="{{ activeItem.showFactoryExpectedDate }}" bind:search="toSearch">
+      </work-order-search>
+      <view wx:if="{{ active === 4 }}" class="text-primary text-24rpx px-20rpx py-10rpx">
+        以下为对公转账且钱款未交到财务的工单，收款未完成的工单不会给师傅审核结费，请及时完成收款!
+      </view>
+      <view class="order-list" wx:if="{{ active !== 7 }}">
+        <mpx-scroll-view id="orderScrollView" searchApi="{{ activeItem.searchApi }}" searchParams="{{ searchParams }}"
+          bind:updateList="onUpdateListChange" bind:loadingChange="onLoadingChange">
+          <block wx:if="{{ loading && orderList.length === 0 }}">
+            <work-order-item wx:for="{{ 5 }}" wx:key="index" loading="{{ true }}">
+            </work-order-item>
+          </block>
+          <block wx:else>
+            <work-order-item wx:for="{{ orderList }}" info="{{ item }}" wx:key="workOrderNo">
+            </work-order-item>
+          </block>
+        </mpx-scroll-view>
+      </view>
+      <view slot="hh" wx:if="{{ active === 7 }}" class="-mt-10rpx">
+        <view class="h-80vh overflow-hidden">
+          <mpx-tabs-page height="{{ '80vh' }}" currentIndex="{{ suspendActive }}" tabList="{{ suspendTabList }}"
+            bind:change="handleSuspendTabChange">
+            <view class="order-list">
+              <mpx-scroll-view id="suspendScrollView" searchApi="{{ activeSuspendItem.searchApi }}"
+                searchParams="{{ { ...searchParams, suspendState } }}" bind:updateList="onUpdateSuspendListChange"
+                bind:loadingChange="onLoadingChange">
+                <block wx:if="{{ loading && suspendOrderList.length === 0 }}">
+                  <work-order-item wx:for="{{ 5 }}" wx:key="index" loading="{{ true }}">
+                  </work-order-item>
+                </block>
+                <block wx:else>
+                  <work-order-item wx:for="{{ suspendOrderList }}" info="{{ item }}" wx:key="workOrderNo">
+                  </work-order-item>
+                </block>
+              </mpx-scroll-view>
+            </view>
+          </mpx-tabs-page>
+        </view>
+      </view>
+    </mpx-tabs-page>
+  </view>
+</template>
+
+<script>
+import mpx, { createPage } from '@mpxjs/core'
+import {
+  getWorkOrderCount, getWaitAppointmentList, getWaitVisitList, getServiceList, getWaitPayList, getNotPayList,
+  getRejectList, getWaitConfirmList, getSuspendList, getSuspendAuditList, getRemindList, getWillOverdueList,
+  getOverdueList, getTdsList
+} from '@/api'
+import { workOrderMap } from '@/utils'
+
+createPage({
+  data: {
+    active: 0,
+    suspendActive: 1,
+    orderList: [],
+    suspendOrderList: [],
+    tabList: [
+      {
+        title: '待预约', num: 0, name: 'aa', searchApi: getWaitAppointmentList,
+        showDispatchTime: true,
+        showExpectedDate: true,
+        showFactoryExpectedDate: true
+      },
+      {
+        title: '待上门', num: 0, name: 'bb', searchApi: getWaitVisitList,
+        showDispatchTime: true,
+        showReservationDate: true,
+      },
+      {
+        title: '服务中', num: 0, name: 'cc', searchApi: getServiceList,
+        showDispatchTime: true,
+        showReservationDate: true,
+      },
+      {
+        title: '待支付', num: 0, name: 'dd', searchApi: getWaitPayList,
+        showCompletionTime: true,
+      },
+      {
+        title: '未交款', num: 0, name: 'ee', searchApi: getNotPayList,
+        showDispatchTime: true,
+        showReservationDate: true,
+        showCompletionTime: true,
+      },
+      {
+        title: '驳回待处理', num: 0, name: 'ff', searchApi: getRejectList,
+        showDispatchTime: true,
+        showReservationDate: true,
+        showCompletionTime: true,
+      },
+      {
+        title: '完工待确认', num: 0, name: 'gg', searchApi: getWaitConfirmList,
+        showCompletionTime: true,
+      },
+      {
+        title: '挂起单', num: 0, name: 'hh', searchApi: undefined,
+        showDispatchTime: true,
+        showReservationDate: true,
+      },
+      {
+        title: '催单', num: 0, name: 'ii', searchApi: getRemindList,
+        showDispatchTime: true,
+        showReservationDate: true,
+      },
+      {
+        title: '将超期', num: 0, name: 'jj', searchApi: getWillOverdueList,
+        showDispatchTime: true,
+        showReservationDate: true,
+        showCompletionTime: true,
+      },
+      {
+        title: '已超期', num: 0, name: 'kk', searchApi: getOverdueList,
+        showDispatchTime: true,
+        showReservationDate: true,
+        showCompletionTime: true,
+      },
+      {
+        title: '补录TDS', num: 0, name: 'll', searchApi: getTdsList,
+        showCompletionTime: true,
+      },
+    ],
+    suspendTabList: [
+      { title: '挂起待审核', backlogType: 10, num: 0, name: 'hh01', searchApi: getSuspendAuditList },
+      { title: '挂起中', backlogType: 5, num: 0, name: 'hh02', searchApi: getSuspendList },
+      { title: '挂起待恢复', backlogType: 11, num: 0, name: 'hh03', searchApi: getSuspendList },
+    ],
+    searchParams: {},
+    loading: false,
+  },
+  computed: {
+    activeItem() {
+      return this.tabList[this.active]
+    },
+    activeSuspendItem() {
+      return this.suspendTabList[this.suspendActive]
+    },
+    suspendState() {
+      return this.suspendActive === 1 ? 10 : this.suspendActive === 2 ? 20 : ''
+    }
+  },
+  onLoad(options) {
+    this.active = Number(options.type) - 1
+    this.fetchWorkOrderCount()
+  },
+  methods: {
+    async fetchWorkOrderCount() {
+      const { code, data } = await getWorkOrderCount({ showLoading: false })
+      if (code === 0) {
+        let titleCountMap = {}
+        data.forEach(item => {
+          const title = workOrderMap[item.backlogType]
+          if (title) {
+            if (titleCountMap[title]) {
+              titleCountMap[title] += item.quantity
+            } else {
+              titleCountMap[title] = item.quantity
+            }
+          }
+          this.suspendTabList = this.suspendTabList.map(sub => {
+            if (sub.backlogType === item.backlogType) {
+              sub.num = item.quantity
+            }
+            return sub
+          })
+        });
+
+        let arr = Object.keys(titleCountMap).map(title => ({
+          title: title,
+          num: titleCountMap[title]
+        }));
+
+        this.tabList.forEach(listItem => {
+          const matchedArrItem = arr.find(arrItem => arrItem.title === listItem.title)
+          if (matchedArrItem) {
+            listItem.num = matchedArrItem.num
+          }
+        });
+      }
+    },
+    handleTabChange(e) {
+      this.active = e.detail
+      this.orderList = []
+      this.searchParams = {}
+      const searchRef = this.selectComponent('#searchRef')
+      searchRef.resetSearch()
+
+      if (this.active === 7) {
+        // this.suspendActive = 1
+        this.$nextTick(() => {
+          const suspendScrollView = this.selectComponent('#suspendScrollView')
+          if (suspendScrollView) {
+            suspendScrollView.searchApi = this.activeSuspendItem.searchApi
+            this.suspendOrderList = []
+            suspendScrollView.search()
+          }
+        })
+      }
+    },
+    handleSuspendTabChange(e) {
+      this.suspendActive = e.detail
+      this.suspendOrderList = []
+    },
+    onUpdateListChange(e) {
+      this.orderList = e.detail.list
+    },
+    onUpdateSuspendListChange(e) {
+      this.suspendOrderList = e.detail.list
+    },
+    toSearch(e) {
+      const searchData = e.detail
+      this.searchParams = {
+        ...searchData
+      }
+    },
+    onLoadingChange(e) {
+      this.loading = e.detail.loading
+    }
+  }
+})
+</script>
+<style lang="scss" scoped>
+.order-list {
+  height: 100%;
+  overflow-y: auto;
+}
+</style>
+<script type="application/json">
+  {
+    "usingComponents": {
+      "work-order-search": "./components/work-order-search/index",
+      "work-order-item": "./components/work-order-item/index"
+    },
+    "navigationBarTitleText": "工单列表",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+  }
+</script>
