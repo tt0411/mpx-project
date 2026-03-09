@@ -3,26 +3,15 @@
     <view class="tabbar-content">
       <view
         class="tabbar-item"
-        wx:for="{{filteredTabBarList}}"
+        wx:for="{{tabBarList}}"
         wx:for-item="item"
         wx:for-index="index"
         wx:key="index"
         data-index="{{index}}"
         bind:tap="onChange"
       >
-        <view class="tabbar-icon-wrap">
-          <image
-            src="{{activeTabbarIndex === index ? item.selectedIconPath : item.iconPath}}"
-            class="tabbar-icon"
-          />
-          <!-- 小红点 -->
-          <view wx:if="{{item.dot}}" class="tabbar-dot"></view>
-          <!-- 提示信息 -->
-          <view wx:if="{{item.info}}" class="tabbar-info">{{item.info}}</view>
-        </view>
-        <text class="tabbar-text {{activeTabbarIndex === index ? 'active' : ''}}">
-          {{ item.text }}
-        </text>
+        <view class="tabbar-icon {{activeTabbarIndex === index ? 'active' : ''}}">{{ item.shortText }}</view>
+        <text class="tabbar-text {{activeTabbarIndex === index ? 'active' : ''}}">{{ item.text }}</text>
       </view>
     </view>
     <view class="tabbar-safe-area"></view>
@@ -30,133 +19,81 @@
 </template>
 
 <script>
-  import mpx, { createComponent } from '@mpxjs/core'
-  import { mapState, mapActions } from '@mpxjs/pinia'
-  import { useAuthStore, useCommonStore } from '@/store'
-  createComponent({
-    computed: {
-      ...mapState(useCommonStore, ['activeTabbarIndex', 'tabBarList']),
-      ...mapState(useAuthStore, ['userInfo']),
-      filteredTabBarList() {
-        if(this.userInfo.workerState === 2) {
-        return this.tabBarList.filter(item => item.text !== 'e帮手学堂')
-      }
-      return this.tabBarList
-      }
-    },
+import mpx, { createComponent } from '@mpxjs/core'
+import { mapActions, mapState } from '@mpxjs/pinia'
+import { useCommonStore } from '@/store'
 
-    methods: {
-      ...mapActions(useCommonStore, ['setActiveTabbarIndex']),
-      onChange(e) {
-        let index
-        // 兼容多端事件参数
-        if (e && e.currentTarget && typeof e.currentTarget.dataset.index !== 'undefined') {
-          index = Number(e.currentTarget.dataset.index)
-        } else if (typeof e.detail === 'number') {
-          index = e.detail
-        }
-        this.setActiveTabbarIndex(index)
-        mpx.switchTab({ url: this.filteredTabBarList[index].pagePath })
-      }
+createComponent({
+  computed: {
+    ...mapState(useCommonStore, ['activeTabbarIndex', 'tabBarList'])
+  },
+  methods: {
+    ...mapActions(useCommonStore, ['setActiveTabbarIndex']),
+    onChange(e) {
+      const index = Number(e.currentTarget.dataset.index)
+      this.setActiveTabbarIndex(index)
+      mpx.switchTab({ url: this.tabBarList[index].pagePath })
     }
-  })
+  }
+})
 </script>
+
 <style lang="scss" scoped>
-  @use '@/styles/var.scss' as *;
+.custom-tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  background: #fff;
+  border-top: 1px solid #eee;
+}
 
-  .custom-tabbar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 999;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-    border-top: 1px solid #eee;
-  }
-  .tabbar-content {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: stretch;
-    height: 50px;
-    width: 100%;
-    padding-top: 8px;
-  }
-  .tabbar-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-  }
+.tabbar-content {
+  display: flex;
+  height: 56px;
+  padding-top: 6px;
+}
 
-  .tabbar-icon-wrap {
-    position: relative;
-    display: inline-block;
-  }
+.tabbar-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 
-  .tabbar-icon {
-    width: 28px;
-    height: 28px;
-    display: inline-block;
-    margin: 0 auto;
-  }
-  .tabbar-text {
-    color: #333;
-    /* @mpx-if (__mpx_mode__ === 'wx') */
-    font-size: 12px;
-    line-height: 0.7;
-    margin-top: -4px;
-    /* @mpx-else */
-    font-size: 14px;
-    line-height: 1;
-    margin-top: 2px;
-    /* @mpx-endif */
-  }
+.tabbar-icon {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  background: #eceff5;
+  color: #888;
+  font-size: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  .tabbar-text.active {
-    color: $primary-color;
-    font-weight: 500;
-  }
+.tabbar-icon.active {
+  background: #1677ff;
+  color: #fff;
+}
 
-  .tabbar-dot {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 6px;
-    height: 6px;
-    background-color: #ee0a24;
-    border-radius: 100%;
-    transform: translate(50%, -50%);
-  }
+.tabbar-text {
+  margin-top: 6rpx;
+  color: #777;
+  font-size: 20rpx;
+}
 
-  .tabbar-info {
-    position: absolute;
-    top: 0;
-    right: 0;
-    box-sizing: border-box;
-    min-width: 16px;
-    padding: 0 3px;
-    color: #fff;
-    font-weight: 500;
-    font-size: 12px;
-    font-family: -apple-system-font, Helvetica Neue, Arial, sans-serif;
-    line-height: 14px;
-    text-align: center;
-    background-color: #ee0a24;
-    border-radius: 16px;
-    transform: translate(50%, -50%);
-    white-space: nowrap;
-  }
-  /* 安全区适配 */
-  .tabbar-safe-area {
-    width: 100%;
-    height: env(safe-area-inset-bottom);
-    min-height: 0;
-    background: #fff;
-  }
+.tabbar-text.active {
+  color: #1677ff;
+}
+
+.tabbar-safe-area {
+  width: 100%;
+  height: env(safe-area-inset-bottom);
+  min-height: 0;
+  background: #fff;
+}
 </style>

@@ -1,45 +1,42 @@
 /**
- * 动态生成配置文件
+ * Dynamic config generator for multi-platform mini-program builds.
+ * 动态生成多平台小程序构建配置。
  */
 
 const fs = require('fs')
 const path = require('path')
 
 const WX_CONFIG_MAP = {
-  // 测试环境
   test: {
-    appId: 'wx43ed82bf04e8a3b7',
-    baseURL: 'https://cbs-gateway.dev.ebsfw.com',
-    projectName: '微信小程序-测试版',
+    appId: 'wx-template-test-appid',
+    baseURL: 'https://api-test.example.com',
+    projectName: 'mpx-template-wx-test',
     env: 'test',
-    envName: '微信小程序测试环境'
+    envName: 'WeChat Test Environment'
   },
-  // 生产环境
   prod: {
-    appId: 'wxPROD123456789',
-    baseURL: 'https://xxx.xxx.com',
-    projectName: '微信小程序-正式版',
+    appId: 'wx-template-prod-appid',
+    baseURL: 'https://api.example.com',
+    projectName: 'mpx-template-wx-prod',
     env: 'prod',
-    envName: '微信小程序生产环境'
+    envName: 'WeChat Production Environment'
   }
 }
 
 const ALI_CONFIG_MAP = {
-  // 测试环境
   test: {
-    appId: 'ali43ed82bf04e8a3b7',
-    baseURL: 'https://cbs-gateway.dev.ebsfw.com',
-    projectName: '支付宝小程序-测试版',
+    appId: 'ali-template-test-appid',
+    baseURL: 'https://api-test.example.com',
+    projectName: 'mpx-template-ali-test',
     env: 'test',
-    envName: '支付宝小程序测试环境'
+    envName: 'Alipay Test Environment'
   },
-  // 生产环境
   prod: {
-    appId: 'aliPROD123456789',
-    baseURL: 'https://xxx.xxx.com',
-    projectName: '支付宝小程序-正式版',
+    appId: 'ali-template-prod-appid',
+    baseURL: 'https://api.example.com',
+    projectName: 'mpx-template-ali-prod',
     env: 'prod',
-    envName: '支付宝小程序生产环境'
+    envName: 'Alipay Production Environment'
   }
 }
 
@@ -48,18 +45,17 @@ const CONFIG_MAP = {
   ali: ALI_CONFIG_MAP
 }
 
-// 获取环境变量
 const ENV = process.env.APP_ENV || 'test'
 const PLATFORM_ENV = process.env.PLATFORM_ENV || 'wx'
 
-const config = CONFIG_MAP[PLATFORM_ENV][ENV]
+const platformConfig = CONFIG_MAP[PLATFORM_ENV]
+const config = platformConfig && platformConfig[ENV]
 
 if (!config) {
-  console.error(`❗ 找不到环境${PLATFORM_ENV} ${ENV} 的配置`)
+  console.error(`Invalid config: platform=${PLATFORM_ENV}, env=${ENV}`)
   process.exit(1)
 }
 
-// 生成微信小程序配置文件内容
 const wxProjectConfig = {
   appid: config.appId,
   projectname: config.projectName,
@@ -97,16 +93,13 @@ const PROJECT_CONFIG_MAP = {
 
 const OUTPUT_PATH_MAP = {
   wx: path.resolve(__dirname, '../static/wx/project.config.json'),
-  ali: path.resolve(__dirname, '../static/ali/mini.project.json'),
+  ali: path.resolve(__dirname, '../static/ali/mini.project.json')
 }
-// 写入文件
+
 const outputPath = OUTPUT_PATH_MAP[PLATFORM_ENV]
 fs.writeFileSync(outputPath, JSON.stringify(PROJECT_CONFIG_MAP[PLATFORM_ENV], null, 2))
-console.log(`✅ 生成${PLATFORM_ENV}项目配置文件：${outputPath}`)
+console.log(`Generated ${PLATFORM_ENV} project config: ${outputPath}`)
 
 const envConfigPath = path.resolve(__dirname, '../src/utils/envConfig.js')
-fs.writeFileSync(envConfigPath, `export const envConfig = ${JSON.stringify(config, null, 2)}`)
-console.log(`✅ 生成${PLATFORM_ENV}环境变量文件：${envConfigPath}`)
-
-console.log(`✅ 当前 ${ENV} 环境`)
-console.log(`   AppID: ${config.appId}  项目名: ${config.projectName}`)
+fs.writeFileSync(envConfigPath, `export const envConfig = ${JSON.stringify(config, null, 2)}\n`)
+console.log(`Generated runtime env config: ${envConfigPath}`)

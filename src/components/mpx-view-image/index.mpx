@@ -1,9 +1,9 @@
 <template>
-  <view class="" catchtap="toShowImg">
+  <view catchtap="toShowImg">
     <image mode="{{mode}}" wx:style="{{ { ...imgStyle, borderRadius: '50%'} }}" class="image" src="{{url}}" bindload="loadImg"></image>
     <view class="w-100vw h-100vh fixed left-0 top-0 flex-col-center z-12001" wx:if="{{showCustomPreview}}" catchtap="closeCustomPreview">
-       <view class="w-100vw h-100vh absolute left-0 top-0 bg-#000 z-12002"></view>
-       <view class="w-100% flex-center">
+      <view class="w-100vw h-100vh absolute left-0 top-0 bg-#000 z-12002"></view>
+      <view class="w-100% flex-center">
         <image mode="widthFix" class="w-100% relative z-12003" src="{{url}}" />
       </view>
       <view class="relative z-12004">
@@ -13,49 +13,49 @@
   </view>
 </template>
 <script>
-import mpx, { createComponent } from "@mpxjs/core";
+import mpx, { createComponent } from '@mpxjs/core'
 
- createComponent({
-    properties: {
-      mode: {
-        type: String,
-        value: "aspectFill"
-      },
-      imgStyle: {
-        type:  Object,
-        value: {}
-      },
-      url: {
-        type: String,
-        value: "http://cbs-worker-wxapp.oss-cn-hangzhou.aliyuncs.com/prod/E.png"
-      },
-      customPreview: {
-        type: Boolean,
-        value: true
-      },
+createComponent({
+  properties: {
+    mode: {
+      type: String,
+      value: 'aspectFill'
     },
-    data: {
-      showCustomPreview: false,
-      isLoad: false
+    imgStyle: {
+      type: Object,
+      value: {}
     },
-    methods: {
-      toShowImg() {
-        if(this.customPreview) {
-          this.showCustomPreview = true;
-        } else {
-          mpx.previewImage({
-            urls: [this.url]
-          });
-        }
-      },
-      closeCustomPreview() {
-        this.showCustomPreview = false;
-      },
-      loadImg() {
-        this.isLoad = true;
-      }
+    url: {
+      type: String,
+      value: ''
+    },
+    customPreview: {
+      type: Boolean,
+      value: true
     }
-});
+  },
+  data: {
+    showCustomPreview: false,
+    isLoad: false
+  },
+  methods: {
+    toShowImg() {
+      if (this.customPreview) {
+        this.showCustomPreview = true
+      } else {
+        mpx.previewImage({
+          urls: [this.url]
+        })
+      }
+    },
+    closeCustomPreview() {
+      this.showCustomPreview = false
+    },
+    loadImg() {
+      this.isLoad = true
+    }
+  }
+})
 </script>
 <script type="application/json">
   {
@@ -63,6 +63,5 @@ import mpx, { createComponent } from "@mpxjs/core";
   }
 </script>
 <style lang="scss" scoped>
-@use "@/styles/var.scss" as *;
-
+@use '@/styles/var.scss' as *;
 </style>

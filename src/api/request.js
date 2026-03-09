@@ -1,232 +1,148 @@
-import mpx from "@mpxjs/core";
-import { envConfig, reLaunch } from '@/utils'
+import mpx from '@mpxjs/core'
+import { envConfig } from '@/utils'
 
 const baseURL = envConfig.baseURL
-let loadingCount = 0;
+let loadingCount = 0
 
-// 全局 loading 控制
 function showLoading() {
   if (loadingCount === 0) {
-    mpx.showLoading({ title: "加载中..." });
+    mpx.showLoading({ title: '加载中...' })
   }
-  loadingCount++;
+  loadingCount += 1
 }
+
 function hideLoading() {
-  loadingCount--;
-  if (loadingCount <= 0) {
-    loadingCount = 0;
-    mpx.hideLoading();
+  loadingCount = Math.max(loadingCount - 1, 0)
+  if (loadingCount === 0) {
+    mpx.hideLoading()
   }
 }
 
-// 添加请求拦截器
 mpx.xfetch.interceptors.request.use((config) => {
-  if (config.method === "GET" && config.showLoading === true) {
-    showLoading();
+  if (config.showLoading) {
+    showLoading()
   }
-  let cookies = mpx.getStorageSync("cookies");
-  if (cookies && cookies.length) {
-    if (!config.headers) config.headers = {};
-    config.headers.cookie = cookies.join(";");
-  }
-  return config;
-});
 
-// 添加响应拦截器
+  const session = mpx.getStorageSync('template_session') || {}
+  const token = session.token
+  const cookies = mpx.getStorageSync('cookies')
+
+  config.headers = config.headers || {}
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  if (cookies && cookies.length) {
+    config.headers.cookie = cookies.join(';')
+  }
+
+  return config
+})
+
 mpx.xfetch.interceptors.response.use(
   (response) => {
-    if (response.requestConfig.showLoading === true) {
-      hideLoading();
-    }
-    if (response.cookies.length) {
-      let cookies = [];
-      const cookie = response.cookies[0];
-      let c = cookie.split(";");
-      if (c) cookies = c;
-      let expired = true;
-      for (let i = 0; i < cookies.length; i++) {
-        let key = cookies[i].split("=")[0];
-        let value = cookies[i].split("=")[1];
-        if (key === "SESSION") {
-          expired = false;
-          if (!value) {
-            expired = true;
-          }
-        }
-      }
-      if (expired) {
-        mpx.removeStorageSync("cookies");
-      } else {
-        mpx.setStorageSync("cookies", cookies);
-      }
+    if (response.requestConfig.showLoading) {
+      hideLoading()
     }
 
-    if (response.data.code !== 0) {
-      if (response.data.code === 101) {
-        mpx.removeStorageSync("cookies");
-        reLaunch('login');
-        return;
-      }
-      if (
-        response.requestConfig.showToastMsg !== false &&
-        response.requestConfig.method !== "get"
-      ) {
-        mpx.showToast({
-          title: response.data.message || "网络异常",
-          icon: "none",
-        });
-      }
+    if (response.cookies && response.cookies.length) {
+      const cookieParts = response.cookies[0].split(';')
+      mpx.setStorageSync('cookies', cookieParts)
     }
-    return response.data;
+
+    return response.data
   },
   (error) => {
-    hideLoading();
-    if (error.code === "ECONNABORTED") {
-      mpx.showToast({ title: "请求超时", icon: "error" });
-      return Promise.reject(error);
+    hideLoading()
+
+    if (error.code === 'ECONNABORTED') {
+      mpx.showToast({ title: '请求超时', icon: 'none' })
+      return Promise.reject(error)
     }
+
     try {
-      const { status, data } = error.response;
-      let message;
-      if (status === 404) {
-        message = `接口【${data.path}】未定义`;
-      } else if (status === 500) {
-        message = `服务不可用`;
-      } else {
-        message = `系统异常`;
-      }
-      mpx.showToast({ title: message, icon: "error" });
-      return Promise.reject(error);
+      const status = error.response && error.response.status
+      const message = status === 404 ? '接口不存在' : status === 500 ? '服务异常' : '网络异常'
+      mpx.showToast({ title: message, icon: 'none' })
     } catch (err) {
-      return Promise.reject(err);
+      mpx.showToast({ title: '网络异常', icon: 'none' })
     }
+
+    return Promise.reject(error)
   }
-);
+)
 
-// 通用请求方法
 function request({ url, config = {} }) {
-  return mpx.xfetch
-    .fetch({
-      url: url.includes("http") ? url : baseURL + url,
-      ...config,
-      timeout: config.timeout ?? 10000,
-    })
-    .then((res) => res);
+  return mpx.xfetch.fetch({
+    url: url.includes('http') ? url : `${baseURL}${url}`,
+    timeout: config.timeout || 10000,
+    ...config
+  })
 }
 
-// GET
+function buildConfig(method, parameter = {}) {
+  return {
+    method,
+    data: parameter.data,
+    params: parameter.params,
+    showLoading: parameter.showLoading,
+    showToastMsg: parameter.showToastMsg,
+    headers: parameter.headers || {},
+    timeout: parameter.timeout || 10000
+  }
+}
+
 export function get(url, parameter = {}) {
-  const { showLoading, params } = parameter;
-  let config = {};
-  config.method = "GET";
-  config.params = params;
-  config.showLoading = showLoading;
-  config.headers = config.headers || {};
-  config.timeout = config.timeout;
-  return request({ url, config });
+  return request({ url, config: buildConfig('GET', parameter) })
 }
 
-// POST
 export function post(url, parameter = {}) {
-  const { showLoading, showToastMsg, data, params } = parameter;
-  let config = {};
-  config.method = "POST";
-  config.params = params;
-  config.data = data;
-  config.showLoading = showLoading;
-  config.showToastMsg = showToastMsg;
-  config.headers = config.headers || {};
-  config.timeout = config.timeout;
-  return request({ url, config });
+  return request({ url, config: buildConfig('POST', parameter) })
 }
 
-// POST form
-export function postForm(url, parameter = {}) {
-  const { showLoading, showToastMsg, data, params } = parameter;
-  let config = {};
-  config.method = "POST";
-  config.params = params;
-  config.data = data;
-  config.showLoading = showLoading;
-  config.showToastMsg = showToastMsg;
-  config.emulateJSON = true;
-  config.timeout = config.timeout;
-  return request({ url, config });
-}
-
-// PUT
 export function put(url, parameter = {}) {
-  const { showLoading, showToastMsg, data, params } = parameter;
-  let config = {};
-  config.method = "PUT";
-  config.data = data;
-  config.params = params;
-  config.showLoading = showLoading;
-  config.showToastMsg = showToastMsg;
-  config.timeout = config.timeout;
-  config.headers = config.headers || {};
-  return request({ url, config });
+  return request({ url, config: buildConfig('PUT', parameter) })
 }
 
-// DELETE
 export function del(url, parameter = {}) {
-  const { showLoading, showToastMsg, data, params } = parameter;
-  let config = {};
-  config.method = "DELETE";
-  config.data = data;
-  config.params = params;
-  config.headers = config.headers || {};
-  config.showLoading = showLoading;
-  config.showToastMsg = showToastMsg;
-  config.timeout = config.timeout;
-  return request({ url, config });
+  return request({ url, config: buildConfig('DELETE', parameter) })
 }
 
-// 上传文件
+export function postForm(url, parameter = {}) {
+  const config = buildConfig('POST', parameter)
+  config.emulateJSON = true
+  return request({ url, config })
+}
+
 export function upload(url, parameter = {}) {
-  // 使用小程序内置的上传方法
-  const { formData = {}, showLoading, showToastMsg, filePath, name } = parameter;
-  console.log("upload", parameter);
+  const { formData = {}, filePath, name = 'file', showLoading } = parameter
 
   return new Promise((resolve, reject) => {
     if (showLoading) {
-      mpx.showLoading({ title: "上传中..." });
+      mpx.showLoading({ title: '上传中...' })
     }
-    let cookies = mpx.getStorageSync("cookies");
-    let header = {};
-    if (cookies && cookies.length) {
-      header.cookie = cookies.join(";");
-    }
+
     mpx.uploadFile({
-      url: url.includes("http") ? url : baseURL + url,
-      filePath: filePath,
-      name: name,
-      formData: formData,
-      header: header,
+      url: url.includes('http') ? url : `${baseURL}${url}`,
+      filePath,
+      name,
+      formData,
       success(res) {
         if (showLoading) {
-          mpx.hideLoading();
+          mpx.hideLoading()
         }
-        let data = JSON.parse(res.data);
-        if (data.code !== 0) {
-          if (showToastMsg !== false) {
-            mpx.showToast({
-              title: data.message || "网络异常",
-              icon: "none",
-            });
-          }
-          reject(data);
-        } else {
-          resolve(data);
+        try {
+          resolve(JSON.parse(res.data))
+        } catch (error) {
+          reject(error)
         }
       },
       fail(err) {
         if (showLoading) {
-          mpx.hideLoading();
+          mpx.hideLoading()
         }
-        mpx.showToast({ title: "上传失败", icon: "error" });
-        reject(err);
-      },
-    });
-  });
+        mpx.showToast({ title: '上传失败', icon: 'none' })
+        reject(err)
+      }
+    })
+  })
 }

@@ -1,25 +1,35 @@
 import mpx from '@mpxjs/core'
 import { defineStore } from '@mpxjs/pinia'
 
-export const useAuthStore = defineStore('auth', {
-  state : () => {
+const STORAGE_KEY = 'template_session'
+
+export const useUserStore = defineStore('user', {
+  state: () => {
+    const saved = mpx.getStorageSync(STORAGE_KEY) || {}
     return {
-        userInfo: mpx.getStorageSync('userInfo') || {},
+      userInfo: saved.userInfo || {},
+      token: saved.token || ''
     }
   },
   getters: {
-    getWorkerInfo(state) {
-      return state.userInfo
+    isLogin(state) {
+      return Boolean(state.token)
     }
   },
   actions: {
-    setUserInfo(userInfo) {
-      this.userInfo = userInfo
-      mpx.setStorageSync('userInfo', userInfo)
+    setSession(payload = {}) {
+      this.userInfo = payload.userInfo || {}
+      this.token = payload.token || ''
+      mpx.setStorageSync(STORAGE_KEY, {
+        userInfo: this.userInfo,
+        token: this.token
+      })
     },
-    clearUserInfo() {
+    clearSession() {
       this.userInfo = {}
-      mpx.removeStorageSync('userInfo')
+      this.token = ''
+      mpx.removeStorageSync(STORAGE_KEY)
+      mpx.removeStorageSync('cookies')
     }
   }
 })

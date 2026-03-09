@@ -1,0 +1,74 @@
+<template>
+  <view class="page">
+    <van-nav-bar title="我的/Profile" />
+    <view class="section">
+      <view class="row"><text class="label">User ID</text><text>{{ userInfo.id || '--' }}</text></view>
+      <view class="row"><text class="label">Name</text><text>{{ userInfo.name || '--' }}</text></view>
+      <view class="row"><text class="label">Token</text><text>{{ token ? '已登录' : '未登录' }}</text></view>
+    </view>
+    <view class="section">
+      <van-button type="primary" block bindtap="goLogin">登录/切换账号</van-button>
+      <van-button custom-class="mt-20rpx" block bindtap="logout">退出登录</van-button>
+    </view>
+  </view>
+</template>
+
+<script>
+import { createPage } from '@mpxjs/core'
+import { mapActions, mapState } from '@mpxjs/pinia'
+import { useUserStore } from '@/store'
+import { navigateTo, switchTab } from '@/utils'
+
+createPage({
+  computed: {
+    ...mapState(useUserStore, ['userInfo', 'token'])
+  },
+  methods: {
+    ...mapActions(useUserStore, ['clearSession']),
+    goLogin() {
+      navigateTo('login')
+    },
+    logout() {
+      this.clearSession()
+      switchTab('home')
+    }
+  }
+})
+</script>
+
+<script name="json">
+module.exports = {
+  navigationBarTitleText: '我的/Profile',
+  navigationStyle: 'custom'
+}
+</script>
+
+<style lang="scss" scoped>
+.page {
+  min-height: 100vh;
+  background: #f7f8fa;
+}
+
+.section {
+  margin: 20rpx;
+  padding: 24rpx;
+  background: #fff;
+  border-radius: 16rpx;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+  color: #333;
+  font-size: 28rpx;
+}
+
+.label {
+  color: #888;
+}
+
+.mt-20rpx {
+  margin-top: 20rpx;
+}
+</style>

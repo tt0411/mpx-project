@@ -1,0 +1,66 @@
+<template>
+  <view class="page">
+    <van-nav-bar title="首页/Home" />
+    <view class="section">
+      <view class="title">MPX Template Starter</view>
+      <view class="desc">通用小程序模板（可二次开发）</view>
+    </view>
+    <view class="section">
+      <van-button type="primary" block bindtap="goDemoList">查看示例列表</van-button>
+      <van-button custom-class="mt-20rpx" block bindtap="goLogin">前往登录页</van-button>
+    </view>
+  </view>
+</template>
+
+<script>
+import { createPage } from '@mpxjs/core'
+import { navigateTo } from '@/utils'
+
+createPage({
+  methods: {
+    goDemoList() {
+      navigateTo('demo-list')
+    },
+    goLogin() {
+      navigateTo('login')
+    }
+  }
+})
+</script>
+
+<script name="json">
+module.exports = {
+  navigationBarTitleText: '首页/Home',
+  navigationStyle: 'custom'
+}
+</script>
+
+<style lang="scss" scoped>
+.page {
+  min-height: 100vh;
+  background: #f7f8fa;
+}
+
+.section {
+  margin: 20rpx;
+  padding: 24rpx;
+  background: #fff;
+  border-radius: 16rpx;
+}
+
+.title {
+  font-size: 38rpx;
+  font-weight: 600;
+  color: #222;
+}
+
+.desc {
+  margin-top: 12rpx;
+  color: #666;
+  font-size: 26rpx;
+}
+
+.mt-20rpx {
+  margin-top: 20rpx;
+}
+</style>

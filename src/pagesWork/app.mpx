@@ -1,8 +1,0 @@
-<script type="application/json">
-  {
-    "pages": [
-      "./work-order-list/index",
-      "./work-order-detail/index"
-    ]
-  }
-</script>

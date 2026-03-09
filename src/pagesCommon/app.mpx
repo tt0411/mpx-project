@@ -2,10 +2,7 @@
   {
     "pages": [
       "./login/index",
-      "./map/index",
-      "./signature/index",
-      "./web-view/index",
-      "./test/index"
+      "./web-view/index"
     ]
   }
 </script>
