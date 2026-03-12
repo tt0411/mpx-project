@@ -1,6 +1,6 @@
 <template>
   <view class="page">
-    <van-nav-bar title="Demo List" left-arrow bind:click-left="back" />
+    <view class="nav"><text class="back" bindtap="back">←</text>Demo List</view>
     <view class="section" wx:if="{{list.length}}">
       <view wx:for="{{list}}" wx:key="id" class="card" bindtap="goDetail" data-id="{{item.id}}">
         <view class="title">{{ item.title }}</view>
@@ -17,18 +17,12 @@ import { getDemoList } from '@/api'
 import { navigateBack, navigateTo } from '@/utils'
 
 createPage({
-  data: {
-    list: []
-  },
-  onLoad() {
-    this.fetchList()
-  },
+  data: { list: [] },
+  onLoad() { this.fetchList() },
   methods: {
     async fetchList() {
       const { code, data } = await getDemoList({ showLoading: true })
-      if (code === 0) {
-        this.list = data || []
-      }
+      if (code === 0) this.list = data || []
     },
     goDetail(e) {
       navigateTo('demo-detail', { id: Number(e.currentTarget.dataset.id) })
@@ -42,37 +36,16 @@ createPage({
 
 <script name="json">
 module.exports = {
-  usingComponents: {},
-  navigationBarTitleText: 'Demo List',
-  navigationStyle: 'custom'
+  navigationBarTitleText: 'Demo List'
 }
 </script>
 
 <style lang="scss" scoped>
-.page {
-  min-height: 100vh;
-  background: #f7f8fa;
-}
-
-.section {
-  padding: 20rpx;
-}
-
-.card {
-  margin-bottom: 16rpx;
-  padding: 20rpx;
-  background: #fff;
-  border-radius: 16rpx;
-}
-
-.title {
-  color: #222;
-  font-size: 30rpx;
-}
-
-.desc {
-  margin-top: 8rpx;
-  color: #666;
-  font-size: 24rpx;
-}
+.page { min-height: 100vh; background: #f7f8fa; }
+.nav { position: relative; height: 88rpx; line-height: 88rpx; text-align: center; font-size: 32rpx; font-weight: 600; background: #fff; }
+.back { position: absolute; left: 24rpx; top: 0; }
+.section { padding: 20rpx; }
+.card { margin-bottom: 16rpx; padding: 20rpx; background: #fff; border-radius: 16rpx; }
+.title { color: #222; font-size: 30rpx; }
+.desc { margin-top: 8rpx; color: #666; font-size: 24rpx; }
 </style>

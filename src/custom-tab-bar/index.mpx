@@ -1,20 +1,14 @@
 <template>
   <view class="custom-tabbar">
-    <view class="tabbar-content">
-      <view
-        class="tabbar-item"
-        wx:for="{{tabBarList}}"
-        wx:for-item="item"
-        wx:for-index="index"
-        wx:key="index"
-        data-index="{{index}}"
-        bind:tap="onChange"
-      >
-        <view class="tabbar-icon {{activeTabbarIndex === index ? 'active' : ''}}">{{ item.shortText }}</view>
-        <text class="tabbar-text {{activeTabbarIndex === index ? 'active' : ''}}">{{ item.text }}</text>
-      </view>
-    </view>
-    <view class="tabbar-safe-area"></view>
+    <cube-tab-bar wx:model="{{ localTabIndex }}" wx:model-prop="value" tabs="{{ tabBarList }}" bindchange="onChange"
+      custom-content>
+      <cube-tab class="cube-tab" wx:for="{{ tabBarList }}" wx:key="index" label="{{ item.label }}"
+        value="{{ item.value }}" custom-content custom-icon>
+        <cube-icon size="{{ 20 }}" color="{{ activeTabbarIndex === index ? '#1677ff' : '#666666' }}"
+          type="{{ item.icon }}" />
+        <view class="{{ activeTabbarIndex === index ? 'active' : '' }}">{{ item.label }}</view>
+      </cube-tab>
+    </cube-tab-bar>
   </view>
 </template>
 
@@ -24,13 +18,27 @@ import { mapActions, mapState } from '@mpxjs/pinia'
 import { useCommonStore } from '@/store'
 
 createComponent({
+  data() {
+    return {
+      localTabIndex: 0
+    }
+  },
   computed: {
     ...mapState(useCommonStore, ['activeTabbarIndex', 'tabBarList'])
+  },
+  watch: {
+    activeTabbarIndex(newVal) {
+      this.localTabIndex = newVal
+    }
+  },
+  created() {
+    this.localTabIndex = this.activeTabbarIndex
   },
   methods: {
     ...mapActions(useCommonStore, ['setActiveTabbarIndex']),
     onChange(e) {
-      const index = Number(e.currentTarget.dataset.index)
+      const index = Number(e.detail.value)
+      this.localTabIndex = index
       this.setActiveTabbarIndex(index)
       mpx.switchTab({ url: this.tabBarList[index].pagePath })
     }
@@ -49,51 +57,23 @@ createComponent({
   border-top: 1px solid #eee;
 }
 
-.tabbar-content {
-  display: flex;
-  height: 56px;
-  padding-top: 6px;
-}
-
-.tabbar-item {
+.cube-tab {
+  z-index: 999;
   flex: 1;
+  padding: 0 0 20rpx 0;
+  text-align: center;
+  color: #666;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-}
 
-.tabbar-icon {
-  width: 36rpx;
-  height: 36rpx;
-  border-radius: 50%;
-  background: #eceff5;
-  color: #888;
-  font-size: 20rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  view {
+    font-size: 28rpx;
+    margin-top: 4rpx;
 
-.tabbar-icon.active {
-  background: #1677ff;
-  color: #fff;
-}
-
-.tabbar-text {
-  margin-top: 6rpx;
-  color: #777;
-  font-size: 20rpx;
-}
-
-.tabbar-text.active {
-  color: #1677ff;
-}
-
-.tabbar-safe-area {
-  width: 100%;
-  height: env(safe-area-inset-bottom);
-  min-height: 0;
-  background: #fff;
+    &.active {
+      color: #1677ff;
+    }
+  }
 }
 </style>

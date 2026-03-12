@@ -1,20 +1,16 @@
 <template>
   <view class="page">
-    <van-nav-bar title="首页/Home" />
     <view class="section">
-      <view class="title">MPX Template Starter</view>
-      <view class="desc">通用小程序模板（可二次开发）</view>
-    </view>
-    <view class="section">
-      <van-button type="primary" block bindtap="goDemoList">查看示例列表</van-button>
-      <van-button custom-class="mt-20rpx" block bindtap="goLogin">前往登录页</van-button>
+      <button class="btn primary" bindtap="goDemoList">查看示例列表</button>
+      <button class="btn" bindtap="goLogin">前往登录页</button>
+      <button class="btn" bindtap="goWebView">前往WebView</button>
     </view>
   </view>
 </template>
 
 <script>
 import { createPage } from '@mpxjs/core'
-import { navigateTo } from '@/utils'
+import { navigateTo, reLaunch } from '@/utils'
 
 createPage({
   methods: {
@@ -22,7 +18,10 @@ createPage({
       navigateTo('demo-list')
     },
     goLogin() {
-      navigateTo('login')
+      reLaunch('login')
+    },
+    goWebView() {
+      navigateTo('web-view', { url: 'https://www.baidu.com' })
     }
   }
 })
@@ -30,17 +29,11 @@ createPage({
 
 <script name="json">
 module.exports = {
-  navigationBarTitleText: '首页/Home',
-  navigationStyle: 'custom'
+  navigationBarTitleText: '首页'
 }
 </script>
 
 <style lang="scss" scoped>
-.page {
-  min-height: 100vh;
-  background: #f7f8fa;
-}
-
 .section {
   margin: 20rpx;
   padding: 24rpx;
@@ -60,7 +53,12 @@ module.exports = {
   font-size: 26rpx;
 }
 
-.mt-20rpx {
+.btn {
   margin-top: 20rpx;
+}
+
+.primary {
+  background: #1677ff;
+  color: #fff;
 }
 </style>

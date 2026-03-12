@@ -15,8 +15,10 @@ module.exports = {
     }
   },
   window: {
-    navigationBarTextStyle: 'black',
-    navigationBarBackgroundColor: '#ffffff'
+    'navigationBarTextStyle@wx': 'black',
+    'navigationBarBackgroundColor@wx': '#ffffff',
+    'defaultTitle@ali': 'Mpx App',
+    'titleBarColor@ali': '#ffffff'
   },
   tabBar: {
     custom: true,
@@ -45,25 +47,8 @@ module.exports = {
     'mpx-copy': './components/mpx-copy/index',
     'mpx-main-title': './components/mpx-main-title/index',
     'mpx-view-image': './components/mpx-view-image/index',
-    'van-checkbox': '@vant/weapp/checkbox/index',
-    'van-checkbox-group': '@vant/weapp/checkbox-group/index',
-    'van-field': '@vant/weapp/field/index',
-    'van-button': '@vant/weapp/button/index',
-    'van-nav-bar': '@vant/weapp/nav-bar/index',
-    'van-row': '@vant/weapp/row/index',
-    'van-col': '@vant/weapp/col/index',
-    'van-cell': '@vant/weapp/cell/index',
-    'van-cell-group': '@vant/weapp/cell-group/index',
-    'van-icon': '@vant/weapp/icon/index',
-    'van-radio': '@vant/weapp/radio/index',
-    'van-image': '@vant/weapp/image/index',
-    'van-grid': '@vant/weapp/grid/index',
-    'van-grid-item': '@vant/weapp/grid-item/index',
-    'van-search': '@vant/weapp/search/index',
-    'van-popup': '@vant/weapp/popup/index',
-    'van-calendar': '@vant/weapp/calendar/index',
-    'van-dialog': '@vant/weapp/dialog/index',
-    'van-uploader': '@vant/weapp/uploader/index',
-    'van-skeleton': '@vant/weapp/skeleton/index'
+    'cube-tab-bar': '@mpxjs/mpx-cube-ui/lib/components/tab-bar/index.mpx',
+    'cube-tab': '@mpxjs/mpx-cube-ui/lib/components/tab-bar/tab.mpx',
+    'cube-icon': '@mpxjs/mpx-cube-ui/lib/components/icon/index.mpx',
   }
 }

@@ -1,7 +1,7 @@
 @use './var.scss' as *;
 
 page {
-  background-color: #F4F5F7;
+  background-color: #f4f5f7;
 
   .bg-primary {
     background-color: $primary-color;
@@ -15,22 +15,6 @@ page {
     background: $gradient-primary;
   }
 
-  .mpx-badge {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    width: 40rpx;
-    height: 30rpx;
-    background: #ee0a24;
-    color: #fff;
-    font-size: 20rpx;
-    border-radius: 50rpx;
-    text-align: center;
-    box-sizing: border-box;
-    z-index: 2;
-    font-weight: normal;
-  }
-
   .main-title {
     font-size: 30rpx;
     color: $default-text-color;
@@ -38,22 +22,5 @@ page {
     line-height: 26rpx;
     border-left: 4rpx solid $primary-color;
     padding-left: 10rpx;
-  }
-
-  --button-primary-background-color: #{$primary-color};
-  --button-primary-border-color: #{$primary-color};
-  --checkbox-checked-icon-color: #{$primary-color};
-  --checkbox-label-color: #{$default-text-color};
-
-  .van-dialog__header {
-    padding-top: 0;
-  }
-
-  .van-grid-item__content {
-    padding: 16rpx !important;
-  }
-
-  .van-cell:after {
-    border-bottom: 2rpx solid #d3d2d2;
   }
 }

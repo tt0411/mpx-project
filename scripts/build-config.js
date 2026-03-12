@@ -8,14 +8,14 @@ const path = require('path')
 
 const WX_CONFIG_MAP = {
   test: {
-    appId: 'wx-template-test-appid',
+    appId: 'wx43ed82bf04e8a3b7',
     baseURL: 'https://api-test.example.com',
     projectName: 'mpx-template-wx-test',
     env: 'test',
     envName: 'WeChat Test Environment'
   },
   prod: {
-    appId: 'wx-template-prod-appid',
+    appId: 'wx43ed82bf04e8a3b7',
     baseURL: 'https://api.example.com',
     projectName: 'mpx-template-wx-prod',
     env: 'prod',
@@ -25,14 +25,14 @@ const WX_CONFIG_MAP = {
 
 const ALI_CONFIG_MAP = {
   test: {
-    appId: 'ali-template-test-appid',
+    appId: '2019080466070862',
     baseURL: 'https://api-test.example.com',
     projectName: 'mpx-template-ali-test',
     env: 'test',
     envName: 'Alipay Test Environment'
   },
   prod: {
-    appId: 'ali-template-prod-appid',
+    appId: '2019080466070862',
     baseURL: 'https://api.example.com',
     projectName: 'mpx-template-ali-prod',
     env: 'prod',

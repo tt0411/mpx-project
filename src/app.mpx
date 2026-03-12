@@ -3,6 +3,7 @@ import mpx, { createApp } from '@mpxjs/core'
 import { createPinia } from '@mpxjs/pinia'
 import apiProxy from '@mpxjs/api-proxy'
 import mpxFetch from '@mpxjs/fetch'
+import "./utils/nav.js"
 
 mpx.use(mpxFetch)
 mpx.use(apiProxy, { usePromise: false })

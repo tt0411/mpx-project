@@ -1,14 +1,13 @@
 <template>
   <view class="page">
-    <van-nav-bar title="我的/Profile" />
     <view class="section">
       <view class="row"><text class="label">User ID</text><text>{{ userInfo.id || '--' }}</text></view>
       <view class="row"><text class="label">Name</text><text>{{ userInfo.name || '--' }}</text></view>
       <view class="row"><text class="label">Token</text><text>{{ token ? '已登录' : '未登录' }}</text></view>
     </view>
     <view class="section">
-      <van-button type="primary" block bindtap="goLogin">登录/切换账号</van-button>
-      <van-button custom-class="mt-20rpx" block bindtap="logout">退出登录</van-button>
+      <button class="btn primary" bindtap="goLogin">登录/切换账号</button>
+      <button class="btn" bindtap="logout">退出登录</button>
     </view>
   </view>
 </template>
@@ -25,9 +24,7 @@ createPage({
   },
   methods: {
     ...mapActions(useUserStore, ['clearSession']),
-    goLogin() {
-      navigateTo('login')
-    },
+    goLogin() { navigateTo('login') },
     logout() {
       this.clearSession()
       switchTab('home')
@@ -38,8 +35,7 @@ createPage({
 
 <script name="json">
 module.exports = {
-  navigationBarTitleText: '我的/Profile',
-  navigationStyle: 'custom'
+  navigationBarTitleText: '我的'
 }
 </script>
 
@@ -47,6 +43,15 @@ module.exports = {
 .page {
   min-height: 100vh;
   background: #f7f8fa;
+}
+
+.nav {
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 600;
+  background: #fff;
 }
 
 .section {
@@ -68,7 +73,12 @@ module.exports = {
   color: #888;
 }
 
-.mt-20rpx {
+.btn {
   margin-top: 20rpx;
+}
+
+.primary {
+  background: #1677ff;
+  color: #fff;
 }
 </style>

@@ -6,18 +6,21 @@ export const useCommonStore = defineStore('common', {
     tabBarList: [
       {
         pagePath: '/pages/tabs/home/index',
-        text: '首页',
-        shortText: 'H'
+        value: 0,
+        label: '首页',
+        icon: 'home',
       },
       {
         pagePath: '/pages/tabs/discover/index',
-        text: '发现',
-        shortText: 'D'
+        value: 1,
+        label: '发现',
+        icon: 'like',
       },
       {
         pagePath: '/pages/tabs/profile/index',
-        text: '我的',
-        shortText: 'P'
+        value: 2,
+        label: '我的',
+        icon: 'user',
       }
     ]
   }),

@@ -1,14 +1,13 @@
 <template>
   <view class="page">
-    <van-nav-bar title="发现/Discover" />
     <view class="section">
       <view class="title">示例接口数据</view>
-      <view wx:if="{{loading}}" class="desc">加载中...</view>
-      <view wx:elif="{{list.length === 0}}" class="desc">暂无数据（可接入真实接口）</view>
+      <view wx:if="{{ loading }}" class="desc">加载中...</view>
+      <view wx:elif="{{ list.length === 0 }}" class="desc">暂无数据（可接入真实接口）</view>
       <view wx:else>
-        <view wx:for="{{list}}" wx:key="id" class="card" bindtap="goDetail" data-id="{{item.id}}">
-          <view class="card-title">{{item.title}}</view>
-          <view class="card-desc">{{item.summary}}</view>
+        <view wx:for="{{ list }}" wx:key="id" class="card" bindtap="goDetail" data-id="{{ item.id }}">
+          <view class="card-title">{{ item.title }}</view>
+          <view class="card-desc">{{ item.summary }}</view>
         </view>
       </view>
     </view>
@@ -21,21 +20,14 @@ import { getDemoList } from '@/api'
 import { navigateTo } from '@/utils'
 
 createPage({
-  data: {
-    loading: false,
-    list: []
-  },
-  onShow() {
-    this.fetchList()
-  },
+  data: { loading: false, list: [] },
+  onShow() { this.fetchList() },
   methods: {
     async fetchList() {
       this.loading = true
       try {
         const { code, data } = await getDemoList({ showLoading: false })
-        if (code === 0) {
-          this.list = data || []
-        }
+        if (code === 0) this.list = data || []
       } finally {
         this.loading = false
       }
@@ -49,8 +41,7 @@ createPage({
 
 <script name="json">
 module.exports = {
-  navigationBarTitleText: '发现/Discover',
-  navigationStyle: 'custom'
+  navigationBarTitleText: '发现'
 }
 </script>
 
@@ -58,6 +49,15 @@ module.exports = {
 .page {
   min-height: 100vh;
   background: #f7f8fa;
+}
+
+.nav {
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 600;
+  background: #fff;
 }
 
 .section {

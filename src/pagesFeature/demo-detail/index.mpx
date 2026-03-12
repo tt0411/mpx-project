@@ -1,6 +1,6 @@
 <template>
   <view class="page">
-    <van-nav-bar title="Demo Detail" left-arrow bind:click-left="back" />
+    <view class="nav"><text class="back" bindtap="back">←</text>Demo Detail</view>
     <view class="section">
       <view class="label">ID</view>
       <view class="value">{{ detail.id }}</view>
@@ -19,11 +19,7 @@ import { navigateBack } from '@/utils'
 
 createPage({
   data: {
-    detail: {
-      id: '--',
-      title: '--',
-      content: '--'
-    }
+    detail: { id: '--', title: '--', content: '--' }
   },
   async onLoad(query) {
     const id = Number(query.id)
@@ -37,43 +33,22 @@ createPage({
     }
   },
   methods: {
-    back() {
-      navigateBack()
-    }
+    back() { navigateBack() }
   }
 })
 </script>
 
 <script name="json">
 module.exports = {
-  navigationBarTitleText: 'Demo Detail',
-  navigationStyle: 'custom'
+  navigationBarTitleText: 'Demo Detail'
 }
 </script>
 
 <style lang="scss" scoped>
-.page {
-  min-height: 100vh;
-  background: #f7f8fa;
-}
-
-.section {
-  margin: 20rpx;
-  padding: 24rpx;
-  background: #fff;
-  border-radius: 16rpx;
-}
-
-.label {
-  margin-top: 16rpx;
-  color: #999;
-  font-size: 24rpx;
-}
-
-.value {
-  margin-top: 8rpx;
-  color: #222;
-  font-size: 28rpx;
-  word-break: break-all;
-}
+.page { min-height: 100vh; background: #f7f8fa; }
+.nav { position: relative; height: 88rpx; line-height: 88rpx; text-align: center; font-size: 32rpx; font-weight: 600; background: #fff; }
+.back { position: absolute; left: 24rpx; top: 0; }
+.section { margin: 20rpx; padding: 24rpx; background: #fff; border-radius: 16rpx; }
+.label { margin-top: 16rpx; color: #999; font-size: 24rpx; }
+.value { margin-top: 8rpx; color: #222; font-size: 28rpx; word-break: break-all; }
 </style>

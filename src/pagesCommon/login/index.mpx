@@ -1,14 +1,9 @@
 <template>
   <view class="page">
-    <van-nav-bar title="登录/Login" />
     <view class="form-wrap">
-      <van-field wx:model="{{ form.username }}" wx:model-value-path="[]" placeholder="账号 username" clearable />
-      <view class="mt-20rpx">
-        <van-field wx:model="{{ form.password }}" wx:model-value-path="[]" type="password" placeholder="密码 password" clearable />
-      </view>
-      <view class="mt-40rpx">
-        <van-button type="primary" block round loading="{{ loading }}" bindtap="submit">登录</van-button>
-      </view>
+      <input class="input" value="{{form.username}}" placeholder="账号 username" bindinput="onUsernameInput" />
+      <input class="input mt-20rpx" password value="{{form.password}}" placeholder="密码 password" bindinput="onPasswordInput" />
+      <button class="btn primary mt-40rpx" loading="{{loading}}" bindtap="submit">登录</button>
     </view>
   </view>
 </template>
@@ -30,6 +25,12 @@ createPage({
   },
   methods: {
     ...mapActions(useUserStore, ['setSession']),
+    onUsernameInput(e) {
+      this.form.username = e.detail.value
+    },
+    onPasswordInput(e) {
+      this.form.password = e.detail.value
+    },
     async submit() {
       if (this.loading) return
       if (!this.form.username || !this.form.password) {
@@ -38,9 +39,7 @@ createPage({
       }
       this.loading = true
       try {
-        const { code, data, message } = await login({
-          data: { username: this.form.username, password: this.form.password }
-        })
+        const { code, data, message } = await login({ data: this.form })
         if (code === 0) {
           this.setSession(data)
           switchTab('home')
@@ -57,29 +56,17 @@ createPage({
 
 <script name="json">
 module.exports = {
-  navigationBarTitleText: '登录/Login',
-  navigationStyle: 'custom'
+  navigationBarTitleText: '登录'
 }
 </script>
 
 <style lang="scss" scoped>
-.page {
-  min-height: 100vh;
-  background: #f7f8fa;
-}
-
-.form-wrap {
-  margin: 20rpx;
-  padding: 24rpx;
-  background: #fff;
-  border-radius: 16rpx;
-}
-
-.mt-20rpx {
-  margin-top: 20rpx;
-}
-
-.mt-40rpx {
-  margin-top: 40rpx;
-}
+.page { min-height: 100vh; background: #f7f8fa; }
+.nav { height: 88rpx; line-height: 88rpx; text-align: center; font-size: 32rpx; font-weight: 600; background: #fff; }
+.form-wrap { margin: 20rpx; padding: 24rpx; background: #fff; border-radius: 16rpx; }
+.input { height: 84rpx; padding: 0 20rpx; border: 1px solid #e7e8ea; border-radius: 12rpx; background: #fff; }
+.btn { margin-top: 20rpx; }
+.primary { background: #1677ff; color: #fff; }
+.mt-20rpx { margin-top: 20rpx; }
+.mt-40rpx { margin-top: 40rpx; }
 </style>
