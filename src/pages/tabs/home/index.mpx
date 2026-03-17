@@ -4,6 +4,7 @@
       <button class="btn primary" bindtap="goDemoList">查看示例列表</button>
       <button class="btn" bindtap="goLogin">前往登录页</button>
       <button class="btn" bindtap="goWebView">前往WebView</button>
+      <t-button theme="primary">按钮</t-button>
     </view>
   </view>
 </template>

@@ -1,7 +1,9 @@
 module.exports = {
   pages: [
     './pages/tabs/home/index',
+    './pages/tabs/app/index',
     './pages/tabs/discover/index',
+    './pages/tabs/chat/index',
     './pages/tabs/profile/index'
   ],
   packages: [
@@ -31,8 +33,16 @@ module.exports = {
         text: '首页'
       },
       {
+        pagePath: 'pages/tabs/app/index',
+        text: '软件'
+      },
+      {
         pagePath: 'pages/tabs/discover/index',
         text: '发现'
+      },
+      {
+        pagePath: 'pages/tabs/chat/index',
+        text: '聊天'
       },
       {
         pagePath: 'pages/tabs/profile/index',
@@ -50,5 +60,10 @@ module.exports = {
     'cube-tab-bar': '@mpxjs/mpx-cube-ui/lib/components/tab-bar/index.mpx',
     'cube-tab': '@mpxjs/mpx-cube-ui/lib/components/tab-bar/tab.mpx',
     'cube-icon': '@mpxjs/mpx-cube-ui/lib/components/icon/index.mpx',
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-icon": "tdesign-miniprogram/icon/icon",
+    "t-tab-bar": "tdesign-miniprogram/tab-bar/tab-bar",
+    "t-tab-bar-item": "tdesign-miniprogram/tab-bar-item/tab-bar-item",
+     "t-upload": "tdesign-miniprogram/upload/upload",
   }
 }

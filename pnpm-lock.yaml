@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  postcss-import: 15.0.1
+
 dependencies:
   '@mpxjs/api-proxy':
     specifier: ^2.9.0
@@ -35,6 +38,9 @@ dependencies:
   pinia:
     specifier: ^2.0.14
     version: 2.3.1(vue@2.7.16)
+  tdesign-miniprogram:
+    specifier: ^1.12.3
+    version: 1.12.3
   vue:
     specifier: ^2.7.0
     version: 2.7.16
@@ -94,6 +100,9 @@ devDependencies:
   autoprefixer:
     specifier: ^10.2.4
     version: 10.4.22(postcss@8.5.6)
+  baseline-browser-mapping:
+    specifier: latest
+    version: 2.10.0
   cross-env:
     specifier: ^7.0.3
     version: 7.0.3
@@ -2067,7 +2076,7 @@ packages:
       mime: 2.6.0
       object-assign: 4.1.1
       postcss: 8.5.6
-      postcss-import: 16.1.1(postcss@8.5.6)
+      postcss-import: 15.0.1(postcss@8.5.6)
       postcss-less: 6.0.0(postcss@8.5.6)
       postcss-load-config: 3.1.4(postcss@8.5.6)
       postcss-modules-extract-imports: 3.1.0(postcss@8.5.6)
@@ -3359,8 +3368,9 @@ packages:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
     dev: true
 
-  /baseline-browser-mapping@2.8.27:
-    resolution: {integrity: sha512-2CXFpkjVnY2FT+B6GrSYxzYf65BJWEqz5tIRHCvNsZZ2F3CmsCB37h8SpYgKG7y9C4YAeTipIPWG7EmFmhAeXA==}
+  /baseline-browser-mapping@2.10.0:
+    resolution: {integrity: sha512-lIyg0szRfYbiy67j9KN8IyeD7q7hcmqnJ1ddWmNt19ItGpNN64mnllmxUNFIOdOm6by97jlL6wfpTTJrmnjWAA==}
+    engines: {node: '>=6.0.0'}
     hasBin: true
     dev: true
 
@@ -3449,7 +3459,7 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      baseline-browser-mapping: 2.8.27
+      baseline-browser-mapping: 2.10.0
       caniuse-lite: 1.0.30001754
       electron-to-chromium: 1.5.250
       node-releases: 2.0.27
@@ -6323,9 +6333,9 @@ packages:
       postcss: 8.5.6
     dev: true
 
-  /postcss-import@16.1.1(postcss@8.5.6):
-    resolution: {integrity: sha512-2xVS1NCZAfjtVdvXiyegxzJ447GyqCeEI5V7ApgQVOWnros1p5lGNovJNapwPpMombyFBfqDwt7AD3n2l0KOfQ==}
-    engines: {node: '>=18.0.0'}
+  /postcss-import@15.0.1(postcss@8.5.6):
+    resolution: {integrity: sha512-UGlvk8EgT7Gm/Ndf9xZHnzr8xm8P54N8CBWLtcY5alP+YxlEge/Rv78etQyevZs3qWTE9If13+Bo6zATBrPOpA==}
+    engines: {node: '>=14.0.0'}
     peerDependencies:
       postcss: ^8.0.0
     dependencies:
@@ -7589,6 +7599,10 @@ packages:
     resolution: {integrity: sha512-g9ljZiwki/LfxmQADO3dEY1CbpmXT5Hm2fJ+QaGKwSXUylMybePR7/67YW7jOrrvjEgL1Fmz5kzyAjWVWLlucg==}
     engines: {node: '>=6'}
     dev: true
+
+  /tdesign-miniprogram@1.12.3:
+    resolution: {integrity: sha512-F4nMv/ph3yyq9bO4RrJuB9x9VWyKIN6lV1HqFaV4AsR0cpDoBYtGYLPOFejvj0MYDSntSHLMVe1nm0fqsXUaUQ==}
+    dev: false
 
   /terser-webpack-plugin@5.3.14(webpack@5.102.1):
     resolution: {integrity: sha512-vkZjpUjb6OMS7dhV+tILUW6BhpDR7P2L/aQSAv+Uwk+m8KATX9EccViHTJR2qDtACKPIYndLGCyl3FMo+r2LMw==}

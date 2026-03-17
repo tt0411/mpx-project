@@ -2,31 +2,43 @@ import { defineStore } from '@mpxjs/pinia'
 
 export const useCommonStore = defineStore('common', {
   state: () => ({
-    activeTabbarIndex: 0,
+    activeTabbarValue: '1',
     tabBarList: [
       {
         pagePath: '/pages/tabs/home/index',
-        value: 0,
+        value: '1',
         label: '首页',
         icon: 'home',
       },
       {
+        pagePath: '/pages/tabs/app/index',
+        value: '2',
+        label: '软件',
+        icon: 'app',
+      },
+      {
         pagePath: '/pages/tabs/discover/index',
-        value: 1,
+        value: '3',
         label: '发现',
-        icon: 'like',
+        icon: 'add-circle',
+      },
+      {
+        pagePath: '/pages/tabs/chat/index',
+        value: '4',
+        label: '聊天',
+        icon: 'chat',
       },
       {
         pagePath: '/pages/tabs/profile/index',
-        value: 2,
+        value: '5',
         label: '我的',
         icon: 'user',
       }
     ]
   }),
   actions: {
-    setActiveTabbarIndex(index) {
-      this.activeTabbarIndex = index
+    setActiveTabbarValue(value) {
+      this.activeTabbarValue = value
     }
   }
 })

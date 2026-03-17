@@ -1,14 +1,12 @@
 <template>
   <view class="custom-tabbar">
-    <cube-tab-bar wx:model="{{ localTabIndex }}" wx:model-prop="value" tabs="{{ tabBarList }}" bindchange="onChange"
-      custom-content>
-      <cube-tab class="cube-tab" wx:for="{{ tabBarList }}" wx:key="index" label="{{ item.label }}"
-        value="{{ item.value }}" custom-content custom-icon>
-        <cube-icon size="{{ 20 }}" color="{{ activeTabbarIndex === index ? '#1677ff' : '#666666' }}"
-          type="{{ item.icon }}" />
-        <view class="{{ activeTabbarIndex === index ? 'active' : '' }}">{{ item.label }}</view>
-      </cube-tab>
-    </cube-tab-bar>
+    <t-tab-bar t-class="t-tab-bar" value="{{ localTabVal }}" shape="round" theme="tag" fixed="{{ false }}"
+      split="{{ false }}" bindchange="onChange">
+      <t-tab-bar-item wx:for="{{ tabBarList }}" wx:key="value" value="{{ item.value }}" icon="{{ item.icon }}">
+        {{ item.label }}
+      </t-tab-bar-item>
+    </t-tab-bar>
+
   </view>
 </template>
 
@@ -20,27 +18,27 @@ import { useCommonStore } from '@/store'
 createComponent({
   data() {
     return {
-      localTabIndex: 0
+      localTabVal: '1',
     }
   },
   computed: {
-    ...mapState(useCommonStore, ['activeTabbarIndex', 'tabBarList'])
+    ...mapState(useCommonStore, ['activeTabbarValue', 'tabBarList'])
   },
   watch: {
-    activeTabbarIndex(newVal) {
-      this.localTabIndex = newVal
+    activeTabbarValue(newVal) {
+      this.localTabVal = newVal
     }
   },
   created() {
-    this.localTabIndex = this.activeTabbarIndex
+    this.localTabVal = this.activeTabbarValue
   },
   methods: {
-    ...mapActions(useCommonStore, ['setActiveTabbarIndex']),
+    ...mapActions(useCommonStore, ['setActiveTabbarValue']),
     onChange(e) {
-      const index = Number(e.detail.value)
-      this.localTabIndex = index
-      this.setActiveTabbarIndex(index)
-      mpx.switchTab({ url: this.tabBarList[index].pagePath })
+      const value = e.detail.value
+      this.localTabVal = value
+      this.setActiveTabbarValue(value)
+      mpx.switchTab({ url: this.tabBarList.find(item => item.value === value).pagePath })
     }
   }
 })
@@ -48,13 +46,7 @@ createComponent({
 
 <style lang="scss" scoped>
 .custom-tabbar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 999;
-  background: #fff;
-  border-top: 1px solid #eee;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .cube-tab {
