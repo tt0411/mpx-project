@@ -1,0 +1,244 @@
+<template>
+  <view class="mpx-list-container" style="height: {{ height }}">
+    <!-- 自定义下拉刷新头部 (支付宝专用模拟) -->
+    <view class="mpx-refresh-header"
+      style="height: {{ refreshHeaderHeight }}px; opacity: {{ pullDistance > 0 ? 1 : 0 }}; transition: {{ isTouching ? 'none' : 'all 0.3s' }}">
+      <view class="refresh-content" style="margin-top: {{ pullDistance > 50 ? (pullDistance - 50) : 0 }}px">
+        <view class="refresh-spinner" wx:if="{{ pullStatus === 2 }}"></view>
+        <text class="refresh-text">{{ refreshTips }}</text>
+      </view>
+    </view>
+
+    <!-- 支付宝适配版 ScrollView -->
+    <scroll-view class="mpx-list-scroll" scroll-y="{{ scrollY }}" trap-scroll="{{ trapScroll }}"
+      enable-back-to-top="{{ enableBackToTop }}" lower-threshold="{{ lowerThreshold }}"
+      onScrollToLower="handleScrollToLower" onScroll="handleScroll" onTouchStart="handleTouchStart"
+      onTouchMove="handleTouchMove" onTouchEnd="handleTouchEnd"
+      style="transform: translateY({{ pullDistance }}px); transition: {{ isTouching ? 'none' : 'transform 0.3s' }}">
+      <view class="mpx-list-content">
+        <slot></slot>
+      </view>
+
+      <!-- 底部加载状态 -->
+      <view class="mpx-list-footer">
+        <block wx:if="{{ loading && !finished }}">
+          <view class="loading-status">
+            <view class="loading-icon"></view>
+            <text>{{ loadingText }}</text>
+          </view>
+        </block>
+        <block wx:elif="{{ finished }}">
+          <text class="finished-text">{{ finishedText }}</text>
+        </block>
+        <block wx:elif="{{ error }}">
+          <view class="error-status" bindtap="retryLoad">
+            <text>{{ errorText }}</text>
+          </view>
+        </block>
+      </view>
+    </scroll-view>
+  </view>
+</template>
+
+<script>
+import { createComponent } from '@mpxjs/core'
+
+createComponent({
+  properties: {
+    loading: Boolean,
+    finished: Boolean,
+    error: Boolean,
+    height: { type: String, value: '100vh' },
+    lowerThreshold: { type: Number, value: 50 },
+    loadingText: { type: String, value: '加载中...' },
+    finishedText: { type: String, value: '没有更多了' },
+    errorText: { type: String, value: '加载失败，点击重试' },
+    // 支付宝特有属性
+    trapScroll: { type: Boolean, value: true },
+    enableBackToTop: { type: Boolean, value: true },
+    // 控制刷新状态（来自父组件）
+    refresherTriggered: {
+      type: Boolean,
+      value: false,
+      observer(newVal) {
+        if (!newVal) {
+          this.resetPull()
+        } else {
+          this.pullStatus = 2
+          this.pullDistance = 60 // 刷新中固定的悬停高度
+          this.refreshHeaderHeight = 60
+        }
+      }
+    }
+  },
+  data: {
+    scrollY: true,
+    pullDistance: 0,
+    refreshHeaderHeight: 0,
+    pullStatus: 0, // 0:静止 1:下拉中 2:刷新中
+    isTouching: false,
+    scrollTop: 0
+  },
+  computed: {
+    refreshTips() {
+      if (this.pullStatus === 2) return '正在刷新...'
+      return this.pullDistance > 70 ? '松开立即刷新' : '继续下拉刷新'
+    }
+  },
+  methods: {
+    handleScroll(e) {
+      this.scrollTop = e.detail.scrollTop
+    },
+    handleTouchStart(e) {
+      this.startY = e.touches[0].clientY
+      // 记录开始触摸时的滚动位置，阈值放宽到 10
+      if (this.scrollTop <= 10 && !this.loading && this.pullStatus === 0) {
+        this.isTouching = true
+        this.startScrollTop = this.scrollTop
+      }
+    },
+    handleTouchMove(e) {
+      if (!this.isTouching) return
+      const currY = e.touches[0].clientY
+      const diff = currY - this.startY
+
+      // 只要满足下拉趋势且初始在顶部附近，就接管下拉逻辑
+      if (diff > 0 && (this.startScrollTop <= 10 || this.pullDistance > 0)) {
+        // 调整阻尼感，前期更灵敏
+        this.pullDistance = Math.pow(diff, 0.9)
+        this.refreshHeaderHeight = this.pullDistance
+        this.pullStatus = 1
+        // 锁定 scroll-view 滚动，防止真机抖动
+        if (this.scrollY) {
+          this.scrollY = false
+        }
+      } else if (diff < 0 && this.pullDistance <= 0) {
+        // 向上滑动且未在下拉状态，释放控制权
+        this.isTouching = false
+        this.scrollY = true
+      }
+    },
+    handleTouchEnd() {
+      if (!this.isTouching) return
+      this.isTouching = false
+      this.scrollY = true // 恢复滚动
+
+      if (this.pullDistance > 70) {
+        this.pullStatus = 2
+        this.pullDistance = 60
+        this.refreshHeaderHeight = 60
+        this.triggerEvent('on-refresh')
+      } else {
+        this.resetPull()
+      }
+    },
+    resetPull() {
+      this.pullDistance = 0
+      this.refreshHeaderHeight = 0
+      this.pullStatus = 0
+      this.scrollY = true
+    },
+    handleScrollToLower() {
+      if (this.loading || this.finished || this.error) return
+      this.triggerEvent('on-load')
+    },
+    retryLoad() {
+      this.triggerEvent('on-load')
+    }
+  }
+})
+</script>
+
+<style>
+.mpx-list-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  background-color: transparent;
+}
+
+.mpx-refresh-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.refresh-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: #969799;
+  height: 60px;
+  /* 固定高，内容居中 */
+}
+
+.refresh-spinner {
+  width: 32rpx;
+  height: 32rpx;
+  border: 3rpx solid #c8c9cc;
+  border-top-color: #1989fa;
+  border-radius: 50%;
+  margin-right: 16rpx;
+  animation: mpx-spin 0.8s linear infinite;
+}
+
+.mpx-list-scroll {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+.mpx-list-content {
+  min-height: 100.1%;
+  /* 保证即使内容少也能有微弱滚动感，利于手势捕获 */
+}
+
+.mpx-list-footer {
+  padding: 30rpx 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #969799;
+  font-size: 24rpx;
+}
+
+.loading-status {
+  display: flex;
+  align-items: center;
+}
+
+.loading-icon {
+  width: 30rpx;
+  height: 30rpx;
+  border: 2rpx solid #ddd;
+  border-top-color: #999;
+  border-radius: 50%;
+  margin-right: 12rpx;
+  animation: mpx-spin 0.8s linear infinite;
+}
+
+@keyframes mpx-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>
+
+<script type="application/json">
+  {
+    "component": true
+  }
+</script>

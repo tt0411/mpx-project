@@ -1,9 +1,14 @@
 <template>
   <view class="page">
     <view class="section">
+      <mpx-uploader value="{{ fileList }}" max-count="1" accept="video" multiple="{{ true }}" preview-size="180rpx"
+        image-fit="cover" enable-compress="{{ true }}" compress-quality="80" enable-watermark="{{ true }}"
+        watermark-text="e帮手" bind:before-read="beforeRead" bind:after-read="afterRead" bind:before-delete="beforeDelete"
+        bind:delete="onDelete" bind:oversize="onOversize" bind:change="onChange" />
       <button class="btn primary" bindtap="goDemoList">查看示例列表</button>
       <button class="btn" bindtap="goLogin">前往登录页</button>
       <button class="btn" bindtap="goWebView">前往WebView</button>
+      <button class="btn" bindtap="goListDemo">查看列表组件</button>
     </view>
   </view>
 </template>
@@ -13,6 +18,9 @@ import { createPage } from '@mpxjs/core'
 import { navigateTo, reLaunch } from '@/utils'
 
 createPage({
+  data: {
+    fileList: []
+  },
   methods: {
     goDemoList() {
       navigateTo('demo-list')
@@ -22,6 +30,30 @@ createPage({
     },
     goWebView() {
       navigateTo('web-view', { url: 'https://www.baidu.com' })
+    },
+    goListDemo() {
+      navigateTo('list-demo')
+    },
+    beforeRead(e) {
+      console.log('文件读取前', e.detail)
+      // 可以返回 false 阻止文件读取
+    },
+    afterRead(e) {
+      console.log('文件读取后', e.detail)
+    },
+    beforeDelete(e) {
+      console.log('删除前', e.detail)
+    },
+    onDelete(e) {
+      console.log('删除后', e.detail)
+    },
+    onOversize(e) {
+      console.log('文件超出大小', e.detail)
+    },
+    onChange(e) {
+      const { files } = e.detail
+      this.fileList = files
+      console.log('上传完成', files)
     }
   }
 })
@@ -29,7 +61,10 @@ createPage({
 
 <script name="json">
 module.exports = {
-  navigationBarTitleText: '首页'
+  navigationBarTitleText: '首页',
+  usingComponents: {
+    'mpx-uploader': '@/components/mpx-uploader'
+  }
 }
 </script>
 

@@ -1,0 +1,723 @@
+<template>
+    <view class="mpx-uploader">
+        <view class="uploader-wrapper">
+            <view class="uploader-preview" wx:for="{{ fileList }}" wx:key="index"
+                wx:style="{{ { width: previewSize, height: previewSize } }}">
+                <image wx:if="{{ item.isImage }}" src="{{ item.url || item.path }}" class="uploader-image"
+                    mode="{{ imageFit }}" bindtap="clickPreview" data-index="{{ index }}" />
+                <video wx:elif="{{ item.isVideo }}" show-center-play-btn="{{ false }}" bindtap="clickPreview"
+                    data-index="{{ index }}" controls="{{ false }}" src="{{ item.url || item.path }}"
+                    class="uploader-video" />
+
+                <view class="uploader-delete" bindtap="deleteFile" data-index="{{ index }}" wx:if="{{ deletable }}">
+                    <icon type="clear" size="14" color="#fff" />
+                </view>
+
+                <view class="uploader-mask" wx:if="{{ item.status === 'uploading' || item.status === 'failed' }}">
+                    <text class="uploader-message">{{ item.message }}</text>
+                </view>
+
+                <view class="uploader-success" wx:if="{{ item.status === 'done' }}">
+                    <icon type="success_no_circle" size="12" color="#fff" />
+                </view>
+            </view>
+
+            <view class="uploader-upload" bindtap="onChooseFile"
+                wx:if="{{ showUpload ? (fileList.length < maxCount) : false }}"
+                wx:style="{{ { width: previewSize, height: previewSize } }}">
+                <view class="uploader-icon">
+                    <!-- 简单加号实现 -->
+                    <view class="plus-v"></view>
+                    <view class="plus-h"></view>
+                </view>
+                <text wx:if="{{ uploadText }}" class="uploader-text">{{ uploadText }}</text>
+            </view>
+        </view>
+
+        <!-- 视频全屏预览 -->
+        <view class="video-preview-mask" wx:if="{{ showVideoPreview }}" catchtap="closeVideoPreview">
+            <video src="{{ previewVideoUrl }}" autoplay controls show-fullscreen-btn="{{ false }}"
+                enable-system-pip="{{ false }}" class="preview-video" catchtap="noop"></video>
+            <view class="close-btn" catchtap="closeVideoPreview">
+                <icon type="cancel" size="30" color="#fff" />
+            </view>
+        </view>
+
+        <!-- 隐藏的canvas,用于水印处理 -->
+        <canvas canvas-id="watermarkCanvas" class="watermark-canvas"
+            wx:style="{{ { width: canvasWidth + 'px', height: canvasHeight + 'px' } }}"></canvas>
+    </view>
+</template>
+
+<script>
+import mpx, { createComponent } from '@mpxjs/core'
+import { uploadFile } from '@/api'
+
+createComponent({
+    properties: {
+        value: { type: Array, value: [] },
+        maxCount: { type: Number, value: 9 },
+        maxSize: { type: Number, value: 10 * 1024 * 1024 }, // 默认10MB
+        accept: { type: String, value: 'image' },
+        disabled: { type: Boolean, value: false },
+        previewSize: { type: String, value: '160rpx' },
+        uploadText: { type: String, value: '' },
+        deletable: { type: Boolean, value: true },
+        showUpload: { type: Boolean, value: true },
+        capture: { type: Array, value: ['album', 'camera'] },
+        compressed: { type: Boolean, value: true },
+        camera: { type: String, value: 'back' },
+        maxDuration: { type: Number, value: 60 },
+        sizeType: { type: Array, value: ['original', 'compressed'] },
+        uploadIcon: { type: String, value: 'plus' },
+        imageFit: { type: String, value: 'scaleDown' },
+        previewImage: { type: Boolean, value: true },
+        previewFullImage: { type: Boolean, value: true },
+        useBeforeRead: { type: Boolean, value: false },
+        multiple: { type: Boolean, value: false },
+
+        // 自定义属性
+        formData: { type: Object, value: {} },
+        name: { type: String, value: 'file' },
+        enableWatermark: { type: Boolean, value: false },
+        watermarkText: { type: String, value: '' },
+        watermarkPosition: { type: String, value: 'bottomRight' },
+        watermarkFontSize: { type: Number, value: 20 },
+        watermarkColor: { type: String, value: 'rgba(255, 255, 255, 0.5)' },
+        enableCompress: { type: Boolean, value: true },
+        compressQuality: { type: Number, value: 80 },
+        compressMaxWidth: { type: Number, value: 1920 },
+        compressMaxHeight: { type: Number, value: 1920 },
+        videoCompressQuality: { type: String, value: 'medium' },
+        maxConcurrent: { type: Number, value: 3 }
+    },
+    data: {
+        fileList: [],
+        canvasWidth: 0,
+        canvasHeight: 0,
+        uploadQueue: [], // 上传队列
+        uploadingCount: 0, // 当前正在上传的数量
+        isSyncing: false, // 是否正在同步（防止循环触发）
+        showVideoPreview: false,
+        previewVideoUrl: ''
+    },
+    attached() {
+        this.syncFileList()
+    },
+    observers: {
+        'value': function (newVal) {
+            if (!this.isSyncing) {
+                this.syncFileList()
+            }
+        }
+    },
+    methods: {
+        syncFileList() {
+            const newValue = this.value || []
+            const hasUploading = this.fileList.some(item =>
+                item && (item.status === 'uploading' || !item.status)
+            )
+
+            const mapItems = (item) => {
+                if (typeof item === 'string') {
+                    return {
+                        url: item,
+                        isImage: this.isImageFile(item),
+                        status: 'done'
+                    }
+                }
+                return {
+                    ...item,
+                    isImage: this.isImageFile(item.url || item.path),
+                    status: item.status || 'done'
+                }
+            }
+
+            if (!hasUploading || this.fileList.length === 0) {
+                this.fileList = newValue.map(mapItems)
+            } else {
+                const uploadingFiles = this.fileList.filter(item =>
+                    item && item.status === 'uploading'
+                )
+                const doneFiles = newValue.map(mapItems)
+                this.fileList = [...uploadingFiles, ...doneFiles]
+            }
+        },
+
+        isImageFile(url) {
+            if (!url) return false
+            const imageExts = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg']
+            return imageExts.some(ext => url.toLowerCase().includes(ext))
+        },
+
+        isVideoFile(url) {
+            if (!url) return false
+            const videoExts = ['.mp4', '.mov', '.avi', '.wmv', '.flv', '.mkv', '.m4v']
+            return videoExts.some(ext => url.toLowerCase().includes(ext))
+        },
+
+        onChooseFile() {
+            if (this.disabled) return
+
+            const remainCount = this.maxCount - this.fileList.length
+            if (remainCount <= 0) return
+
+            if (this.accept === 'video') {
+                mpx.chooseVideo({
+                    sourceType: this.capture,
+                    compressed: this.compressed,
+                    maxDuration: this.maxDuration,
+                    camera: this.camera,
+                    success: (res) => {
+                        const fileItem = {
+                            url: res.tempFilePath || res.apFilePath,
+                            size: res.size,
+                            type: 'video'
+                        }
+                        this.handleFiles([fileItem])
+                    }
+                })
+            } else {
+                // 支付宝的选择图片API
+                mpx.chooseImage({
+                    count: this.multiple ? remainCount : 1,
+                    sizeType: this.sizeType,
+                    sourceType: this.capture,
+                    success: (res) => {
+                        const files = res.apFilePaths ? res.apFilePaths.map((path, index) => ({
+                            url: path,
+                            size: res.tempFiles ? res.tempFiles[index].size : 0,
+                            type: 'image'
+                        })) : res.tempFilePaths.map((path, index) => ({
+                            url: path,
+                            size: res.tempFiles ? res.tempFiles[index].size : 0,
+                            type: 'image'
+                        }))
+                        this.handleFiles(files)
+                    }
+                })
+            }
+        },
+
+        handleFiles(files) {
+            const validFiles = []
+            files.forEach(file => {
+                if (file.size > this.maxSize) {
+                    this.triggerEvent('oversize', { file })
+                    mpx.showToast({ title: '文件大小超过限制', icon: 'none' })
+                } else {
+                    validFiles.push(file)
+                }
+            })
+
+            if (validFiles.length === 0) return
+
+            const startIndex = this.fileList.length
+            const newFiles = validFiles.map((fileItem, index) => {
+                const isImage = this.isImageFile(fileItem.url) || fileItem.type === 'image'
+                const isVideo = this.isVideoFile(fileItem.url) || fileItem.type === 'video'
+                return {
+                    ...fileItem,
+                    isImage,
+                    isVideo,
+                    status: 'uploading',
+                    message: '排队中...'
+                }
+            })
+
+            this.fileList = [...this.fileList, ...newFiles]
+
+            validFiles.forEach((fileItem, index) => {
+                const isImage = this.isImageFile(fileItem.url) || fileItem.type === 'image'
+                const isVideo = this.isVideoFile(fileItem.url) || fileItem.type === 'video'
+                const fileIndex = startIndex + index
+
+                this.uploadQueue.push({
+                    fileItem,
+                    isImage,
+                    isVideo,
+                    fileIndex
+                })
+            })
+
+            this.processUploadQueue()
+        },
+
+        async processUploadQueue() {
+            if (this.uploadingCount >= this.maxConcurrent || this.uploadQueue.length === 0) {
+                return
+            }
+
+            const task = this.uploadQueue.shift()
+            if (!task) return
+
+            const { fileItem, isImage, isVideo, fileIndex } = task
+
+            this.uploadingCount++
+
+            if (this.fileList[fileIndex]) {
+                this.fileList[fileIndex] = {
+                    ...this.fileList[fileIndex],
+                    message: '上传中...'
+                }
+                this.fileList = [...this.fileList]
+            }
+
+            try {
+                let uploadPath = fileItem.url
+
+                if (isImage) {
+                    if (this.enableCompress || (this.enableWatermark && this.watermarkText)) {
+                        if (this.fileList[fileIndex]) {
+                            this.fileList[fileIndex] = {
+                                ...this.fileList[fileIndex],
+                                message: '处理中...'
+                            }
+                            this.fileList = [...this.fileList]
+                        }
+                    }
+
+                    if (this.enableCompress) {
+                        uploadPath = await this.compressImage(fileItem.url)
+                    }
+                    if (this.enableWatermark && this.watermarkText) {
+                        uploadPath = await this.addWatermark(uploadPath)
+                    }
+                }
+
+                if (isVideo && this.enableCompress) {
+                    if (this.fileList[fileIndex]) {
+                        this.fileList[fileIndex] = {
+                            ...this.fileList[fileIndex],
+                            message: '压缩中...'
+                        }
+                        this.fileList = [...this.fileList]
+                    }
+                    uploadPath = await this.compressVideo(fileItem.url)
+                }
+
+                if (this.fileList[fileIndex]) {
+                    this.fileList[fileIndex] = {
+                        ...this.fileList[fileIndex],
+                        message: '上传中...'
+                    }
+                    this.fileList = [...this.fileList]
+                }
+
+                const { data, code } = await uploadFile({
+                    filePath: uploadPath,
+                    name: this.name || 'file',
+                    formData: { fileType: 1, ossBizDirEnum: "MAIN" }
+                })
+
+                if (code === 0) {
+                    if (this.fileList[fileIndex]) {
+                        this.fileList[fileIndex] = {
+                            ...this.fileList[fileIndex],
+                            status: 'done',
+                            message: '',
+                            url: data,
+                        }
+                        this.fileList = [...this.fileList]
+                        this.emitChange()
+                    }
+                } else {
+                    throw new Error('Upload failed')
+                }
+            } catch (err) {
+                if (this.fileList[fileIndex]) {
+                    this.fileList[fileIndex] = {
+                        ...this.fileList[fileIndex],
+                        status: 'failed',
+                        message: '上传失败'
+                    }
+                    this.fileList = [...this.fileList]
+                }
+                console.error('文件上传失败', err)
+            } finally {
+                this.uploadingCount--
+                this.processUploadQueue()
+            }
+        },
+
+        compressImage(imagePath) {
+            return new Promise((resolve, reject) => {
+                mpx.getImageInfo({
+                    src: imagePath,
+                    success: (imageInfo) => {
+                        const { width, height } = imageInfo
+                        let targetWidth = width
+                        let targetHeight = height
+
+                        if (width > this.compressMaxWidth || height > this.compressMaxHeight) {
+                            const widthRatio = this.compressMaxWidth / width
+                            const heightRatio = this.compressMaxHeight / height
+                            const ratio = Math.min(widthRatio, heightRatio)
+                            targetWidth = Math.floor(width * ratio)
+                            targetHeight = Math.floor(height * ratio)
+                        }
+
+                        this.canvasWidth = targetWidth
+                        this.canvasHeight = targetHeight
+
+                        setTimeout(() => {
+                            const ctx = mpx.createCanvasContext('watermarkCanvas', this)
+                            ctx.drawImage(imagePath, 0, 0, targetWidth, targetHeight)
+
+                            ctx.draw(false, () => {
+                                setTimeout(() => {
+                                    mpx.canvasToTempFilePath({
+                                        canvasId: 'watermarkCanvas',
+                                        x: 0,
+                                        y: 0,
+                                        width: targetWidth,
+                                        height: targetHeight,
+                                        destWidth: targetWidth,
+                                        destHeight: targetHeight,
+                                        fileType: 'jpg',
+                                        quality: this.compressQuality / 100,
+                                        success: (res) => {
+                                            resolve(res.tempFilePath || res.apFilePath)
+                                        },
+                                        fail: (err) => {
+                                            console.error('图片压缩失败', err)
+                                            resolve(imagePath)
+                                        }
+                                    }, this)
+                                }, 100)
+                            })
+                        }, 100)
+                    },
+                    fail: (err) => {
+                        console.error('获取图片信息失败', err)
+                        resolve(imagePath)
+                    }
+                })
+            })
+        },
+
+        compressVideo(videoPath) {
+            return new Promise((resolve, reject) => {
+                // 支付宝可能不支持 compressVideo，这里做兼容
+                if (mpx.compressVideo) {
+                    mpx.compressVideo({
+                        src: videoPath,
+                        quality: this.videoCompressQuality,
+                        success: (res) => {
+                            resolve(res.tempFilePath || res.apFilePath)
+                        },
+                        fail: (err) => {
+                            console.error('视频压缩失败', err)
+                            resolve(videoPath)
+                        }
+                    })
+                } else {
+                    resolve(videoPath)
+                }
+            })
+        },
+
+        addWatermark(imagePath) {
+            return new Promise((resolve, reject) => {
+                mpx.getImageInfo({
+                    src: imagePath,
+                    success: (imageInfo) => {
+                        const { width, height } = imageInfo
+                        this.canvasWidth = width
+                        this.canvasHeight = height
+
+                        setTimeout(() => {
+                            const ctx = mpx.createCanvasContext('watermarkCanvas', this)
+                            ctx.drawImage(imagePath, 0, 0, width, height)
+                            ctx.setFontSize(this.watermarkFontSize)
+                            ctx.setFillStyle(this.watermarkColor)
+
+                            const textWidth = ctx.measureText(this.watermarkText).width
+                            const padding = 10
+                            let x, y
+
+                            switch (this.watermarkPosition) {
+                                case 'bottomRight':
+                                    x = width - textWidth - padding
+                                    y = height - padding
+                                    break
+                                case 'bottomLeft':
+                                    x = padding
+                                    y = height - padding
+                                    break
+                                case 'topRight':
+                                    x = width - textWidth - padding
+                                    y = this.watermarkFontSize + padding
+                                    break
+                                case 'topLeft':
+                                    x = padding
+                                    y = this.watermarkFontSize + padding
+                                    break
+                                case 'center':
+                                    x = (width - textWidth) / 2
+                                    y = height / 2
+                                    break
+                                default:
+                                    x = width - textWidth - padding
+                                    y = height - padding
+                            }
+
+                            ctx.fillText(this.watermarkText, x, y)
+
+                            ctx.draw(false, () => {
+                                setTimeout(() => {
+                                    mpx.canvasToTempFilePath({
+                                        canvasId: 'watermarkCanvas',
+                                        width,
+                                        height,
+                                        destWidth: width,
+                                        destHeight: height,
+                                        success: (res) => {
+                                            resolve(res.tempFilePath || res.apFilePath)
+                                        },
+                                        fail: (err) => {
+                                            console.error('水印添加失败', err)
+                                            resolve(imagePath)
+                                        }
+                                    }, this)
+                                }, 100)
+                            })
+                        }, 100)
+                    },
+                    fail: (err) => {
+                        console.error('获取图片信息失败', err)
+                        resolve(imagePath)
+                    }
+                })
+            })
+        },
+
+        deleteFile(event) {
+            const { index } = event.currentTarget.dataset
+            this.fileList.splice(index, 1)
+            this.fileList = [...this.fileList]
+            this.emitChange()
+            this.triggerEvent('delete', { index })
+        },
+
+        clickPreview(event) {
+            const { index } = event.currentTarget.dataset
+            if (!this.fileList[index]) return
+
+            const currentFile = this.fileList[index]
+
+            if (currentFile.isImage && currentFile.url) {
+                const urls = this.fileList
+                    .filter(item => item && item.isImage && item.url)
+                    .map(item => item.url)
+
+                if (urls.length > 0) {
+                    mpx.previewImage({
+                        urls: urls,
+                        current: currentFile.url,
+                    })
+                }
+            } else if (currentFile.isVideo && (currentFile.url || currentFile.path)) {
+                this.previewVideoUrl = currentFile.url || currentFile.path
+                this.showVideoPreview = true
+            }
+            this.triggerEvent('click-preview', { index })
+        },
+
+        closeVideoPreview() {
+            this.showVideoPreview = false
+            this.previewVideoUrl = ''
+        },
+
+        noop() { },
+
+        emitChange() {
+            this.isSyncing = true
+
+            const fileUrls = this.fileList
+                .filter(item => item && item.status === 'done' && item.url)
+                .map(item => item.url)
+
+            this.triggerEvent('change', {
+                files: fileUrls,
+                fileList: this.fileList.filter(item => item)
+            })
+
+            setTimeout(() => {
+                this.isSyncing = false
+            }, 100)
+        }
+    }
+})
+</script>
+
+<script type="application/json">
+{
+    "component": true
+}
+</script>
+
+<style lang="scss" scoped>
+.mpx-uploader {
+    width: 100%;
+    position: relative;
+}
+
+.uploader-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.uploader-preview {
+    position: relative;
+    margin: 0 16rpx 16rpx 0;
+    border-radius: 8rpx;
+    overflow: hidden;
+    background-color: #f7f8fa;
+}
+
+.uploader-image,
+.uploader-video {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.uploader-delete {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 28rpx;
+    height: 28rpx;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 0 0 0 24rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+
+    icon {
+        margin-top: -4rpx;
+        margin-right: -4rpx;
+    }
+}
+
+.uploader-success {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 32rpx;
+    height: 32rpx;
+    background-color: #07c160;
+    border-radius: 24rpx 0 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+
+    icon {
+        margin-bottom: -4rpx;
+        margin-right: -4rpx;
+    }
+}
+
+.uploader-upload {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    margin: 0 16rpx 16rpx 0;
+    background-color: #f7f8fa;
+    border-radius: 8rpx;
+}
+
+.uploader-icon {
+    position: relative;
+    width: 48rpx;
+    height: 48rpx;
+
+    .plus-v {
+        position: absolute;
+        width: 4rpx;
+        height: 48rpx;
+        background-color: #dcdee0;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .plus-h {
+        position: absolute;
+        width: 48rpx;
+        height: 4rpx;
+        background-color: #dcdee0;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+}
+
+.uploader-text {
+    margin-top: 8rpx;
+    color: #969799;
+    font-size: 24rpx;
+}
+
+.uploader-mask {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background-color: rgba(50, 50, 51, 0.8);
+    z-index: 1;
+}
+
+.uploader-message {
+    margin-top: 8rpx;
+    font-size: 24rpx;
+}
+
+.watermark-canvas {
+    position: fixed;
+    top: -9999px;
+    left: -9999px;
+    z-index: -1;
+}
+
+.video-preview-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .preview-video {
+        width: 100%;
+        height: 90%;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 40rpx;
+        right: 40rpx;
+        width: 80rpx;
+        height: 80rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+</style>

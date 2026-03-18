@@ -25,3 +25,12 @@ export function logout() {
     data: true
   })
 }
+
+
+export function uploadFile(parameter = {}) {
+  return Promise.resolve({
+    code: 0,
+    message: 'success',
+    data: 'https://bh-cbs-dev.oss-cn-hangzhou.aliyuncs.com/else/2026/2/26/2026960626475208705.mp4'
+  })
+}

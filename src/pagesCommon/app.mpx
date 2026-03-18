@@ -2,7 +2,8 @@
   {
     "pages": [
       "./login/index",
-      "./web-view/index"
+      "./web-view/index",
+      "./list-demo/index"
     ]
   }
 </script>

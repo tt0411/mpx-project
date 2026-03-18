@@ -2,7 +2,7 @@
   "appid": "wx43ed82bf04e8a3b7",
   "projectname": "mpx-template-wx-test",
   "compileType": "miniprogram",
-  "libVersion": "3.11.3",
+  "libVersion": "3.9.0",
   "packOptions": {
     "ignore": [],
     "include": []

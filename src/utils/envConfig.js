@@ -1,7 +1,7 @@
 export const envConfig = {
-  "appId": "2019080466070862",
+  "appId": "wx43ed82bf04e8a3b7",
   "baseURL": "https://api-test.example.com",
-  "projectName": "mpx-template-ali-test",
+  "projectName": "mpx-template-wx-test",
   "env": "test",
-  "envName": "Alipay Test Environment"
+  "envName": "WeChat Test Environment"
 }
