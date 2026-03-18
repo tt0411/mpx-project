@@ -6,6 +6,7 @@
         watermark-text="e帮手" bind:before-read="beforeRead" bind:after-read="afterRead" bind:before-delete="beforeDelete"
         bind:delete="onDelete" bind:oversize="onOversize" bind:change="onChange" />
       <button class="btn primary" bindtap="goDemoList">查看示例列表</button>
+      <button class="btn info" bindtap="toggleTabbarMode">切换 Tabbar 模式 (当前: {{ tabbarMode === 'floating' ? '悬浮' : '正常' }})</button>
       <button class="btn" bindtap="goLogin">前往登录页</button>
       <button class="btn" bindtap="goWebView">前往WebView</button>
       <button class="btn" bindtap="goListDemo">查看列表组件</button>
@@ -13,15 +14,26 @@
   </view>
 </template>
 
+
 <script>
 import { createPage } from '@mpxjs/core'
+import { mapActions, mapState } from '@mpxjs/pinia'
+import { useCommonStore } from '@/store'
 import { navigateTo, reLaunch } from '@/utils'
 
 createPage({
   data: {
     fileList: []
   },
+  computed: {
+    ...mapState(useCommonStore, ['tabbarMode'])
+  },
   methods: {
+    ...mapActions(useCommonStore, ['setTabbarMode']),
+    toggleTabbarMode() {
+      const mode = this.tabbarMode === 'normal' ? 'floating' : 'normal'
+      this.setTabbarMode(mode)
+    },
     goDemoList() {
       navigateTo('demo-list')
     },
@@ -57,6 +69,7 @@ createPage({
     }
   }
 })
+
 </script>
 
 <script name="json">
@@ -96,4 +109,10 @@ module.exports = {
   background: #1677ff;
   color: #fff;
 }
+
+.info {
+  background: linear-gradient(90deg, #1677ff, #00d2ff);
+  color: #fff;
+}
 </style>
+

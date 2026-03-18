@@ -3,6 +3,7 @@ import { defineStore } from '@mpxjs/pinia'
 export const useCommonStore = defineStore('common', {
   state: () => ({
     activeTabbarIndex: 0,
+    tabbarMode: 'normal', // 'normal' | 'floating'
     tabBarList: [
       {
         pagePath: '/pages/tabs/home/index',
@@ -27,6 +28,10 @@ export const useCommonStore = defineStore('common', {
   actions: {
     setActiveTabbarIndex(index) {
       this.activeTabbarIndex = index
+    },
+    setTabbarMode(mode) {
+      this.tabbarMode = mode
     }
   }
 })
+

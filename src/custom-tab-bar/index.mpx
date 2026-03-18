@@ -1,10 +1,10 @@
 <template>
-  <view class="custom-tabbar">
+  <view class="custom-tabbar {{ tabbarMode === 'floating' ? 'is-floating' : '' }}">
     <cube-tab-bar wx:model="{{ localTabIndex }}" wx:model-prop="value" tabs="{{ tabBarList }}" bindchange="onChange"
       custom-content>
       <cube-tab class="cube-tab" wx:for="{{ tabBarList }}" wx:key="index" label="{{ item.label }}"
         value="{{ item.value }}" custom-content custom-icon>
-        <cube-icon size="{{ 20 }}" color="{{ activeTabbarIndex === index ? '#1677ff' : '#666666' }}"
+        <cube-icon size="{{ 24 }}" color="{{ activeTabbarIndex === index ? '#1677ff' : '#666666' }}"
           type="{{ item.icon }}" />
         <view class="{{ activeTabbarIndex === index ? 'active' : '' }}">{{ item.label }}</view>
       </cube-tab>
@@ -24,7 +24,7 @@ createComponent({
     }
   },
   computed: {
-    ...mapState(useCommonStore, ['activeTabbarIndex', 'tabBarList'])
+    ...mapState(useCommonStore, ['activeTabbarIndex', 'tabBarList', 'tabbarMode'])
   },
   watch: {
     activeTabbarIndex(newVal) {
@@ -55,24 +55,40 @@ createComponent({
   z-index: 999;
   background: #fff;
   border-top: 1px solid #eee;
-}
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-.cube-tab {
-  z-index: 999;
-  flex: 1;
-  padding: 0 0 20rpx 0;
-  text-align: center;
-  color: #666;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  &.is-floating {
+    bottom: 20rpx;
+    left: 60rpx;
+    right: 60rpx;
+    border-radius: 100rpx;
+    box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    overflow: hidden;
 
-  view {
-    font-size: 28rpx;
-    margin-top: 4rpx;
+    .cube-tab {
+      padding: 0;
+    }
+  }
 
-    &.active {
-      color: #1677ff;
+  .cube-tab {
+    z-index: 999;
+    flex: 1;
+    padding: 0 0 calc(env(safe-area-inset-bottom) - 20rpx) 0;
+    text-align: center;
+    color: #666;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    view {
+      font-size: 24rpx;
+      margin-top: 4rpx;
+
+      &.active {
+        color: #1677ff;
+        font-weight: 500;
+      }
     }
   }
 }
