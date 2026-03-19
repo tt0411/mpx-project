@@ -41,7 +41,8 @@ createPage({
 
 <script name="json">
 module.exports = {
-  navigationBarTitleText: '发现'
+  navigationBarTitleText: '发现',
+  allowsBounceVertical: 'NO'
 }
 </script>
 

@@ -1,214 +1,230 @@
 <template>
-  <view
-    wx:if="{{ show }}"
-    class="van-notice-bar {{ wrapable ? 'van-notice-bar--wrapable' : '' }}"
-    style="color: {{ color }}; background-color: {{ backgroundColor }};"
-    bindtap="onClick"
-  >
+  <view wx:if="{{ show }}" class="van-notice-bar {{ wrapable ? 'van-notice-bar--wrapable' : '' }}"
+    style="color: {{ color }}; background-color: {{ backgroundColor }};" bindtap="onClick">
     <view wx:if="{{ leftIcon }}" class="van-notice-bar__left-icon">
       <cube-icon type="{{ leftIcon }}" size="{{ iconSize }}" color="{{ color }}" />
     </view>
 
     <view class="van-notice-bar__wrap">
-      <view
-        class="van-notice-bar__content {{ isScrolling ? 'van-notice-bar__content--scroll' : '' }}"
-        style="{{ contentStyle }}"
-      >
-        <rich-text nodes="{{ text }}"></rich-text>
+      <view class="van-notice-bar__content {{ isScrolling ? 'van-notice-bar__content--scroll' : '' }}"
+        style="{{ contentStyle }}">
+        <rich-text nodes="{{ text }}" style="display: inline-block; white-space: nowrap;"></rich-text>
       </view>
     </view>
 
-    <view
-      wx:if="{{ showRightIcon }}"
-      class="van-notice-bar__right-icon"
-      bindtap="onRightIconClick"
-    >
+    <view wx:if="{{ showRightIcon }}" class="van-notice-bar__right-icon" bindtap="onRightIconClick">
       <cube-icon type="{{ rightIconType }}" size="{{ iconSize }}" color="{{ color }}" />
     </view>
   </view>
 </template>
 
 <script>
-  import { createComponent } from '@mpxjs/core'
+import { createComponent } from '@mpxjs/core'
 
-  createComponent({
-    properties: {
-      text: {
-        type: String,
-        value: ''
-      },
-      mode: {
-        type: String,
-        value: '' // closeable | link
-      },
-      color: {
-        type: String,
-        value: '#ed6a0c'
-      },
-      backgroundColor: {
-        type: String,
-        value: '#fffbe8'
-      },
-      leftIcon: String,
-      rightIcon: String,
-      scrollable: {
-        type: Boolean,
-        value: true
-      },
-      wrapable: {
-        type: Boolean,
-        value: false
-      },
-      speed: {
-        type: Number,
-        value: 60
-      },
-      delay: {
-        type: Number,
-        value: 1
-      },
-      iconSize: {
-        type: Number,
-        value: 16
-      }
+createComponent({
+  properties: {
+    text: {
+      type: String,
+      value: ''
     },
-    data: {
-      show: true,
-      isScrolling: false,
-      contentStyle: '',
-      textNodes: []
+    mode: {
+      type: String,
+      value: '' // closeable | link
     },
-    computed: {
-      showRightIcon() {
-        return this.mode === 'closeable' || this.mode === 'link' || !!this.rightIcon
-      },
-      rightIconType() {
-        if (this.rightIcon) return this.rightIcon
-        if (this.mode === 'closeable') return 'close'
-        if (this.mode === 'link') return 'arrow'
-        return ''
-      }
+    color: {
+      type: String,
+      value: '#ed6a0c'
     },
-    watch: {
-      text() {
-        this.updateAnimation()
-      },
-      scrollable() {
-        this.updateAnimation()
-      },
-      wrapable() {
-        this.updateAnimation()
-      },
-      speed() {
-        this.updateAnimation()
-      },
-      delay() {
-        this.updateAnimation()
-      }
+    backgroundColor: {
+      type: String,
+      value: '#fffbe8'
     },
-    mounted() {
+    leftIcon: String,
+    rightIcon: String,
+    scrollable: {
+      type: Boolean,
+      value: true
+    },
+    wrapable: {
+      type: Boolean,
+      value: false
+    },
+    speed: {
+      type: Number,
+      value: 60
+    },
+    delay: {
+      type: Number,
+      value: 1
+    },
+    iconSize: {
+      type: Number,
+      value: 16
+    }
+  },
+  data: {
+    show: true,
+    isScrolling: false,
+    contentStyle: '',
+    textNodes: []
+  },
+  computed: {
+    showRightIcon() {
+      return this.mode === 'closeable' || this.mode === 'link' || !!this.rightIcon
+    },
+    rightIconType() {
+      if (this.rightIcon) return this.rightIcon
+      if (this.mode === 'closeable') return 'close'
+      if (this.mode === 'link') return 'arrow'
+      return ''
+    }
+  },
+  watch: {
+    text() {
       this.updateAnimation()
     },
-    methods: {
-      updateAnimation() {
-        if (!this.scrollable || this.wrapable) {
-          this.isScrolling = false
-          this.contentStyle = ''
-          return
-        }
+    scrollable() {
+      this.updateAnimation()
+    },
+    wrapable() {
+      this.updateAnimation()
+    },
+    speed() {
+      this.updateAnimation()
+    },
+    delay() {
+      this.updateAnimation()
+    }
+  },
+  mounted() {
+    this.updateAnimation()
+    // 额外在 200ms 后调一次，防止某些平台初次渲染拿不到准确尺寸
+    setTimeout(() => {
+      this.updateAnimation()
+    }, 200)
+  },
+  methods: {
+    updateAnimation() {
+      if (!this.scrollable || this.wrapable) {
+        this.isScrolling = false
+        this.contentStyle = ''
+        return
+      }
+
+      this.$nextTick(() => {
         const query = this.createSelectorQuery()
         query.select('.van-notice-bar__wrap').boundingClientRect()
         query.select('.van-notice-bar__content').boundingClientRect()
         query.exec((res) => {
           const wrapRect = res[0]
           const contentRect = res[1]
-          if (!wrapRect || !contentRect) return
-          if (contentRect.width <= wrapRect.width) {
+          if (!wrapRect || !contentRect || wrapRect.width === 0) {
+            return
+          }
+
+          const currentContentWidth = this.isScrolling ? contentRect.width - wrapRect.width : contentRect.width
+          const isNeeded = currentContentWidth > wrapRect.width
+
+          console.log('NoticeBar Animation Update:', {
+            wrapWidth: wrapRect.width,
+            contentWidth: currentContentWidth,
+            isNeeded
+          })
+
+          if (!isNeeded) {
             this.isScrolling = false
             this.contentStyle = ''
             return
           }
-          const distance = contentRect.width + wrapRect.width
+
+          const distance = currentContentWidth + wrapRect.width
           const duration = distance / (this.speed || 60)
           const delay = this.delay || 1
+
+          // 如果已经在滚动且 style 没变，就没必要重复触发渲染
+          const newStyle = `animation-duration: ${duration}s; animation-delay: ${delay}s;`
+          if (this.isScrolling && this.contentStyle === newStyle) return
+
           this.isScrolling = true
-          this.contentStyle = `animation-duration: ${duration}s; animation-delay: ${delay}s;`
+          this.contentStyle = newStyle
         })
-      },
-      onRightIconClick(e) {
-        e && e.stopPropagation && e.stopPropagation()
-        if (this.mode === 'closeable') {
-          this.show = false
-          this.triggerEvent('close')
-          return
-        }
-        this.triggerEvent('click')
-      },
-      onClick() {
-        this.triggerEvent('click')
+      })
+    },
+    onRightIconClick(e) {
+      e && e.stopPropagation && e.stopPropagation()
+      if (this.mode === 'closeable') {
+        this.show = false
+        this.triggerEvent('close')
+        return
       }
+      this.triggerEvent('click')
+    },
+    onClick() {
+      this.triggerEvent('click')
     }
-  })
+  }
+})
 </script>
 
 <style lang="scss" scoped>
-  .van-notice-bar {
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    min-height: 40px;
-    font-size: 14px;
-    line-height: 24px;
-    box-sizing: border-box;
+.van-notice-bar {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  min-height: 40px;
+  font-size: 14px;
+  line-height: 24px;
+  box-sizing: border-box;
+}
+
+.van-notice-bar__left-icon {
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.van-notice-bar__wrap {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.van-notice-bar--wrapable .van-notice-bar__wrap {
+  white-space: normal;
+}
+
+.van-notice-bar__content {
+  display: inline-block;
+  box-sizing: border-box;
+}
+
+.van-notice-bar--wrapable .van-notice-bar__content {
+  padding-left: 0;
+}
+
+.van-notice-bar__content--scroll {
+  padding-left: 100%;
+  animation-name: van-notice-bar-play;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.van-notice-bar__right-icon {
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+@keyframes van-notice-bar-play {
+  0% {
+    transform: translate3d(0, 0, 0);
   }
 
-  .van-notice-bar__left-icon {
-    margin-right: 8px;
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
+  100% {
+    transform: translate3d(-100%, 0, 0);
   }
-
-  .van-notice-bar__wrap {
-    position: relative;
-    flex: 1;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
-  .van-notice-bar--wrapable .van-notice-bar__wrap {
-    white-space: normal;
-  }
-
-  .van-notice-bar__content {
-    display: inline-block;
-    padding-left: 100%;
-    box-sizing: border-box;
-  }
-
-  .van-notice-bar--wrapable .van-notice-bar__content {
-    padding-left: 0;
-  }
-
-  .van-notice-bar__content--scroll {
-    animation-name: van-notice-bar-play;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-  }
-
-  .van-notice-bar__right-icon {
-    margin-left: 8px;
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-  }
-
-  @keyframes van-notice-bar-play {
-    0% {
-      transform: translate3d(0, 0, 0);
-    }
-    100% {
-      transform: translate3d(-100%, 0, 0);
-    }
-  }
+}
 </style>
