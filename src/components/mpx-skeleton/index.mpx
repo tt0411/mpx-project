@@ -1,0 +1,233 @@
+<template>
+  <view class="skeleton" wx:if="{{loading}}">
+    <!-- Avatar + Content Layout -->
+    <view wx:if="{{avatar}}" class="skeleton-avatar-wrapper">
+      <view class="skeleton-avatar" wx:style="{{avatarStyle}}"></view>
+      <view class="skeleton-content">
+        <view class="skeleton-line" wx:style="{{titleStyle}}"></view>
+        <view class="skeleton-line" wx:for="{{contentLineStyles}}" wx:key="index" wx:style="{{item}}"></view>
+      </view>
+    </view>
+    
+    <!-- Simple Rows Layout -->
+    <view wx:else>
+      <view class="skeleton-line" wx:for="{{skeletonList}}" wx:key="index" wx:style="{{item.style}}"></view>
+    </view>
+  </view>
+</template>
+
+<script>
+import { createComponent } from '@mpxjs/core'
+
+createComponent({
+  properties: {
+    loading: {
+      type: Boolean,
+      value: true
+    },
+    // Simple mode: just rows
+    rows: {
+      type: Number,
+      value: 3
+    },
+    rowHeight: {
+      type: [String, Number],
+      value: 24
+    },
+    rowWidth: {
+      type: [String, Number],
+      value: '100%'
+    },
+    // Avatar mode
+    avatar: {
+      type: Boolean,
+      value: false
+    },
+    avatarSize: {
+      type: Number,
+      value: 50
+    },
+    avatarShape: {
+      type: String,
+      value: 'square' // 'square' or 'circle'
+    },
+    title: {
+      type: Boolean,
+      value: true
+    },
+    
+    titleWidth: {
+      type: [String, Number],
+      value: '40%'
+    },
+    contentLines: {
+      type: Number,
+      value: 3
+    },
+    contentWidth: {
+      type: [String, Number, Array],
+      value: '100%'
+    }
+  },
+  data: {
+    skeletonList: [],
+    avatarStyle: '',
+    titleStyle: '',
+    contentLineStyles: []
+  },
+  lifetimes: {
+    ready() {
+      this.initSkeleton()
+    }
+  },
+  observers: {
+    'loading, rows, avatar, avatarSize, title, contentLineList'() {
+      this.initSkeleton()
+    }
+  },
+  methods: {
+    initSkeleton() {
+      if (this.avatar) {
+        this.initAvatarMode()
+      } else {
+        this.initSimpleMode()
+      }
+    },
+    initSimpleMode() {
+      const list = []
+      const rows = this.rows || 3
+      
+      for (let i = 0; i < rows; i++) {
+        list.push({
+          type: 'line',
+          width: this.rowWidth,
+          height: this.rowHeight,
+          margin: i < rows - 1 ? '0 0 12px 0' : '0'
+        })
+      }
+      
+      this.setData({
+        skeletonList: list.map(item => ({
+          ...item,
+          style: this.getItemStyle(item)
+        }))
+      })
+    },
+    initAvatarMode() {
+      const avatarSize = this.formatSize(this.avatarSize)
+      const avatarStyle = {
+        width: avatarSize,
+        height: avatarSize,
+        borderRadius: this.avatarShape === 'circle' ? '50%' : '4px'
+      }
+      
+      const titleStyle = {
+        width: this.formatSize(this.titleWidth),
+        height: this.formatSize(this.rowHeight),
+        marginBottom: '12px'
+      }
+      
+      const contentLineStyles = []
+      const lines = this.contentLines || 3
+      const contentWidths = Array.isArray(this.contentWidth) 
+        ? this.contentWidth 
+        : [this.contentWidth]
+      
+      for (let i = 0; i < lines; i++) {
+        const width = contentWidths[i] || contentWidths[contentWidths.length - 1]
+        const style = {
+          width: this.formatSize(width),
+          height: this.formatSize(this.rowHeight),
+          marginBottom: i < lines - 1 ? '12px' : '0'
+        }
+        contentLineStyles.push(this.styleObjToString(style))
+      }
+      
+      this.setData({
+        avatarStyle: this.styleObjToString(avatarStyle),
+        titleStyle: this.styleObjToString(titleStyle),
+        contentLineStyles
+      })
+    },
+    getItemStyle(item) {
+      const style = {
+        width: this.formatSize(item.width),
+        height: this.formatSize(item.height),
+        margin: item.margin || '0'
+      }
+      return this.styleObjToString(style)
+    },
+    styleObjToString(styleObj) {
+      return Object.entries(styleObj)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('; ')
+    },
+    formatSize(size) {
+      if (typeof size === 'number') {
+        return `${size}px`
+      }
+      return size
+    }
+  }
+})
+</script>
+
+<style lang="scss" scoped>
+.skeleton {
+  padding: 16px;
+  background-color: #fff;
+}
+
+.skeleton-avatar-wrapper {
+  display: flex;
+  gap: 12px;
+}
+
+.skeleton-avatar,
+.skeleton-line {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.skeleton-avatar {
+  min-width: 50px;
+}
+
+.skeleton-content {
+  flex: 1;
+  width: 100%;
+}
+
+.skeleton-line {
+  width: 100%;
+  height: 24px;
+  margin-bottom: 12px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+</style>
+
+<script type="application/json">
+{
+  "component": true
+}
+</script>

@@ -10,6 +10,27 @@
       <button class="btn" bindtap="goLogin">前往登录页</button>
       <button class="btn" bindtap="goWebView">前往WebView</button>
       <button class="btn" bindtap="goListDemo">查看列表组件</button>
+      <cube-button
+        primary
+        open-type="share"
+        tip="需在小程序环境下预览"
+      >分享</cube-button>
+      <mpx-steps
+        steps="{{[
+          { text: '买家下单', desc: '2024-01-01' },
+          { text: '商家发货', desc: '待发货' },
+          { text: '确认收货', desc: '' }
+        ]}}"
+        active="{{0}}"
+        direction="vertical"
+        active-color="#07c160"
+        inactive-color="#969799"
+        bind:click-step="onStepClick"
+      />
+      <mpx-notice-bar
+        text="{{ '这里是一个通知' }}"
+        left-icon="volume"
+      />
     </view>
   </view>
 </template>
@@ -33,6 +54,9 @@ createPage({
     toggleTabbarMode() {
       const mode = this.tabbarMode === 'normal' ? 'floating' : 'normal'
       this.setTabbarMode(mode)
+    },
+    onStepClick(e) {
+      console.log('步骤切换到:', e.detail)
     },
     goDemoList() {
       navigateTo('demo-list')
@@ -76,7 +100,7 @@ createPage({
 module.exports = {
   navigationBarTitleText: '首页',
   usingComponents: {
-    'mpx-uploader': '@/components/mpx-uploader'
+    'mpx-uploader': '@/components/mpx-uploader',
   }
 }
 </script>

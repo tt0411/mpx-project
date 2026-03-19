@@ -1,8 +1,8 @@
 <template>
   <view class="empty-wrap">
     <view class="empty-icon">∅</view>
-    <view class="empty-title">{{ title || 'No Data' }}</view>
-    <view class="empty-desc">{{ desc || '暂无数据' }}</view>
+    <view class="empty-title">{{ title || '暂无数据' }}</view>
+    <view class="empty-desc">{{ desc || '' }}</view>
     <slot></slot>
   </view>
 </template>
