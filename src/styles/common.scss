@@ -24,3 +24,7 @@ page {
     padding-left: 10rpx;
   }
 }
+
+.page {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 120rpx);
+}

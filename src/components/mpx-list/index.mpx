@@ -1,42 +1,80 @@
 <template>
   <view class="mpx-list-container" style="height: {{ height }}">
-    <!-- 自定义下拉刷新头部 (支付宝专用模拟) -->
-    <view class="mpx-refresh-header"
-      style="height: {{ refreshHeaderHeight }}px; opacity: {{ pullDistance > 0 ? 1 : 0 }}; transition: {{ isTouching ? 'none' : 'all 0.3s' }}">
-      <view class="refresh-content" style="margin-top: {{ pullDistance > 50 ? (pullDistance - 50) : 0 }}px">
-        <view class="refresh-spinner" wx:if="{{ pullStatus === 2 }}"></view>
-        <text class="refresh-text">{{ refreshTips }}</text>
-      </view>
-    </view>
+    <!-- ========== 微信小程序：使用原生 refresher 下拉刷新 ========== -->
+    <block wx:if="{{ env === 'wx' }}">
+      <scroll-view class="mpx-list-scroll" scroll-y
+        refresher-enabled="{{ true }}"
+        refresher-triggered="{{ refresherTriggered }}"
+        refresher-default-style="black"
+        lower-threshold="{{ lowerThreshold }}"
+        enable-back-to-top="{{ enableBackToTop }}"
+        bindscrolltolower="handleScrollToLower"
+        bindscroll="handleScroll"
+        bindrefresherrefresh="handleWxRefresh"
+        enhanced="{{ true }}">
+        <view class="mpx-list-content">
+          <slot></slot>
+        </view>
 
-    <!-- 支付宝适配版 ScrollView -->
-    <scroll-view class="mpx-list-scroll" scroll-y="{{ scrollY }}" trap-scroll="{{ trapScroll }}"
-      enable-back-to-top="{{ enableBackToTop }}" lower-threshold="{{ lowerThreshold }}"
-      onScrollToLower="handleScrollToLower" onScroll="handleScroll" onTouchStart="handleTouchStart"
-      onTouchMove="handleTouchMove" onTouchEnd="handleTouchEnd"
-      style="transform: translateY({{ pullDistance }}px); transition: {{ isTouching ? 'none' : 'transform 0.3s' }}">
-      <view class="mpx-list-content">
-        <slot></slot>
+        <!-- 底部加载状态 -->
+        <view class="mpx-list-footer">
+          <block wx:if="{{ loading && !finished }}">
+            <view class="loading-status">
+              <view class="loading-icon"></view>
+              <text>{{ loadingText }}</text>
+            </view>
+          </block>
+          <block wx:elif="{{ finished }}">
+            <text class="finished-text">{{ finishedText }}</text>
+          </block>
+          <block wx:elif="{{ error }}">
+            <view class="error-status" bindtap="retryLoad">
+              <text>{{ errorText }}</text>
+            </view>
+          </block>
+        </view>
+      </scroll-view>
+    </block>
+
+    <!-- ========== 支付宝小程序：手动模拟下拉刷新 ========== -->
+    <block wx:else>
+      <!-- 自定义下拉刷新头部 (支付宝专用模拟) -->
+      <view class="mpx-refresh-header"
+        style="height: {{ refreshHeaderHeight }}px; opacity: {{ pullDistance > 0 ? 1 : 0 }}; transition: {{ isTouching ? 'none' : 'all 0.3s' }}">
+        <view class="refresh-content" style="margin-top: {{ pullDistance > 50 ? (pullDistance - 50) : 0 }}px">
+          <view class="refresh-spinner" wx:if="{{ pullStatus === 2 }}"></view>
+          <text class="refresh-text">{{ refreshTips }}</text>
+        </view>
       </view>
 
-      <!-- 底部加载状态 -->
-      <view class="mpx-list-footer">
-        <block wx:if="{{ loading && !finished }}">
-          <view class="loading-status">
-            <view class="loading-icon"></view>
-            <text>{{ loadingText }}</text>
-          </view>
-        </block>
-        <block wx:elif="{{ finished }}">
-          <text class="finished-text">{{ finishedText }}</text>
-        </block>
-        <block wx:elif="{{ error }}">
-          <view class="error-status" bindtap="retryLoad">
-            <text>{{ errorText }}</text>
-          </view>
-        </block>
-      </view>
-    </scroll-view>
+      <scroll-view class="mpx-list-scroll" scroll-y="{{ scrollY }}" trap-scroll="{{ trapScroll }}"
+        enable-back-to-top="{{ enableBackToTop }}" lower-threshold="{{ lowerThreshold }}"
+        onScrollToLower="handleScrollToLower" onScroll="handleScroll" onTouchStart="handleTouchStart"
+        onTouchMove="handleTouchMove" onTouchEnd="handleTouchEnd"
+        style="transform: translateY({{ pullDistance }}px); transition: {{ isTouching ? 'none' : 'transform 0.3s' }}">
+        <view class="mpx-list-content">
+          <slot></slot>
+        </view>
+
+        <!-- 底部加载状态 -->
+        <view class="mpx-list-footer">
+          <block wx:if="{{ loading && !finished }}">
+            <view class="loading-status">
+              <view class="loading-icon"></view>
+              <text>{{ loadingText }}</text>
+            </view>
+          </block>
+          <block wx:elif="{{ finished }}">
+            <text class="finished-text">{{ finishedText }}</text>
+          </block>
+          <block wx:elif="{{ error }}">
+            <view class="error-status" bindtap="retryLoad">
+              <text>{{ errorText }}</text>
+            </view>
+          </block>
+        </view>
+      </scroll-view>
+    </block>
   </view>
 </template>
 
@@ -61,17 +99,23 @@ createComponent({
       type: Boolean,
       value: false,
       observer(newVal) {
+        // 微信端：直接控制原生 refresher 状态即可
+        if (__mpx_mode__ === 'wx') return
+
+        // 支付宝端：手动管理下拉动画
         if (!newVal) {
           this.resetPull()
         } else {
           this.pullStatus = 2
-          this.pullDistance = 60 // 刷新中固定的悬停高度
+          this.pullDistance = 60
           this.refreshHeaderHeight = 60
         }
       }
     }
   },
   data: {
+    // 当前运行平台标识，用于模板条件渲染
+    env: __mpx_mode__,
     scrollY: true,
     pullDistance: 0,
     refreshHeaderHeight: 0,
@@ -86,12 +130,26 @@ createComponent({
     }
   },
   methods: {
+    // ===== 通用事件 =====
     handleScroll(e) {
       this.scrollTop = e.detail.scrollTop
     },
+    handleScrollToLower() {
+      if (this.loading || this.finished || this.error) return
+      this.triggerEvent('on-load')
+    },
+    retryLoad() {
+      this.triggerEvent('on-load')
+    },
+
+    // ===== 微信端：原生 refresher 回调 =====
+    handleWxRefresh() {
+      this.triggerEvent('on-refresh')
+    },
+
+    // ===== 支付宝端：手动 Touch 模拟下拉刷新 =====
     handleTouchStart(e) {
       this.startY = e.touches[0].clientY
-      // 记录开始触摸时的滚动位置，阈值放宽到 10
       if (this.scrollTop <= 10 && !this.loading && this.pullStatus === 0) {
         this.isTouching = true
         this.startScrollTop = this.scrollTop
@@ -102,18 +160,14 @@ createComponent({
       const currY = e.touches[0].clientY
       const diff = currY - this.startY
 
-      // 只要满足下拉趋势且初始在顶部附近，就接管下拉逻辑
       if (diff > 0 && (this.startScrollTop <= 10 || this.pullDistance > 0)) {
-        // 调整阻尼感，前期更灵敏
         this.pullDistance = Math.pow(diff, 0.9)
         this.refreshHeaderHeight = this.pullDistance
         this.pullStatus = 1
-        // 锁定 scroll-view 滚动，防止真机抖动
         if (this.scrollY) {
           this.scrollY = false
         }
       } else if (diff < 0 && this.pullDistance <= 0) {
-        // 向上滑动且未在下拉状态，释放控制权
         this.isTouching = false
         this.scrollY = true
       }
@@ -121,7 +175,7 @@ createComponent({
     handleTouchEnd() {
       if (!this.isTouching) return
       this.isTouching = false
-      this.scrollY = true // 恢复滚动
+      this.scrollY = true
 
       if (this.pullDistance > 70) {
         this.pullStatus = 2
@@ -137,13 +191,6 @@ createComponent({
       this.refreshHeaderHeight = 0
       this.pullStatus = 0
       this.scrollY = true
-    },
-    handleScrollToLower() {
-      if (this.loading || this.finished || this.error) return
-      this.triggerEvent('on-load')
-    },
-    retryLoad() {
-      this.triggerEvent('on-load')
     }
   }
 })
@@ -177,7 +224,6 @@ createComponent({
   font-size: 24rpx;
   color: #969799;
   height: 60px;
-  /* 固定高，内容居中 */
 }
 
 .refresh-spinner {

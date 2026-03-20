@@ -6,7 +6,7 @@
         value="{{ item.value }}" custom-content custom-icon>
         <cube-icon size="{{ 24 }}" color="{{ activeTabbarIndex === index ? '#1677ff' : '#666666' }}"
           type="{{ item.icon }}" />
-        <view class="{{ activeTabbarIndex === index ? 'active' : '' }}">{{ item.label }}</view>
+        <view class="{{ activeTabbarIndex === index ? 'active tab-label' : 'tab-label' }}">{{ item.label }}</view>
       </cube-tab>
     </cube-tab-bar>
   </view>
@@ -56,6 +56,14 @@ createComponent({
   background: #fff;
   border-top: 1px solid #eee;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  .tab-label {
+    /*
+     @mpx-if (__mpx_mode__ === 'ali')
+    */
+    padding-top: 10rpx;
+    /* @mpx-endif */
+  }
 
   &.is-floating {
     bottom: 20rpx;

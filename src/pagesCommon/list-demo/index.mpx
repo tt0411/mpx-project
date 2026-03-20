@@ -2,6 +2,8 @@
   <view class="page-container">
     <mpx-list height="100vh" loading="{{ loading }}" finished="{{ finished }}" error="{{ error }}"
       refresher-triggered="{{ refresherTriggered }}" bind:on-load="onLoadMore" bind:on-refresh="onRefresh">
+
+      <!-- 数据列表 -->
       <view class="list-item" wx:for="{{ list }}" wx:key="index">
         <mpx-swipe-cell right-width="65" left-width="65" async-close="{{ true }}" bind:close="onSwipeCellClose">
           <view slot="left" class="swipe-button left-button">选择</view>
@@ -12,6 +14,15 @@
           <view slot="right" class="swipe-button right-button">删除</view>
         </mpx-swipe-cell>
       </view>
+
+      <!-- 初始加载骨架屏 -->
+      <block wx:if="{{ list.length === 0 && loading }}">
+        <view class="list-item" wx:for="{{ 8 }}" wx:key="index">
+          <view class="item-card">
+            <mpx-skeleton rows="2" row-height="34rpx" padding="0" background="transparent"></mpx-skeleton>
+          </view>
+        </view>
+      </block>
     </mpx-list>
   </view>
 </template>
@@ -160,6 +171,8 @@ createPage({
 <script type="application/json">
   {
     "navigationBarTitleText": "列表组件演示",
-    "allowsBounceVertical@ali": "NO"
+    "usingComponents": {
+      "mpx-skeleton": "@/components/mpx-skeleton/index"
+    }
   }
 </script>

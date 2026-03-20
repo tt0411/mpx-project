@@ -18,8 +18,14 @@ export const useCommonStore = defineStore('common', {
         icon: 'like',
       },
       {
-        pagePath: '/pages/tabs/profile/index',
+        pagePath: '/pages/tabs/message/index',
         value: 2,
+        label: '消息',
+        icon: 'chat',
+      },
+      {
+        pagePath: '/pages/tabs/profile/index',
+        value: 3,
         label: '我的',
         icon: 'user',
       }

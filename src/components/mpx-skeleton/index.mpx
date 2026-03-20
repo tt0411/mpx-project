@@ -1,5 +1,5 @@
 <template>
-  <view class="skeleton" wx:if="{{loading}}">
+  <view class="skeleton" wx:if="{{loading}}" wx:style="{{skeletonStyle}}">
     <!-- Avatar + Content Layout -->
     <view wx:if="{{avatar}}" class="skeleton-avatar-wrapper">
       <view class="skeleton-avatar" wx:style="{{avatarStyle}}"></view>
@@ -67,13 +67,22 @@ createComponent({
     contentWidth: {
       type: [String, Number, Array],
       value: '100%'
+    },
+    padding: {
+      type: String,
+      value: '16px'
+    },
+    background: {
+      type: String,
+      value: '#fff'
     }
   },
   data: {
     skeletonList: [],
     avatarStyle: '',
     titleStyle: '',
-    contentLineStyles: []
+    contentLineStyles: [],
+    skeletonStyle: ''
   },
   lifetimes: {
     ready() {
@@ -81,12 +90,20 @@ createComponent({
     }
   },
   observers: {
-    'loading, rows, avatar, avatarSize, title, contentLineList'() {
+    'loading, rows, avatar, avatarSize, title, contentLines, padding, background'() {
       this.initSkeleton()
     }
   },
   methods: {
     initSkeleton() {
+      const skeletonStyle = {
+        padding: this.padding,
+        background: this.background
+      }
+      this.setData({
+        skeletonStyle: this.styleObjToString(skeletonStyle)
+      })
+
       if (this.avatar) {
         this.initAvatarMode()
       } else {
@@ -174,8 +191,8 @@ createComponent({
 
 <style lang="scss" scoped>
 .skeleton {
-  padding: 16px;
-  background-color: #fff;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .skeleton-avatar-wrapper {

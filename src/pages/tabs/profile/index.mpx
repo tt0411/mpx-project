@@ -41,20 +41,6 @@ module.exports = {
 </script>
 
 <style lang="scss" scoped>
-.page {
-  min-height: 100vh;
-  background: #f7f8fa;
-}
-
-.nav {
-  height: 88rpx;
-  line-height: 88rpx;
-  text-align: center;
-  font-size: 32rpx;
-  font-weight: 600;
-  background: #fff;
-}
-
 .section {
   margin: 20rpx;
   padding: 24rpx;

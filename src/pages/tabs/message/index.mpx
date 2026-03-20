@@ -1,0 +1,22 @@
+<template>
+  <view class="page">
+    消息
+  </view>
+</template>
+
+<script>
+import { createPage } from '@mpxjs/core'
+
+createPage({
+
+})
+</script>
+
+<script name="json">
+module.exports = {
+  navigationBarTitleText: '消息',
+  allowsBounceVertical: 'NO'
+}
+</script>
+
+<style lang="scss" scoped></style>

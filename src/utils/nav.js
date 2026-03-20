@@ -9,6 +9,7 @@ const routeMap = routes.reduce((map, route) => {
 const tabBarPages = [
   '/pages/tabs/home/index',
   '/pages/tabs/discover/index',
+  '/pages/tabs/message/index',
   '/pages/tabs/profile/index'
 ]
 

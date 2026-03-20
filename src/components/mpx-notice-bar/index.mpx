@@ -8,7 +8,10 @@
     <view class="van-notice-bar__wrap">
       <view class="van-notice-bar__content {{ isScrolling ? 'van-notice-bar__content--scroll' : '' }}"
         style="{{ contentStyle }}">
-        <rich-text nodes="{{ text }}" style="display: inline-block; white-space: nowrap;"></rich-text>
+        <!-- 富文本模式：使用 rich-text 组件渲染 HTML 内容 -->
+        <rich-text wx:if="{{ richText }}" nodes="{{ richTextNodes }}"></rich-text>
+        <!-- 纯文本模式：使用 text 组件，样式可正常继承 -->
+        <text wx:else>{{ text }}</text>
       </view>
     </view>
 
@@ -60,6 +63,11 @@ createComponent({
     iconSize: {
       type: Number,
       value: 16
+    },
+    // 是否启用富文本渲染模式（传入 HTML 字符串）
+    richText: {
+      type: Boolean,
+      value: false
     }
   },
   data: {
@@ -77,6 +85,13 @@ createComponent({
       if (this.mode === 'closeable') return 'close'
       if (this.mode === 'link') return 'arrow'
       return ''
+    },
+    // 为富文本内容包裹内联样式，解决 rich-text 组件内部样式隔离问题
+    richTextNodes() {
+      if (!this.text) return ''
+      const fontSize = '14px'
+      const color = this.color || '#ed6a0c'
+      return `<div style="font-size:${fontSize};color:${color};line-height:24px;white-space:nowrap;">${this.text}</div>`
     }
   },
   watch: {

@@ -2,6 +2,7 @@ module.exports = {
   pages: [
     './pages/tabs/home/index',
     './pages/tabs/discover/index',
+    './pages/tabs/message/index',
     './pages/tabs/profile/index'
   ],
   packages: [
@@ -15,16 +16,17 @@ module.exports = {
     }
   },
   window: {
-    'navigationBarTextStyle@wx': 'black',
-    'navigationBarBackgroundColor@wx': '#ffffff',
-    'defaultTitle@ali': 'Mpx App',
-    'titleBarColor@ali': '#ffffff'
+    'navigationBarTextStyle': 'black',
+    'navigationBarBackgroundColor': '#ffffff',
+    'defaultTitle': 'Mpx App',
+    'titleBarColor': '#ffffff'
   },
   tabBar: {
     custom: true,
     color: '#999999',
     selectedColor: '#1677ff',
     backgroundColor: '#ffffff',
+    overlay: true,
     list: [
       {
         pagePath: 'pages/tabs/home/index',
@@ -33,6 +35,10 @@ module.exports = {
       {
         pagePath: 'pages/tabs/discover/index',
         text: '发现'
+      },
+      {
+        pagePath: 'pages/tabs/message/index',
+        text: '消息'
       },
       {
         pagePath: 'pages/tabs/profile/index',
