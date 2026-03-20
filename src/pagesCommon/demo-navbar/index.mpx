@@ -42,11 +42,11 @@ createPage({
     initNavBar() {
       const systemInfo = mpx.getWindowInfo()
       const { windowWidth } = systemInfo
-      const { bottom, height, right } = mpx.getMenuButtonBoundingClientRect()
+      const { bottom, height, right, top } = mpx.getMenuButtonBoundingClientRect()
       // 导航栏底部稍微留白，避免内容贴着
       this.navBarHeight = bottom + 8
       // 胶囊的 top 坐标就是我们对齐的起点
-      this.navTop = bottom - height
+      this.navTop = top
       // 保持左右对称
       this.navPadding = windowWidth - right
       this.menuButtonHeight = height
