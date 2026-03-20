@@ -4,7 +4,7 @@
     <view class="bg-red" style="height: {{ navBarHeight }}px; position: relative;">
 
       <!-- 1. 居中标题 -->
-      <view
+      <view @wx
         style="position: absolute; left: 0; right: 0; top: {{ navTop }}px; height: {{ menuButtonHeight }}px; display: flex; align-items: center; justify-content: center; z-index: 1;">
         <text class="text-[#fff] text-[14px]">自定义导航栏</text>
       </view>
@@ -64,7 +64,7 @@ createPage({
 <script type="application/json">
 {
   "usingComponents": {},
-  "navigationBarTitleText": "",
+  "navigationBarTitleText": "自定义导航栏",
   "navigationStyle": "custom",
   "transparentTitle": "auto",
 }
