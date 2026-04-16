@@ -57,6 +57,11 @@ export function normalizeMockAssets(value) {
   return value
 }
 
+function getCurrentUserId() {
+  const session = mpx.getStorageSync(SESSION_STORAGE_KEY) || {}
+  return (session.userInfo && session.userInfo.id) || CURRENT_USER_ID
+}
+
 let hotKeywords = [
   { id: 'hot_001', keyword: '上海探店', heat: 98 },
   { id: 'hot_002', keyword: '春季穿搭', heat: 93 },
@@ -528,9 +533,32 @@ export function createListResponse(list, parameter = {}) {
 
 export function getCurrentUserProfile() {
   const session = mpx.getStorageSync(SESSION_STORAGE_KEY) || {}
-  const sessionUserId = session.userInfo && session.userInfo.id
-  const targetUserId = sessionUserId || CURRENT_USER_ID
-  return clone(users.find((item) => item.id === targetUserId))
+  const targetUserId = getCurrentUserId()
+  const existingUser = users.find((item) => item.id === targetUserId)
+
+  if (existingUser) {
+    return clone(existingUser)
+  }
+
+  if (session.userInfo && session.userInfo.id) {
+    const nextUser = {
+      avatar: '/src/static/images/mock/avatar-1.jpg',
+      bio: '刚加入社区，准备记录新的生活灵感。',
+      gender: 'unknown',
+      location: '未设置',
+      isFollowed: false,
+      followCount: 0,
+      fansCount: 0,
+      likedReceivedCount: 0,
+      ...session.userInfo,
+      name: session.userInfo.nickname || session.userInfo.name || '用户'
+    }
+
+    users.unshift(nextUser)
+    return clone(nextUser)
+  }
+
+  return clone(users.find((item) => item.id === CURRENT_USER_ID))
 }
 
 export function resolveLoginUser(username = '') {
@@ -626,7 +654,8 @@ export function getNoteDetailMock(noteId) {
 }
 
 export function getMyNotesMock() {
-  return noteCards.filter((item) => item.author.id === CURRENT_USER_ID)
+  const currentUserId = getCurrentUserId()
+  return noteCards.filter((item) => item.author.id === currentUserId)
 }
 
 export function getUserNotesMock(userId) {
@@ -725,7 +754,8 @@ export function createNoteMock(payload = {}) {
   return {
     id,
     status: 'published',
-    publishTime
+    publishTime,
+    noteCard: card
   }
 }
 
@@ -932,15 +962,18 @@ export function getTopicNotesMock(topicId) {
 }
 
 export function updateCurrentUserMock(payload = {}) {
+  const currentUserId = getCurrentUserId()
+
   users = users.map((item) => {
-    if (item.id !== CURRENT_USER_ID) return item
+    if (item.id !== currentUserId) return item
     return {
       ...item,
       ...payload,
       name: payload.nickname || item.nickname
     }
   })
-  syncEmbeddedUser(CURRENT_USER_ID)
+
+  syncEmbeddedUser(currentUserId)
   return getCurrentUserProfile()
 }
 

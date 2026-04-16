@@ -65,6 +65,13 @@ export const useFeedStore = defineStore('feed', {
         })
       })
     },
+    prependNoteToFeed(scene, note) {
+      const target = this.feeds[scene]
+      if (!target || !note) return
+
+      const nextList = [note, ...target.list.filter((item) => item.id !== note.id)]
+      target.list = nextList
+    },
     resetFeed(scene) {
       if (!this.feeds[scene]) return
       this.feeds[scene] = createFeedState()

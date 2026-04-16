@@ -1,5 +1,6 @@
 import { defineStore } from '@mpxjs/pinia'
 import { createNote, getDraftDetail, saveDraft, updateNote } from '@/api'
+import { useFeedStore } from './feed'
 import { useProfileStore } from './profile'
 
 function createEditorForm() {
@@ -93,6 +94,9 @@ export const usePublishStore = defineStore('publish', {
         const request = payload.id ? updateNote : createNote
         const { code, data } = await request({ data: payload })
         if (code === 0 && data) {
+          if (data.noteCard) {
+            useFeedStore().prependNoteToFeed('recommend', data.noteCard)
+          }
           this.resetEditor()
           const profileStore = useProfileStore()
           await profileStore.fetchMyNotes({ refresh: true })
