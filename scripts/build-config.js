@@ -67,6 +67,7 @@ const wxProjectConfig = {
   },
   condition: {},
   setting: {
+    urlCheck: false,
     postcss: true,
     ignoreUploadUnusedFiles: true,
     babelSetting: {

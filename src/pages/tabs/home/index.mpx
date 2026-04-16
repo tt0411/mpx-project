@@ -109,6 +109,7 @@ module.exports = {
 <style lang="scss" scoped>
 .home-page {
   padding: 20rpx 24rpx 0;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 192rpx);
 }
 
 .home-header {

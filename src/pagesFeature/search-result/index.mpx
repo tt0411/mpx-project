@@ -69,6 +69,14 @@ const TAB_LIST = [
   { name: 'topic', label: '话题' }
 ]
 
+function decodeKeyword(keyword = '') {
+  try {
+    return decodeURIComponent(keyword)
+  } catch (error) {
+    return keyword
+  }
+}
+
 createPage({
   data: {
     localKeyword: '',
@@ -84,7 +92,7 @@ createPage({
     }
   },
   onLoad(options) {
-    this.localKeyword = options.keyword || ''
+    this.localKeyword = decodeKeyword(options.keyword || '')
     this.initializeSearch(this.localKeyword)
   },
   methods: {
@@ -140,6 +148,7 @@ module.exports = {
 <style lang="scss" scoped>
 .search-page {
   padding: 20rpx 24rpx 0;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 192rpx);
 }
 
 .search-bar {

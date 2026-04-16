@@ -1,4 +1,4 @@
-import { createDataResponse, getCurrentUserProfile, getPayload, getUserProfileMock, resolveLoginUser, updateCurrentUserMock } from './mock-data'
+import { createDataResponse, getCurrentUserProfile, getPayload, getUserProfileMock, normalizeMockAssets, resolveLoginUser, updateCurrentUserMock } from './mock-data'
 
 /**
  * 模板登录接口（示例实现）
@@ -13,11 +13,11 @@ export function login(parameter = {}) {
     message: 'success',
     data: {
       token: `mock-token-${Date.now()}`,
-      userInfo: {
+      userInfo: normalizeMockAssets({
         ...loginUser,
         name: loginUser.nickname,
         nickname: loginUser.nickname
-      }
+      })
     }
   })
 }
@@ -43,6 +43,6 @@ export function uploadFile(parameter = {}) {
   return Promise.resolve({
     code: 0,
     message: 'success',
-    data: `/src/static/images/mock/upload-result-${Date.now()}.jpg`
+    data: `https://picsum.photos/seed/upload-file-${Date.now()}/1080/1440`
   })
 }

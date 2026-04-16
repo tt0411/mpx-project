@@ -10,7 +10,7 @@
 
     <view wx:else>
       <view wx:for="{{ draftList }}" wx:key="draftId" class="draft-item" bindtap="handleEditDraft" data-id="{{ item.draftId }}">
-        <image class="draft-cover" src="{{ item.images[0] || '/src/static/images/mock/draft-1.jpg' }}" mode="aspectFill" />
+        <image class="draft-cover" src="{{ item.images[0] || 'https://picsum.photos/seed/draft-fallback/240/240' }}" mode="aspectFill" />
         <view class="draft-content">
           <view class="draft-name">{{ item.title || '未命名草稿' }}</view>
           <view class="draft-time">最后编辑于 {{ item.updatedAt }}</view>
@@ -84,6 +84,7 @@ module.exports = {
 <style lang="scss" scoped>
 .draft-page {
   padding: 24rpx;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 192rpx);
 }
 
 .page-title {

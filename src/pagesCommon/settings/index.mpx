@@ -52,6 +52,7 @@ module.exports = {
 <style lang="scss" scoped>
 .settings-page {
   padding: 24rpx;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 192rpx);
 }
 
 .settings-card {

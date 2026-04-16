@@ -36,7 +36,8 @@
           <view wx:for="{{ item.replies }}" wx:key="id" class="reply-item">
             <view class="reply-line">
               <text class="reply-name">{{ item.user.nickname }}</text>
-              <text class="reply-text">{{ item.replyUser ? ` 回复 ${item.replyUser.nickname}` : '' }}：{{ item.content }}</text>
+              <text class="reply-text" wx:if="{{ item.replyUser }}">回复 {{ item.replyUser.nickname }}：{{ item.content }}</text>
+              <text class="reply-text" wx:else>{{ item.content }}</text>
             </view>
             <view class="comment-meta">
               <view>{{ item.createdAt }}</view>
@@ -141,6 +142,7 @@ module.exports = {
 <style lang="scss" scoped>
 .comment-page {
   padding: 24rpx;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 192rpx);
 }
 
 .page-header {

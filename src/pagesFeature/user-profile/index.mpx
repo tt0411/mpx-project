@@ -116,6 +116,7 @@ module.exports = {
 <style lang="scss" scoped>
 .user-profile-page {
   padding: 24rpx;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 192rpx);
 }
 
 .skeleton-wrap,

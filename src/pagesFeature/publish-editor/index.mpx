@@ -3,7 +3,7 @@
     <view class="editor-header">
       <view class="header-action" bindtap="handleCancel">取消</view>
       <view class="header-title">发布图文</view>
-      <view class="header-action is-primary" bindtap="handlePublish">{{ publishing ? '发布中' : '发布' }}</view>
+      <view class="header-action is-primary" bindtap="handlePublish">{{ publishButtonText }}</view>
     </view>
 
     <view wx:if="{{ loadingDraft }}" class="loading-wrap">
@@ -48,15 +48,15 @@
 
       <view class="section-card section-card-compact" bindtap="handleSelectCategory">
         <view class="section-label">分类</view>
-        <view class="section-value">{{ currentCategoryLabel || '请选择分类' }}</view>
+        <view class="section-value">{{ categoryDisplayText }}</view>
       </view>
 
       <view class="section-card section-card-compact" bindtap="handleSelectLocation">
         <view class="section-label">位置</view>
-        <view class="section-value">{{ editorForm.locationText || '请选择位置' }}</view>
+        <view class="section-value">{{ locationDisplayText }}</view>
       </view>
 
-      <view class="meta-line">{{ lastSavedAt ? `最近保存于 ${lastSavedAt}` : '草稿会同步显示在草稿箱' }}</view>
+      <view class="meta-line">{{ saveHintText }}</view>
 
       <button class="draft-button" loading="{{ savingDraft }}" bindtap="handleSaveDraft">保存草稿</button>
     </view>
@@ -93,6 +93,18 @@ createPage({
     currentCategoryLabel() {
       const currentCategory = CATEGORY_OPTIONS.find((item) => item.id === this.editorForm.categoryId)
       return currentCategory ? currentCategory.name : ''
+    },
+    publishButtonText() {
+      return this.publishing ? '发布中' : '发布'
+    },
+    categoryDisplayText() {
+      return this.currentCategoryLabel || '请选择分类'
+    },
+    locationDisplayText() {
+      return this.editorForm.locationText || '请选择位置'
+    },
+    saveHintText() {
+      return this.lastSavedAt ? `最近保存于 ${this.lastSavedAt}` : '草稿会同步显示在草稿箱'
     }
   },
   onLoad(options) {
@@ -218,6 +230,7 @@ module.exports = {
 <style lang="scss" scoped>
 .editor-page {
   padding: 24rpx;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 192rpx);
 }
 
 .editor-header {

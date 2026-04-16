@@ -3,6 +3,60 @@ import mpx from '@mpxjs/core'
 const CURRENT_USER_ID = 'user_001'
 const SESSION_STORAGE_KEY = 'template_session'
 
+function buildImageUrl(seed, width = 800, height = 800) {
+  return `https://picsum.photos/seed/${encodeURIComponent(seed)}/${width}/${height}`
+}
+
+const ONLINE_IMAGE_MAP = {
+  'topic-shanghai.jpg': buildImageUrl('topic-shanghai', 960, 640),
+  'topic-weekend.jpg': buildImageUrl('topic-weekend', 960, 640),
+  'topic-goodthings.jpg': buildImageUrl('topic-goodthings', 960, 640),
+  'avatar-1.jpg': buildImageUrl('avatar-1', 240, 240),
+  'avatar-2.jpg': buildImageUrl('avatar-2', 240, 240),
+  'avatar-3.jpg': buildImageUrl('avatar-3', 240, 240),
+  'avatar-4.jpg': buildImageUrl('avatar-4', 240, 240),
+  'note-1.jpg': buildImageUrl('note-1', 900, 1200),
+  'note-2.jpg': buildImageUrl('note-2', 900, 1200),
+  'note-3.jpg': buildImageUrl('note-3', 900, 1200),
+  'note-4.jpg': buildImageUrl('note-4', 900, 1200),
+  'note-5.jpg': buildImageUrl('note-5', 900, 1200),
+  'note-6.jpg': buildImageUrl('note-6', 900, 1200),
+  'note-detail-1.jpg': buildImageUrl('note-detail-1', 1200, 1600),
+  'note-detail-2.jpg': buildImageUrl('note-detail-2', 1200, 1600),
+  'note-detail-3.jpg': buildImageUrl('note-detail-3', 1200, 1600),
+  'draft-1.jpg': buildImageUrl('draft-1', 800, 800),
+  'draft-2.jpg': buildImageUrl('draft-2', 800, 800),
+  'draft-3.jpg': buildImageUrl('draft-3', 800, 800),
+  'avatar-1-new.jpg': buildImageUrl('avatar-1-new', 240, 240)
+}
+
+function toOnlineMockAsset(path = '') {
+  if (typeof path !== 'string') return path
+  if (!path.startsWith('/src/static/images/mock/')) return path
+
+  const fileName = path.split('/').pop()
+  return ONLINE_IMAGE_MAP[fileName] || buildImageUrl(fileName || 'mock-default', 960, 960)
+}
+
+export function normalizeMockAssets(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizeMockAssets(item))
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.keys(value).reduce((result, key) => {
+      result[key] = normalizeMockAssets(value[key])
+      return result
+    }, {})
+  }
+
+  if (typeof value === 'string') {
+    return toOnlineMockAsset(value)
+  }
+
+  return value
+}
+
 let hotKeywords = [
   { id: 'hot_001', keyword: '上海探店', heat: 98 },
   { id: 'hot_002', keyword: '春季穿搭', heat: 93 },
@@ -451,7 +505,7 @@ export function createDataResponse(data) {
   return Promise.resolve({
     code: 0,
     message: 'success',
-    data: clone(data)
+    data: normalizeMockAssets(clone(data))
   })
 }
 
@@ -464,7 +518,7 @@ export function createListResponse(list, parameter = {}) {
     code: 0,
     message: 'success',
     data: {
-      list: clone(list.slice(start, end)),
+      list: normalizeMockAssets(clone(list.slice(start, end))),
       pageNo,
       pageSize,
       hasMore: end < list.length
@@ -892,7 +946,7 @@ export function updateCurrentUserMock(payload = {}) {
 
 export function createUploadImageMock() {
   return {
-    url: `/src/static/images/mock/upload-result-${Date.now()}.jpg`,
+    url: buildImageUrl(`upload-${Date.now()}`, 1080, 1440),
     width: 1080,
     height: 1440
   }
