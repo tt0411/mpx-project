@@ -14,6 +14,5 @@ export const routes = [
   { path: '/pagesFeature/topic-detail/index', name: 'topic-detail', label: '话题详情' },
   { path: '/pagesCommon/login/index', name: 'login', label: '登录' },
   { path: '/pagesCommon/edit-profile/index', name: 'edit-profile', label: '编辑资料' },
-  { path: '/pagesCommon/settings/index', name: 'settings', label: '设置' },
-  { path: '/pagesCommon/web-view/index', name: 'web-view', label: '网页/WebView' }
+  { path: '/pagesCommon/settings/index', name: 'settings', label: '设置' }
 ]

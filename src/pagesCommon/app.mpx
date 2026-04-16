@@ -3,8 +3,7 @@
     "pages": [
       "./login/index",
       "./edit-profile/index",
-      "./settings/index",
-      "./web-view/index"
+      "./settings/index"
     ]
   }
 </script>

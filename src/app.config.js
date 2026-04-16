@@ -52,20 +52,8 @@ module.exports = {
     ]
   },
   usingComponents: {
-    'mpx-tabs-page': './components/mpx-tabs-page/index',
-    'mpx-scroll-view': './components/mpx-scroll-view/index',
     'mpx-empty': './components/mpx-empty/index',
-    'mpx-copy': './components/mpx-copy/index',
-    'mpx-main-title': './components/mpx-main-title/index',
-    'mpx-view-image': './components/mpx-view-image/index',
-    'mpx-list': './components/mpx-list/index',
     'mpx-skeleton': './components/mpx-skeleton/index',
-    'mpx-swipe-cell': './components/mpx-swipe-cell/index',
-    'mpx-steps': './components/mpx-steps/index',
-    'mpx-notice-bar': './components/mpx-notice-bar/index',
-    'cube-tab-bar': '@mpxjs/mpx-cube-ui/lib/components/tab-bar/index.mpx',
-    'cube-tab': '@mpxjs/mpx-cube-ui/lib/components/tab-bar/tab.mpx',
-    'cube-icon': '@mpxjs/mpx-cube-ui/lib/components/icon/index.mpx',
-    'cube-button': '@mpxjs/mpx-cube-ui/lib/components/button/index.mpx',
+    'cube-icon': '@mpxjs/mpx-cube-ui/lib/components/icon/index.mpx'
   }
 }
