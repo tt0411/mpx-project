@@ -9,10 +9,7 @@
     "build:test": "cross-env APP_ENV=test PLATFORM_ENV=wx node scripts/build-config.js && mpx-cli-service build --mode development",
     "build:prod": "cross-env APP_ENV=prod PLATFORM_ENV=wx node scripts/build-config.js && mpx-cli-service build",
     "build:test:wx": "cross-env APP_ENV=test PLATFORM_ENV=wx node scripts/build-config.js && mpx-cli-service build --mode development",
-    "build:prod:wx": "cross-env APP_ENV=prod PLATFORM_ENV=wx node scripts/build-config.js && mpx-cli-service build",
-    "serve:ali": "cross-env APP_ENV=test PLATFORM_ENV=ali node scripts/build-config.js && mpx-cli-service serve --targets=ali --watch",
-    "build:test:ali": "cross-env APP_ENV=test PLATFORM_ENV=ali node scripts/build-config.js && mpx-cli-service build --mode development --targets=ali",
-    "build:prod:ali": "cross-env APP_ENV=prod PLATFORM_ENV=ali node scripts/build-config.js && mpx-cli-service build --targets=ali"
+    "build:prod:wx": "cross-env APP_ENV=prod PLATFORM_ENV=wx node scripts/build-config.js && mpx-cli-service build"
   },
   "dependencies": {
     "@mpxjs/api-proxy": "^2.9.0",
@@ -22,7 +19,6 @@
     "@mpxjs/pinia": "^2.9.0",
     "@mpxjs/store": "^2.9.0",
     "@mpxjs/utils": "^2.9.0",
-    "dayjs": "^1.11.13",
     "jsencrypt": "^3.3.2",
     "pinia": "^2.0.14",
     "vue": "^2.7.0",
@@ -51,8 +47,6 @@
     "process": "^0.11.10",
     "sass": "^1.87.0",
     "sass-loader": "^16.0.5",
-    "stylus": "^0.64.0",
-    "stylus-loader": "^8.1.3",
     "webpack": "^5.43.0"
   },
   "browserslist": [
