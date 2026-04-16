@@ -1,0 +1,197 @@
+<template>
+  <view class="page user-profile-page">
+    <view wx:if="{{ loadingProfile }}" class="skeleton-wrap">
+      <mpx-skeleton rows="6" row-height="32" padding="20px" background="#ffffff" />
+    </view>
+
+    <view wx:elif="{{ profile }}">
+      <view class="profile-card">
+        <image class="profile-avatar" src="{{ profile.avatar }}" mode="aspectFill" />
+        <view class="profile-name">{{ profile.nickname }}</view>
+        <view class="profile-bio">{{ profile.bio }}</view>
+        <view class="stats-row">
+          <view class="stat-item">
+            <view class="stat-value">{{ profile.followCount }}</view>
+            <view class="stat-label">关注</view>
+          </view>
+          <view class="stat-item">
+            <view class="stat-value">{{ profile.fansCount }}</view>
+            <view class="stat-label">粉丝</view>
+          </view>
+          <view class="stat-item">
+            <view class="stat-value">{{ profile.likedReceivedCount }}</view>
+            <view class="stat-label">获赞</view>
+          </view>
+        </view>
+        <view class="follow-button {{ profile.isFollowed ? 'is-followed' : '' }}" bindtap="handleFollow">{{ profile.isFollowed ? '已关注' : '关注' }}</view>
+      </view>
+
+      <view class="section-title">TA 的笔记</view>
+      <view wx:if="{{ userNotes.loading && userNotes.list.length === 0 }}" class="skeleton-wrap">
+        <mpx-skeleton rows="4" row-height="32" padding="20px" background="#ffffff" />
+      </view>
+      <mpx-empty wx:elif="{{ !userNotes.loading && userNotes.list.length === 0 }}" title="还没有发布内容" desc="TA 发布的笔记会显示在这里。" />
+      <view wx:else class="feed-grid">
+        <view class="feed-column">
+          <note-card wx:for="{{ leftColumn }}" wx:key="id" note="{{ item }}" bind:cardtap="handleCardTap" bind:authortap="noop" />
+        </view>
+        <view class="feed-column">
+          <note-card wx:for="{{ rightColumn }}" wx:key="id" note="{{ item }}" bind:cardtap="handleCardTap" bind:authortap="noop" />
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import { createPage } from '@mpxjs/core'
+import { mapActions, mapState } from '@mpxjs/pinia'
+import { useProfileStore, useUserStore } from '@/store'
+import { navigateTo } from '@/utils'
+
+function splitColumns(list = []) {
+  return list.reduce((columns, item, index) => {
+    columns[index % 2].push(item)
+    return columns
+  }, [[], []])
+}
+
+createPage({
+  data: {
+    userId: ''
+  },
+  computed: {
+    ...mapState(useProfileStore, ['visitProfiles', 'visitUserNotes', 'followPendingMap']),
+    profile() {
+      return this.visitProfiles[this.userId] || null
+    },
+    userNotes() {
+      return this.visitUserNotes[this.userId] || { list: [], loading: false }
+    },
+    loadingProfile() {
+      return !this.profile
+    },
+    leftColumn() {
+      return splitColumns(this.userNotes.list || [])[0]
+    },
+    rightColumn() {
+      return splitColumns(this.userNotes.list || [])[1]
+    }
+  },
+  async onLoad(options) {
+    this.userId = options.userId || ''
+    await Promise.all([
+      this.fetchVisitProfile(this.userId),
+      this.fetchVisitUserNotes(this.userId, { refresh: true })
+    ])
+  },
+  methods: {
+    ...mapActions(useProfileStore, ['fetchVisitProfile', 'fetchVisitUserNotes', 'patchVisitFollowState']),
+    handleFollow() {
+      if (!this.userId || this.followPendingMap[this.userId]) return
+      if (!useUserStore().isLogin) {
+        navigateTo('login')
+        return
+      }
+      this.patchVisitFollowState(this.userId)
+    },
+    handleCardTap(e) {
+      navigateTo('note-detail', { noteId: e.detail.note.id })
+    },
+    noop() {}
+  }
+})
+</script>
+
+<script name="json">
+module.exports = {
+  navigationBarTitleText: '用户主页',
+  allowsBounceVertical: 'NO',
+  usingComponents: {
+    'note-card': '@/components/note-card'
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.user-profile-page {
+  padding: 24rpx;
+}
+
+.skeleton-wrap,
+.profile-card {
+  border-radius: 24rpx;
+  overflow: hidden;
+  background: #fff;
+}
+
+.profile-card {
+  padding: 32rpx 24rpx;
+  text-align: center;
+}
+
+.profile-avatar {
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 999rpx;
+}
+
+.profile-name,
+.section-title,
+.stat-value {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #222;
+}
+
+.profile-name {
+  margin-top: 18rpx;
+}
+
+.profile-bio,
+.stat-label {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.5;
+}
+
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24rpx;
+}
+
+.stat-item {
+  flex: 1;
+}
+
+.follow-button {
+  width: 180rpx;
+  height: 64rpx;
+  margin: 24rpx auto 0;
+  line-height: 64rpx;
+  border-radius: 999rpx;
+  background: #FF2442;
+  color: #fff;
+  font-size: 24rpx;
+}
+
+.follow-button.is-followed {
+  background: #f5f5f7;
+  color: #666;
+}
+
+.section-title {
+  margin: 28rpx 0 18rpx;
+}
+
+.feed-grid {
+  display: flex;
+  gap: 16rpx;
+}
+
+.feed-column {
+  flex: 1;
+}
+</style>

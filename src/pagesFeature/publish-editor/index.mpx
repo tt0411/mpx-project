@@ -1,0 +1,329 @@
+<template>
+  <view class="page editor-page">
+    <view class="editor-header">
+      <view class="header-action" bindtap="handleCancel">取消</view>
+      <view class="header-title">发布图文</view>
+      <view class="header-action is-primary" bindtap="handlePublish">{{ publishing ? '发布中' : '发布' }}</view>
+    </view>
+
+    <view wx:if="{{ loadingDraft }}" class="loading-wrap">
+      <mpx-skeleton rows="6" row-height="32" padding="20px" background="#ffffff" />
+    </view>
+
+    <view wx:else>
+      <view class="section-card">
+        <view class="section-label">图片</view>
+        <mpx-uploader
+          value="{{ editorForm.images }}"
+          max-count="9"
+          multiple="{{ true }}"
+          preview-size="196rpx"
+          image-fit="cover"
+          bind:change="handleImageChange"
+          bind:delete="handleImageDelete"
+          upload-text="添加图片"
+        />
+      </view>
+
+      <view class="section-card">
+        <view class="section-label">标题</view>
+        <input class="title-input" value="{{ editorForm.title }}" placeholder="填写一个吸引人的标题" maxlength="30" bindinput="handleTitleInput" />
+      </view>
+
+      <view class="section-card">
+        <view class="section-label">正文</view>
+        <textarea class="content-input" value="{{ editorForm.content }}" placeholder="分享你的真实体验和感受..." maxlength="500" bindinput="handleContentInput" />
+      </view>
+
+      <view class="section-card">
+        <view class="section-row">
+          <view class="section-label">话题</view>
+          <view class="section-action" bindtap="handleAddTopic">添加话题</view>
+        </view>
+        <view wx:if="{{ editorForm.topics.length }}" class="topic-group">
+          <view wx:for="{{ editorForm.topics }}" wx:key="id" class="topic-tag" data-id="{{ item.id }}" bindtap="handleRemoveTopic">{{ item.name }}</view>
+        </view>
+        <view wx:else class="empty-hint">还没有添加话题</view>
+      </view>
+
+      <view class="section-card section-card-compact" bindtap="handleSelectCategory">
+        <view class="section-label">分类</view>
+        <view class="section-value">{{ currentCategoryLabel || '请选择分类' }}</view>
+      </view>
+
+      <view class="section-card section-card-compact" bindtap="handleSelectLocation">
+        <view class="section-label">位置</view>
+        <view class="section-value">{{ editorForm.locationText || '请选择位置' }}</view>
+      </view>
+
+      <view class="meta-line">{{ lastSavedAt ? `最近保存于 ${lastSavedAt}` : '草稿会同步显示在草稿箱' }}</view>
+
+      <button class="draft-button" loading="{{ savingDraft }}" bindtap="handleSaveDraft">保存草稿</button>
+    </view>
+  </view>
+</template>
+
+<script>
+import mpx, { createPage } from '@mpxjs/core'
+import { mapActions, mapState } from '@mpxjs/pinia'
+import { usePublishStore } from '@/store'
+import { navigateBack, redirectTo } from '@/utils'
+
+const TOPIC_OPTIONS = [
+  { id: 'topic_001', name: '#上海探店' },
+  { id: 'topic_002', name: '#周末去哪玩' },
+  { id: 'topic_003', name: '#平价好物推荐' }
+]
+
+const CATEGORY_OPTIONS = [
+  { id: 'travel', name: '旅行' },
+  { id: 'food', name: '美食' },
+  { id: 'outfit', name: '穿搭' },
+  { id: 'beauty', name: '美妆' },
+  { id: 'home', name: '家居' },
+  { id: 'study', name: '学习' },
+  { id: 'explore', name: '探店' }
+]
+
+const LOCATION_OPTIONS = ['上海市静安区', '杭州市西湖区', '苏州市姑苏区']
+
+createPage({
+  computed: {
+    ...mapState(usePublishStore, ['editorForm', 'currentDraftId', 'loadingDraft', 'savingDraft', 'publishing', 'hasUnsavedChanges', 'lastSavedAt']),
+    currentCategoryLabel() {
+      const currentCategory = CATEGORY_OPTIONS.find((item) => item.id === this.editorForm.categoryId)
+      return currentCategory ? currentCategory.name : ''
+    }
+  },
+  onLoad(options) {
+    this.resetEditor()
+    if (options.draftId) {
+      this.loadDraft(options.draftId)
+    }
+  },
+  methods: {
+    ...mapActions(usePublishStore, ['setEditorField', 'setEditorImages', 'loadDraft', 'saveCurrentDraft', 'publishCurrentNote', 'resetEditor']),
+    handleImageChange(e) {
+      this.setEditorImages(e.detail.files || [])
+    },
+    handleImageDelete(e) {
+      const nextImages = [...this.editorForm.images]
+      nextImages.splice(e.detail.index, 1)
+      this.setEditorImages(nextImages)
+    },
+    handleTitleInput(e) {
+      this.setEditorField('title', e.detail.value)
+    },
+    handleContentInput(e) {
+      this.setEditorField('content', e.detail.value)
+    },
+    handleAddTopic() {
+      const nextTopic = TOPIC_OPTIONS.find((item) => !this.editorForm.topics.some((topic) => topic.id === item.id))
+      if (!nextTopic) {
+        mpx.showToast({ title: '可选话题已全部添加', icon: 'none' })
+        return
+      }
+      this.setEditorField('topics', [...this.editorForm.topics, nextTopic])
+    },
+    handleRemoveTopic(e) {
+      const { id } = e.currentTarget.dataset
+      this.setEditorField('topics', this.editorForm.topics.filter((item) => item.id !== id))
+    },
+    handleSelectCategory() {
+      mpx.showActionSheet({
+        itemList: CATEGORY_OPTIONS.map((item) => item.name),
+        success: (res) => {
+          const currentCategory = CATEGORY_OPTIONS[res.tapIndex]
+          if (currentCategory) {
+            this.setEditorField('categoryId', currentCategory.id)
+          }
+        }
+      })
+    },
+    handleSelectLocation() {
+      mpx.showActionSheet({
+        itemList: LOCATION_OPTIONS,
+        success: (res) => {
+          this.setEditorField('locationText', LOCATION_OPTIONS[res.tapIndex] || '')
+        }
+      })
+    },
+    async handleSaveDraft() {
+      const hasContent = this.editorForm.images.length || this.editorForm.title || this.editorForm.content
+      if (!hasContent) {
+        mpx.showToast({ title: '先添加一点内容再保存草稿', icon: 'none' })
+        return
+      }
+
+      const result = await this.saveCurrentDraft()
+      if (result) {
+        mpx.showToast({ title: '草稿已保存', icon: 'none' })
+      }
+    },
+    async handlePublish() {
+      if (!this.editorForm.images.length) {
+        mpx.showToast({ title: '至少添加一张图片', icon: 'none' })
+        return
+      }
+
+      if (!this.editorForm.title.trim()) {
+        mpx.showToast({ title: '请填写标题', icon: 'none' })
+        return
+      }
+
+      const result = await this.publishCurrentNote()
+      if (result) {
+        mpx.showToast({ title: '发布成功', icon: 'none' })
+        redirectTo('my-notes')
+      }
+    },
+    handleCancel() {
+      if (!this.hasUnsavedChanges) {
+        navigateBack()
+        return
+      }
+
+      mpx.showActionSheet({
+        itemList: ['保存草稿并离开', '直接离开'],
+        success: async (res) => {
+          if (res.tapIndex === 0) {
+            const result = await this.saveCurrentDraft()
+            if (result) {
+              navigateBack()
+            }
+            return
+          }
+
+          if (res.tapIndex === 1) {
+            this.resetEditor()
+            navigateBack()
+          }
+        }
+      })
+    }
+  }
+})
+</script>
+
+<script name="json">
+module.exports = {
+  navigationBarTitleText: '图文编辑',
+  allowsBounceVertical: 'NO',
+  usingComponents: {
+    'mpx-uploader': '@/components/mpx-uploader'
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.editor-page {
+  padding: 24rpx;
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.header-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #222;
+}
+
+.header-action {
+  min-width: 96rpx;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.header-action.is-primary {
+  text-align: right;
+  color: #FF2442;
+  font-weight: 600;
+}
+
+.loading-wrap {
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
+.section-card {
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  border-radius: 24rpx;
+  background: #fff;
+}
+
+.section-card-compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-label {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #222;
+}
+
+.section-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-action,
+.section-value {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.title-input,
+.content-input {
+  width: 100%;
+  margin-top: 16rpx;
+  color: #222;
+  font-size: 26rpx;
+  line-height: 1.5;
+}
+
+.content-input {
+  min-height: 220rpx;
+}
+
+.topic-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 18rpx;
+}
+
+.topic-tag {
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: #fff1f3;
+  color: #FF2442;
+  font-size: 22rpx;
+}
+
+.empty-hint,
+.meta-line {
+  margin-top: 18rpx;
+  font-size: 22rpx;
+  color: #999;
+}
+
+.meta-line {
+  margin: 4rpx 6rpx 24rpx;
+}
+
+.draft-button {
+  background: #fff;
+  color: #FF2442;
+  border: 1px solid #ffd4db;
+  border-radius: 999rpx;
+}
+</style>

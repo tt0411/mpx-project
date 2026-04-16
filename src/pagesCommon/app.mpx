@@ -2,9 +2,9 @@
   {
     "pages": [
       "./login/index",
-      "./web-view/index",
-      "./list-demo/index",
-      "./demo-navbar/index"
+      "./edit-profile/index",
+      "./settings/index",
+      "./web-view/index"
     ]
   }
 </script>

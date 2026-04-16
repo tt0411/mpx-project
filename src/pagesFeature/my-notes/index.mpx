@@ -1,0 +1,115 @@
+<template>
+  <view class="page my-notes-page">
+    <view class="page-title">我的发布</view>
+
+    <view wx:if="{{ myNotes.loading && myNotes.list.length === 0 }}" class="skeleton-wrap">
+      <mpx-skeleton rows="4" row-height="32" padding="20px" background="#ffffff" />
+      <mpx-skeleton rows="4" row-height="32" padding="20px" background="#ffffff" />
+    </view>
+
+    <mpx-empty wx:elif="{{ !myNotes.loading && myNotes.list.length === 0 }}" title="还没有发布内容" desc="发布成功后会显示在这里。" />
+
+    <view wx:else class="feed-grid">
+      <view class="feed-column">
+        <view wx:for="{{ leftColumn }}" wx:key="id" class="note-block">
+          <note-card note="{{ item }}" bind:cardtap="handleCardTap" bind:authortap="handleAuthorTap" />
+          <view class="publish-time">{{ item.publishTime }}</view>
+        </view>
+      </view>
+      <view class="feed-column">
+        <view wx:for="{{ rightColumn }}" wx:key="id" class="note-block">
+          <note-card note="{{ item }}" bind:cardtap="handleCardTap" bind:authortap="handleAuthorTap" />
+          <view class="publish-time">{{ item.publishTime }}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import mpx, { createPage } from '@mpxjs/core'
+import { mapActions, mapState } from '@mpxjs/pinia'
+import { useProfileStore, useUserStore } from '@/store'
+import { navigateTo } from '@/utils'
+
+function splitColumns(list = []) {
+  return list.reduce((columns, item, index) => {
+    columns[index % 2].push(item)
+    return columns
+  }, [[], []])
+}
+
+createPage({
+  computed: {
+    ...mapState(useProfileStore, ['myNotes']),
+    leftColumn() {
+      return splitColumns(this.myNotes.list || [])[0]
+    },
+    rightColumn() {
+      return splitColumns(this.myNotes.list || [])[1]
+    }
+  },
+  async onShow() {
+    if (!useUserStore().isLogin) {
+      navigateTo('login')
+      return
+    }
+
+      await this.fetchMyNotes({ refresh: true })
+    },
+  methods: {
+    ...mapActions(useProfileStore, ['fetchMyNotes']),
+    handleCardTap(e) {
+      navigateTo('note-detail', { noteId: e.detail.note.id })
+    },
+    handleAuthorTap(e) {
+      navigateTo('user-profile', { userId: e.detail.note.author.id })
+    }
+  }
+})
+</script>
+
+<script name="json">
+module.exports = {
+  navigationBarTitleText: '我的发布',
+  allowsBounceVertical: 'NO',
+  usingComponents: {
+    'note-card': '@/components/note-card'
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.my-notes-page {
+  padding: 24rpx;
+}
+
+.page-title {
+  margin-bottom: 24rpx;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #222;
+}
+
+.skeleton-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.feed-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+
+.feed-column {
+  flex: 1;
+}
+
+.publish-time {
+  margin: -4rpx 12rpx 16rpx;
+  font-size: 22rpx;
+  color: #999;
+}
+</style>

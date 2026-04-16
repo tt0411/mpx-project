@@ -1,0 +1,137 @@
+<template>
+  <view class="page edit-page">
+    <view class="form-card">
+      <view class="field-label">头像</view>
+      <input class="field-input" value="{{ form.avatar }}" placeholder="填写头像地址" bindinput="handleInput" data-key="avatar" />
+
+      <view class="field-label">昵称</view>
+      <input class="field-input" value="{{ form.nickname }}" placeholder="填写昵称" bindinput="handleInput" data-key="nickname" />
+
+      <view class="field-label">简介</view>
+      <textarea class="field-textarea" value="{{ form.bio }}" placeholder="介绍一下你自己" bindinput="handleInput" data-key="bio" />
+
+      <view class="field-label">性别</view>
+      <input class="field-input" value="{{ form.gender }}" placeholder="female / male / unknown" bindinput="handleInput" data-key="gender" />
+
+      <view class="field-label">地区</view>
+      <input class="field-input" value="{{ form.location }}" placeholder="填写地区" bindinput="handleInput" data-key="location" />
+    </view>
+
+    <button class="save-button" loading="{{ saving }}" bindtap="handleSave">保存资料</button>
+  </view>
+</template>
+
+<script>
+import mpx, { createPage } from '@mpxjs/core'
+import { mapActions, mapState } from '@mpxjs/pinia'
+import { updateProfile } from '@/api'
+import { useProfileStore, useUserStore } from '@/store'
+import { navigateBack } from '@/utils'
+
+createPage({
+  data: {
+    saving: false,
+    form: {
+      avatar: '',
+      nickname: '',
+      bio: '',
+      gender: '',
+      location: ''
+    }
+  },
+  computed: {
+    ...mapState(useUserStore, ['token', 'userInfo'])
+  },
+  onShow() {
+    this.form = {
+      avatar: this.userInfo.avatar || '',
+      nickname: this.userInfo.nickname || this.userInfo.name || '',
+      bio: this.userInfo.bio || '',
+      gender: this.userInfo.gender || '',
+      location: this.userInfo.location || ''
+    }
+  },
+  methods: {
+    ...mapActions(useUserStore, ['setSession']),
+    ...mapActions(useProfileStore, ['fetchMyProfile']),
+    handleInput(e) {
+      const { key } = e.currentTarget.dataset
+      this.form = {
+        ...this.form,
+        [key]: e.detail.value
+      }
+    },
+    async handleSave() {
+      if (!this.form.nickname.trim()) {
+        mpx.showToast({ title: '请填写昵称', icon: 'none' })
+        return
+      }
+
+      this.saving = true
+      try {
+        const { code, data } = await updateProfile({ data: this.form })
+        if (code === 0 && data) {
+          this.setSession({ token: this.token, userInfo: data })
+          await this.fetchMyProfile()
+          mpx.showToast({ title: '资料已更新', icon: 'none' })
+          navigateBack()
+        }
+      } finally {
+        this.saving = false
+      }
+    }
+  }
+})
+</script>
+
+<script name="json">
+module.exports = {
+  navigationBarTitleText: '编辑资料',
+  allowsBounceVertical: 'NO'
+}
+</script>
+
+<style lang="scss" scoped>
+.edit-page {
+  padding: 24rpx;
+}
+
+.form-card {
+  padding: 24rpx;
+  border-radius: 24rpx;
+  background: #fff;
+}
+
+.field-label {
+  margin-top: 20rpx;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.field-label:first-child {
+  margin-top: 0;
+}
+
+.field-input,
+.field-textarea {
+  width: 100%;
+  margin-top: 12rpx;
+  padding: 18rpx 20rpx;
+  box-sizing: border-box;
+  border-radius: 18rpx;
+  background: #f7f8fa;
+  font-size: 24rpx;
+  color: #222;
+}
+
+.field-textarea {
+  min-height: 180rpx;
+}
+
+.save-button {
+  margin-top: 24rpx;
+  background: #FF2442;
+  color: #fff;
+  border-radius: 999rpx;
+}
+</style>

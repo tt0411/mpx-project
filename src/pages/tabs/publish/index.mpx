@@ -1,0 +1,232 @@
+<template>
+  <view class="page publish-page">
+    <view class="page-header">
+      <view class="page-title">发布</view>
+      <view class="page-desc">从这里开始记录一条新的灵感笔记。</view>
+    </view>
+
+    <view class="hero-card" bindtap="handlePrimaryAction">
+      <view class="hero-icon">+</view>
+      <view class="hero-content">
+        <view class="hero-title">发图文</view>
+        <view class="hero-subtitle">记录生活瞬间、探店笔记和实用清单</view>
+      </view>
+    </view>
+
+    <view class="grid-section">
+      <view class="action-card action-card-left" bindtap="handleActionTap" data-action="drafts">
+        <view class="action-title">草稿箱</view>
+        <view class="action-desc">继续编辑未发布内容</view>
+      </view>
+      <view class="action-card" bindtap="handleActionTap" data-action="notes">
+        <view class="action-title">我的发布</view>
+        <view class="action-desc">查看已经发布的内容</view>
+      </view>
+    </view>
+
+    <view wx:if="{{ isLogin && draftSummary.latestDraft }}" class="draft-card" bindtap="goLatestDraft">
+      <view class="draft-header">
+        <view class="draft-title">最近草稿</view>
+        <view class="draft-count">{{ draftSummary.count }} 篇未发布</view>
+      </view>
+      <view class="draft-name">{{ draftSummary.latestDraft.title || '未命名草稿' }}</view>
+      <view class="draft-meta">最后编辑于 {{ draftSummary.latestDraft.updatedAt }}</view>
+    </view>
+
+    <view class="tips-card" bindtap="handleGuidelineTap">
+      <view class="tips-title">社区规范</view>
+      <view class="tips-desc">保持真实分享、避免引流和违规信息，首期先展示说明入口。</view>
+    </view>
+  </view>
+</template>
+
+<script>
+import mpx, { createPage } from '@mpxjs/core'
+import { mapActions, mapState } from '@mpxjs/pinia'
+import { useProfileStore, useUserStore } from '@/store'
+import { navigateTo } from '@/utils'
+
+createPage({
+  computed: {
+    ...mapState(useUserStore, ['isLogin']),
+    ...mapState(useProfileStore, ['draftSummary'])
+  },
+  onShow() {
+    if (this.isLogin) {
+      this.fetchDraftSummary()
+    }
+  },
+  methods: {
+    ...mapActions(useProfileStore, ['fetchDraftSummary']),
+    ensureLogin() {
+      if (this.isLogin) return true
+      navigateTo('login')
+      return false
+    },
+    handlePrimaryAction() {
+      if (!this.ensureLogin()) return
+      navigateTo('publish-editor')
+    },
+    handleActionTap(e) {
+      if (!this.ensureLogin()) return
+
+      const { action } = e.currentTarget.dataset
+      if (action === 'drafts') {
+        navigateTo('draft-list')
+        return
+      }
+
+      if (action === 'notes') {
+        navigateTo('my-notes')
+      }
+    },
+    goLatestDraft() {
+      if (!this.ensureLogin() || !this.draftSummary.latestDraft) return
+      navigateTo('publish-editor', { draftId: this.draftSummary.latestDraft.draftId })
+    },
+    handleGuidelineTap() {
+      mpx.showToast({
+        title: '请保持真实分享，避免引流与违规信息',
+        icon: 'none'
+      })
+    }
+  }
+})
+</script>
+
+<script name="json">
+module.exports = {
+  navigationBarTitleText: '发布',
+  allowsBounceVertical: 'NO'
+}
+</script>
+
+<style lang="scss" scoped>
+.publish-page {
+  padding: 24rpx;
+}
+
+.page-header {
+  margin-bottom: 24rpx;
+}
+
+.page-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #222;
+}
+
+.page-desc {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.5;
+}
+
+.hero-card {
+  display: flex;
+  align-items: center;
+  padding: 28rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg, #FF4B68 0%, #FF2442 100%);
+  color: #fff;
+  box-shadow: 0 16rpx 40rpx rgba(255, 36, 66, 0.2);
+}
+
+.hero-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 84rpx;
+  height: 84rpx;
+  margin-right: 20rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 48rpx;
+  line-height: 1;
+}
+
+.hero-content {
+  flex: 1;
+}
+
+.hero-title {
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.hero-subtitle {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.grid-section {
+  display: flex;
+  margin-top: 20rpx;
+}
+
+.action-card,
+.tips-card,
+.draft-card {
+  background: #fff;
+  border-radius: 20rpx;
+}
+
+.action-card {
+  flex: 1;
+  padding: 24rpx;
+}
+
+.action-card-left {
+  margin-right: 16rpx;
+}
+
+.action-title,
+.tips-title,
+.draft-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #222;
+}
+
+.action-desc,
+.tips-desc,
+.draft-meta,
+.draft-count {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.5;
+}
+
+.draft-card,
+.tips-card {
+  margin-top: 20rpx;
+  padding: 24rpx;
+}
+
+.draft-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.draft-count {
+  margin-top: 0;
+  font-size: 22rpx;
+  color: #999;
+}
+
+.draft-name {
+  margin-top: 14rpx;
+  font-size: 28rpx;
+  color: #222;
+  font-weight: 500;
+}
+
+.draft-meta {
+  color: #999;
+}
+</style>

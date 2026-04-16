@@ -1,46 +1,104 @@
 <template>
   <view class="custom-tabbar {{ tabbarMode === 'floating' ? 'is-floating' : '' }}">
-    <cube-tab-bar wx:model="{{ localTabIndex }}" wx:model-prop="value" tabs="{{ tabBarList }}" bindchange="onChange"
-      custom-content>
-      <cube-tab class="cube-tab" wx:for="{{ tabBarList }}" wx:key="index" label="{{ item.label }}"
-        value="{{ item.value }}" custom-content custom-icon>
-        <cube-icon size="{{ 24 }}" color="{{ activeTabbarIndex === index ? '#1677ff' : '#666666' }}"
-          type="{{ item.icon }}" />
-        <view class="{{ activeTabbarIndex === index ? 'active tab-label' : 'tab-label' }}">{{ item.label }}</view>
-      </cube-tab>
-    </cube-tab-bar>
+    <view class="tabbar-shell">
+      <view class="tabbar-side">
+        <view
+          wx:for="{{ leftTabList }}"
+          wx:key="value"
+          class="tabbar-item {{ activeTabbarIndex === item.value ? 'is-active' : '' }}"
+          data-value="{{ item.value }}"
+          bindtap="handleTabTap"
+        >
+          <view class="tabbar-icon-wrap">
+            <cube-icon size="22" color="{{ activeTabbarIndex === item.value ? '#FF2442' : '#666666' }}" type="{{ item.icon }}" />
+          </view>
+          <view class="tabbar-label">{{ item.label }}</view>
+        </view>
+      </view>
+
+      <view wx:if="{{ centerTab }}" class="tabbar-center" data-value="{{ centerTab.value }}" bindtap="handleTabTap">
+        <view class="publish-button {{ activeTabbarIndex === centerTab.value ? 'is-active' : '' }}">
+          <view class="publish-plus">+</view>
+        </view>
+        <view class="publish-label">{{ centerTab.label }}</view>
+      </view>
+
+      <view class="tabbar-side tabbar-side-right">
+        <view
+          wx:for="{{ rightTabList }}"
+          wx:key="value"
+          class="tabbar-item {{ activeTabbarIndex === item.value ? 'is-active' : '' }}"
+          data-value="{{ item.value }}"
+          bindtap="handleTabTap"
+        >
+          <view class="tabbar-icon-wrap">
+            <cube-icon size="22" color="{{ activeTabbarIndex === item.value ? '#FF2442' : '#666666' }}" type="{{ item.icon }}" />
+            <view wx:if="{{ item.name === 'message' && messageBadgeText }}" class="tabbar-badge">{{ messageBadgeText }}</view>
+          </view>
+          <view class="tabbar-label">{{ item.label }}</view>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
 <script>
 import mpx, { createComponent } from '@mpxjs/core'
 import { mapActions, mapState } from '@mpxjs/pinia'
-import { useCommonStore } from '@/store'
+import { useCommonStore, useMessageStore, useUserStore } from '@/store'
 
 createComponent({
-  data() {
-    return {
-      localTabIndex: 0
-    }
-  },
   computed: {
-    ...mapState(useCommonStore, ['activeTabbarIndex', 'tabBarList', 'tabbarMode'])
-  },
-  watch: {
-    activeTabbarIndex(newVal) {
-      this.localTabIndex = newVal
+    ...mapState(useCommonStore, ['activeTabbarIndex', 'tabBarList', 'tabbarMode', 'messageBadgeCount']),
+    centerIndex() {
+      return this.tabBarList.findIndex((item) => item.isCenter)
+    },
+    leftTabList() {
+      if (this.centerIndex === -1) return this.tabBarList
+      return this.tabBarList.slice(0, this.centerIndex)
+    },
+    centerTab() {
+      if (this.centerIndex === -1) return null
+      return this.tabBarList[this.centerIndex]
+    },
+    rightTabList() {
+      if (this.centerIndex === -1) return []
+      return this.tabBarList.slice(this.centerIndex + 1)
+    },
+    messageBadgeText() {
+      if (!this.messageBadgeCount) return ''
+      return this.messageBadgeCount > 99 ? '99+' : String(this.messageBadgeCount)
     }
   },
-  created() {
-    this.localTabIndex = this.activeTabbarIndex
+  attached() {
+    this.syncActiveTabByRoute()
+    if (useUserStore().isLogin) {
+      useMessageStore().fetchUnreadCount()
+    } else {
+      this.setMessageBadgeCount(0)
+    }
   },
   methods: {
-    ...mapActions(useCommonStore, ['setActiveTabbarIndex']),
-    onChange(e) {
-      const index = Number(e.detail.value)
-      this.localTabIndex = index
-      this.setActiveTabbarIndex(index)
-      mpx.switchTab({ url: this.tabBarList[index].pagePath })
+    ...mapActions(useCommonStore, ['setActiveTabbarIndex', 'setMessageBadgeCount']),
+    syncActiveTabByRoute() {
+      const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : []
+      const currentPage = pages[pages.length - 1]
+      const currentPath = currentPage ? `/${currentPage.route}` : ''
+      const currentTab = this.tabBarList.find((item) => item.pagePath === currentPath)
+
+      if (currentTab) {
+        this.setActiveTabbarIndex(currentTab.value)
+      }
+    },
+    handleTabTap(e) {
+      const value = Number(e.currentTarget.dataset.value)
+      const currentTab = this.tabBarList.find((item) => item.value === value)
+
+      if (!currentTab) return
+      if (value === this.activeTabbarIndex) return
+
+      this.setActiveTabbarIndex(value)
+      mpx.switchTab({ url: currentTab.pagePath })
     }
   }
 })
@@ -53,51 +111,126 @@ createComponent({
   right: 0;
   bottom: 0;
   z-index: 999;
-  background: #fff;
-  border-top: 1px solid #eee;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-  .tab-label {
-    /*
-     @mpx-if (__mpx_mode__ === 'ali')
-    */
-    padding-top: 10rpx;
-    /* @mpx-endif */
-  }
-
   &.is-floating {
+    left: 32rpx;
+    right: 32rpx;
     bottom: 20rpx;
-    left: 60rpx;
-    right: 60rpx;
-    border-radius: 100rpx;
-    box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    overflow: hidden;
 
-    .cube-tab {
-      padding: 0;
+    .tabbar-shell {
+      border-radius: 999rpx;
+      box-shadow: 0 12rpx 36rpx rgba(17, 24, 39, 0.12);
+      border: 1px solid rgba(17, 24, 39, 0.06);
     }
   }
+}
 
-  .cube-tab {
-    z-index: 999;
-    flex: 1;
-    padding: 0 0 calc(env(safe-area-inset-bottom) - 20rpx) 0;
-    text-align: center;
-    color: #666;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+.tabbar-shell {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  min-height: 112rpx;
+  padding: 12rpx 24rpx calc(env(safe-area-inset-bottom) + 12rpx);
+  background: #fff;
+  border-top: 1px solid #eee;
+}
 
-    view {
-      font-size: 24rpx;
-      margin-top: 4rpx;
+.tabbar-side {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  justify-content: space-around;
+}
 
-      &.active {
-        color: #1677ff;
-        font-weight: 500;
-      }
-    }
+.tabbar-side-right {
+  padding-left: 64rpx;
+}
+
+.tabbar-item {
+  position: relative;
+  min-width: 88rpx;
+  padding-top: 8rpx;
+  text-align: center;
+}
+
+.tabbar-icon-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tabbar-label {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #666;
+  line-height: 1;
+}
+
+.tabbar-item.is-active {
+  .tabbar-label {
+    color: #FF2442;
+    font-weight: 500;
   }
+}
+
+.tabbar-center {
+  position: absolute;
+  left: 50%;
+  top: -18rpx;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 112rpx;
+}
+
+.publish-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 92rpx;
+  height: 92rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(180deg, #FF4B68 0%, #FF2442 100%);
+  box-shadow: 0 14rpx 32rpx rgba(255, 36, 66, 0.3);
+}
+
+.publish-button.is-active {
+  transform: scale(1.04);
+}
+
+.publish-plus {
+  color: #fff;
+  font-size: 48rpx;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.publish-label {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #FF2442;
+  line-height: 1;
+  font-weight: 600;
+}
+
+.tabbar-badge {
+  position: absolute;
+  top: -8rpx;
+  right: -18rpx;
+  min-width: 28rpx;
+  height: 28rpx;
+  padding: 0 8rpx;
+  border-radius: 999rpx;
+  background: #FF2442;
+  color: #fff;
+  font-size: 18rpx;
+  line-height: 28rpx;
+  text-align: center;
+  box-sizing: border-box;
 }
 </style>

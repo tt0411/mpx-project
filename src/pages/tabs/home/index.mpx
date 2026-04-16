@@ -1,144 +1,191 @@
 <template>
-  <view class="page">
-    <view class="section">
-      <mpx-uploader value="{{ fileList }}" max-count="1" accept="video" multiple="{{ true }}" preview-size="180rpx"
-        image-fit="cover" enable-compress="{{ true }}" compress-quality="80" enable-watermark="{{ true }}"
-        watermark-text="e帮手" bind:before-read="beforeRead" bind:after-read="afterRead" bind:before-delete="beforeDelete"
-        bind:delete="onDelete" bind:oversize="onOversize" bind:change="onChange" />
-      <button class="btn primary" bindtap="goDemo">自定义navbar</button>
-      <button class="btn info" bindtap="toggleTabbarMode">切换 Tabbar 模式 (当前: {{ tabbarMode === 'floating' ? '悬浮' : '正常'
-        }})</button>
-      <button class="btn" bindtap="goLogin">前往登录页</button>
-      <button class="btn" bindtap="goWebView">前往WebView</button>
-      <button class="btn" bindtap="goListDemo">查看列表组件</button>
-      <cube-button primary open-type="share" tip="需在小程序环境下预览">分享</cube-button>
-      <cube-button outline open-type@wx="getUserInfo" open-type@ali="getAuthorize" scope@ali="auth_user"
-        tip="需在小程序环境下预览" bind:getUserInfo@wx="onGetUserInfo" bind:getAuthorize@ali="onGetUserInfo">获取用户信息</cube-button>
-      <mpx-steps steps="{{[
-          { text: '买家下单', desc: '2024-01-01' },
-          { text: '商家发货', desc: '待发货' },
-          { text: '确认收货', desc: '' }
-        ]}}" active="{{ 0 }}" direction="vertical" active-color="#07c160" inactive-color="#969799"
-        bind:click-step="onStepClick" />
-      <mpx-notice-bar text="{{ noticeText }}" rich-text="{{ true }}" left-icon="volume" />
+  <view class="page home-page">
+    <view class="home-header">
+      <view>
+        <view class="brand">小红书 Lite</view>
+        <view class="brand-desc">内容优先的轻社区示范版</view>
+      </view>
+      <view class="search-entry" bindtap="goSearch">
+        <cube-icon size="18" color="#999999" type="search" />
+        <view class="search-placeholder">搜索上海探店、春季穿搭、减脂餐</view>
+      </view>
+    </view>
+
+    <view class="scene-tabs">
+      <view class="scene-tab {{ activeHomeTab === 'recommend' ? 'is-active' : '' }}" data-scene="recommend" bindtap="handleSwitchTab">推荐</view>
+      <view class="scene-tab {{ activeHomeTab === 'following' ? 'is-active' : '' }}" data-scene="following" bindtap="handleSwitchTab">关注</view>
+    </view>
+
+    <view wx:if="{{ currentFeed.loading && currentFeed.list.length === 0 }}" class="skeleton-wrap">
+      <mpx-skeleton rows="4" row-height="32" padding="20px" background="#ffffff" />
+      <mpx-skeleton rows="4" row-height="32" padding="20px" background="#ffffff" />
+    </view>
+
+    <mpx-empty wx:elif="{{ !currentFeed.loading && currentFeed.list.length === 0 }}" title="还没有内容" desc="下一阶段会接入真实推荐与关注内容流。" />
+
+    <view wx:else class="feed-grid">
+      <view class="feed-column">
+        <note-card wx:for="{{ leftColumn }}" wx:key="id" note="{{ item }}" bind:cardtap="handleCardTap" bind:authortap="handleAuthorTap" />
+      </view>
+      <view class="feed-column">
+        <note-card wx:for="{{ rightColumn }}" wx:key="id" note="{{ item }}" bind:cardtap="handleCardTap" bind:authortap="handleAuthorTap" />
+      </view>
     </view>
   </view>
 </template>
 
-
 <script>
-import { createPage } from '@mpxjs/core'
+import mpx, { createPage } from '@mpxjs/core'
 import { mapActions, mapState } from '@mpxjs/pinia'
-import { useCommonStore } from '@/store'
-import { navigateTo, reLaunch } from '@/utils'
+import { useFeedStore } from '@/store'
+import { navigateTo } from '@/utils'
+
+function splitColumns(list = []) {
+  return list.reduce((columns, item, index) => {
+    columns[index % 2].push(item)
+    return columns
+  }, [[], []])
+}
 
 createPage({
-  data: {
-    fileList: [],
-    // 富文本 HTML 内容放在 data 里，避免模板编译器解析出错
-    noticeText: '<b>重要通知：</b>今日<span style="color:red">10:00</span>系统维护'
-  },
   computed: {
-    ...mapState(useCommonStore, ['tabbarMode'])
+    ...mapState(useFeedStore, ['feeds', 'activeHomeTab']),
+    currentFeed() {
+      return this.feeds[this.activeHomeTab] || { list: [], loading: false }
+    },
+    leftColumn() {
+      return splitColumns(this.currentFeed.list || [])[0]
+    },
+    rightColumn() {
+      return splitColumns(this.currentFeed.list || [])[1]
+    }
   },
-  // 支付宝小程序在处理 open-type="share" 时, 必须显式定义 onShareAppMessage
+  onShow() {
+    this.ensureFeed(this.activeHomeTab)
+  },
   onShareAppMessage() {
     return {
-      title: '欢迎体验 mpx-project',
+      title: '欢迎体验小红书 Lite',
       path: '/pages/tabs/home/index'
     }
   },
   methods: {
-    ...mapActions(useCommonStore, ['setTabbarMode']),
-    toggleTabbarMode() {
-      const mode = this.tabbarMode === 'normal' ? 'floating' : 'normal'
-      this.setTabbarMode(mode)
+    ...mapActions(useFeedStore, ['fetchFeed', 'switchHomeTab']),
+    async ensureFeed(scene) {
+      const target = this.feeds[scene]
+      if (!target) return
+      if (!target.initialized) {
+        await this.fetchFeed(scene, { refresh: true })
+      }
     },
-    onStepClick(e) {
-      console.log('步骤切换到:', e.detail)
+    async handleSwitchTab(e) {
+      const { scene } = e.currentTarget.dataset
+      this.switchHomeTab(scene)
+      await this.ensureFeed(scene)
     },
-    onGetUserInfo(e) {
-      console.log('获取用户信息', e.detail)
+    goSearch() {
+      navigateTo('search-result', { keyword: '上海探店' })
     },
-    goDemo() {
-      navigateTo('demo-navbar')
+    handleCardTap(e) {
+      navigateTo('note-detail', { noteId: e.detail.note.id })
     },
-    goLogin() {
-      reLaunch('login')
-    },
-    goWebView() {
-      navigateTo('web-view', { url: 'https://www.baidu.com' })
-    },
-    goListDemo() {
-      navigateTo('list-demo')
-    },
-    beforeRead(e) {
-      console.log('文件读取前', e.detail)
-      // 可以返回 false 阻止文件读取
-    },
-    afterRead(e) {
-      console.log('文件读取后', e.detail)
-    },
-    beforeDelete(e) {
-      console.log('删除前', e.detail)
-    },
-    onDelete(e) {
-      console.log('删除后', e.detail)
-    },
-    onOversize(e) {
-      console.log('文件超出大小', e.detail)
-    },
-    onChange(e) {
-      const { files } = e.detail
-      this.fileList = files
-      console.log('上传完成', files)
+    handleAuthorTap(e) {
+      navigateTo('user-profile', { userId: e.detail.note.author.id })
     }
   }
 })
-
 </script>
 
 <script name="json">
 module.exports = {
   navigationBarTitleText: '首页',
-  // allowsBounceVertical: 'NO', // 禁用支付宝页面的回弹，解决 fixed 元素位移问题
+  allowsBounceVertical: 'NO',
   usingComponents: {
-    'mpx-uploader': '@/components/mpx-uploader',
+    'note-card': '@/components/note-card'
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.section {
-  margin: 20rpx;
-  padding: 24rpx;
-  background: #fff;
-  border-radius: 16rpx;
+.home-page {
+  padding: 20rpx 24rpx 0;
 }
 
-.title {
-  font-size: 38rpx;
-  font-weight: 600;
+.home-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.brand {
+  font-size: 40rpx;
+  font-weight: 700;
   color: #222;
 }
 
-.desc {
-  margin-top: 12rpx;
+.brand-desc {
+  margin-top: 8rpx;
+  font-size: 24rpx;
   color: #666;
-  font-size: 26rpx;
 }
 
-.btn {
-  margin-top: 20rpx;
+.search-entry {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 0 24rpx;
+  height: 80rpx;
+  border-radius: 999rpx;
+  background: #fff;
 }
 
-.primary {
-  background: #1677ff;
-  color: #fff;
+.search-placeholder {
+  font-size: 24rpx;
+  color: #999;
 }
 
-.info {
-  background: linear-gradient(90deg, #1677ff, #00d2ff);
-  color: #fff;
+.scene-tabs {
+  display: flex;
+  gap: 32rpx;
+  margin: 28rpx 0 20rpx;
+}
+
+.scene-tab {
+  position: relative;
+  padding-bottom: 10rpx;
+  font-size: 30rpx;
+  color: #666;
+}
+
+.scene-tab.is-active {
+  color: #222;
+  font-weight: 600;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 6rpx;
+    border-radius: 999rpx;
+    background: #FF2442;
+  }
+}
+
+.skeleton-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.feed-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+
+.feed-column {
+  flex: 1;
 }
 </style>

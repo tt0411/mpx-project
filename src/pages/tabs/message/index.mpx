@@ -1,14 +1,114 @@
 <template>
-  <view class="page">
-    消息
+  <view class="page message-page">
+    <view class="page-title">消息</view>
+
+    <view wx:if="{{ !isLogin }}" class="login-card">
+      <view class="login-title">登录后查看互动通知</view>
+      <view class="login-desc">点赞、评论、关注和系统提醒会汇总到这里。</view>
+      <button class="login-button" bindtap="goLogin">去登录</button>
+    </view>
+
+    <view wx:else>
+      <view class="message-tabs">
+        <view wx:for="{{ tabList }}" wx:key="name" class="message-tab {{ activeMessageTab === item.name ? 'is-active' : '' }}" data-name="{{ item.name }}" bindtap="handleSwitchTab">{{ item.label }}</view>
+      </view>
+
+      <view wx:if="{{ currentTabState.loading && currentTabState.list.length === 0 }}" class="skeleton-wrap">
+        <mpx-skeleton rows="5" row-height="32" padding="20px" background="#ffffff" />
+      </view>
+
+      <mpx-empty wx:elif="{{ !currentTabState.loading && currentTabState.list.length === 0 }}" title="还没有新消息" desc="有人互动后会第一时间出现在这里。" />
+
+      <view wx:else>
+        <view wx:for="{{ currentTabState.list }}" wx:key="id" class="message-card" bindtap="handleMessageTap" data-id="{{ item.id }}">
+          <image wx:if="{{ item.actorUser }}" class="message-avatar" src="{{ item.actorUser.avatar }}" mode="aspectFill" />
+          <view wx:else class="message-avatar system-avatar">系</view>
+          <view class="message-content">
+            <view class="message-text">{{ item.actorUser ? item.actorUser.nickname : '系统通知' }} {{ item.summary }}</view>
+            <view class="message-subtext">{{ item.targetTitle || '点击查看详情' }}</view>
+            <view class="message-time">{{ item.createdAt }}</view>
+          </view>
+          <image wx:if="{{ item.targetCover }}" class="message-cover" src="{{ item.targetCover }}" mode="aspectFill" />
+          <view wx:if="{{ !item.isRead }}" class="message-dot"></view>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
 <script>
 import { createPage } from '@mpxjs/core'
+import { mapActions, mapState } from '@mpxjs/pinia'
+import { useMessageStore, useUserStore } from '@/store'
+import { navigateTo } from '@/utils'
+
+const TAB_LIST = [
+  { name: 'all', label: '全部' },
+  { name: 'like', label: '点赞' },
+  { name: 'comment', label: '评论' },
+  { name: 'follow', label: '关注' },
+  { name: 'system', label: '系统' }
+]
 
 createPage({
+  data: {
+    tabList: TAB_LIST
+  },
+  computed: {
+    ...mapState(useUserStore, ['isLogin']),
+    ...mapState(useMessageStore, ['messages', 'activeMessageTab']),
+    currentTabState() {
+      return this.messages[this.activeMessageTab] || { list: [], loading: false }
+    }
+  },
+  async onShow() {
+    if (!this.isLogin) return
+    await this.ensureTabData(this.activeMessageTab)
+    await this.markVisibleMessagesRead()
+  },
+  methods: {
+    ...mapActions(useMessageStore, ['fetchMessages', 'switchMessageTab', 'markMessagesRead', 'fetchUnreadCount']),
+    async ensureTabData(type) {
+      const target = this.messages[type]
+      if (!target || !target.initialized) {
+        await this.fetchMessages(type, { refresh: true })
+      }
+      await this.fetchUnreadCount()
+    },
+    async markVisibleMessagesRead() {
+      const unreadIds = (this.currentTabState.list || []).filter((item) => !item.isRead).map((item) => item.id)
+      if (unreadIds.length) {
+        await this.markMessagesRead(unreadIds)
+      }
+    },
+    async handleSwitchTab(e) {
+      const type = e.currentTarget.dataset.name
+      this.switchMessageTab(type)
+      await this.ensureTabData(type)
+      await this.markVisibleMessagesRead()
+    },
+    handleMessageTap(e) {
+      const message = (this.currentTabState.list || []).find((item) => item.id === e.currentTarget.dataset.id)
+      if (!message) return
 
+      if (message.targetType === 'note') {
+        navigateTo('note-detail', { noteId: message.targetId })
+        return
+      }
+
+      if (message.targetType === 'comment') {
+        navigateTo('comment-list', { noteId: message.noteId })
+        return
+      }
+
+      if (message.targetType === 'user' && message.actorUser) {
+        navigateTo('user-profile', { userId: message.actorUser.id })
+      }
+    },
+    goLogin() {
+      navigateTo('login')
+    }
+  }
 })
 </script>
 
@@ -19,4 +119,139 @@ module.exports = {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.message-page {
+  padding: 24rpx;
+}
+
+.page-title {
+  margin-bottom: 20rpx;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #222;
+}
+
+.login-card,
+.message-card {
+  padding: 24rpx;
+  border-radius: 24rpx;
+  background: #fff;
+}
+
+.login-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #222;
+}
+
+.login-desc {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.6;
+}
+
+.login-button {
+  margin-top: 24rpx;
+  background: #FF2442;
+  color: #fff;
+  border-radius: 999rpx;
+}
+
+.message-tabs {
+  display: flex;
+  gap: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.message-tab {
+  position: relative;
+  padding-bottom: 10rpx;
+  font-size: 26rpx;
+  color: #666;
+}
+
+.message-tab.is-active {
+  color: #222;
+  font-weight: 600;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 6rpx;
+    border-radius: 999rpx;
+    background: #FF2442;
+  }
+}
+
+.skeleton-wrap {
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
+.message-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.message-avatar,
+.system-avatar {
+  width: 88rpx;
+  height: 88rpx;
+  margin-right: 18rpx;
+  border-radius: 999rpx;
+}
+
+.system-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff1f3;
+  color: #FF2442;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.message-content {
+  flex: 1;
+}
+
+.message-text {
+  font-size: 26rpx;
+  color: #222;
+  font-weight: 500;
+}
+
+.message-subtext,
+.message-time {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #666;
+}
+
+.message-time {
+  color: #999;
+}
+
+.message-cover {
+  width: 92rpx;
+  height: 92rpx;
+  margin-left: 16rpx;
+  border-radius: 20rpx;
+}
+
+.message-dot {
+  position: absolute;
+  top: 18rpx;
+  right: 18rpx;
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 999rpx;
+  background: #FF2442;
+}
+</style>

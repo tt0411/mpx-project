@@ -1,9 +1,12 @@
+import { createDataResponse, getCurrentUserProfile, getPayload, getUserProfileMock, resolveLoginUser, updateCurrentUserMock } from './mock-data'
+
 /**
  * 模板登录接口（示例实现）
  */
 export function login(parameter = {}) {
-  const data = parameter.data || {}
-  const username = data.username || ''
+  const data = getPayload(parameter)
+  const username = data.username || getCurrentUserProfile().nickname || 'demo'
+  const loginUser = resolveLoginUser(username)
 
   return Promise.resolve({
     code: 0,
@@ -11,26 +14,35 @@ export function login(parameter = {}) {
     data: {
       token: `mock-token-${Date.now()}`,
       userInfo: {
-        id: `u-${username || 'demo'}`,
-        name: username || 'Demo User'
+        ...loginUser,
+        name: loginUser.nickname,
+        nickname: loginUser.nickname
       }
     }
   })
 }
 
 export function logout() {
-  return Promise.resolve({
-    code: 0,
-    message: 'success',
-    data: true
-  })
+  return createDataResponse(true)
 }
 
+export function getCurrentUser() {
+  return createDataResponse(getCurrentUserProfile())
+}
+
+export function updateProfile(parameter = {}) {
+  return createDataResponse(updateCurrentUserMock(getPayload(parameter)))
+}
+
+export function getUserProfile(parameter = {}) {
+  const { userId, id } = getPayload(parameter)
+  return createDataResponse(getUserProfileMock(userId || id))
+}
 
 export function uploadFile(parameter = {}) {
   return Promise.resolve({
     code: 0,
     message: 'success',
-    data: 'https://bh-cbs-dev.oss-cn-hangzhou.aliyuncs.com/else/2026/2/26/2026960626475208705.mp4'
+    data: `/src/static/images/mock/upload-result-${Date.now()}.jpg`
   })
 }

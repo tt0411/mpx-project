@@ -1,13 +1,76 @@
 <template>
-  <view class="page">
-    <view class="section">
-      <view class="row"><text class="label">User ID</text><text>{{ userInfo.id || '--' }}</text></view>
-      <view class="row"><text class="label">Name</text><text>{{ userInfo.name || '--' }}</text></view>
-      <view class="row"><text class="label">Token</text><text>{{ token ? '已登录' : '未登录' }}</text></view>
+  <view class="page profile-page">
+    <view wx:if="{{ !isLogin }}" class="login-card">
+      <view class="login-title">登录后查看你的内容资产</view>
+      <view class="login-desc">我的发布、草稿箱、收藏预览和互动数据都会集中展示在这里。</view>
+      <button class="login-button" bindtap="goLogin">去登录</button>
     </view>
-    <view class="section">
-      <button class="btn primary" bindtap="goLogin">登录/切换账号</button>
-      <button class="btn" bindtap="logout">退出登录</button>
+
+    <view wx:else>
+      <view class="profile-header">
+        <image class="profile-avatar" src="{{ myProfile.avatar }}" mode="aspectFill" />
+        <view class="profile-main">
+          <view class="profile-name">{{ myProfile.nickname }}</view>
+          <view class="profile-bio">{{ myProfile.bio || '开始写下你的第一条生活笔记。' }}</view>
+        </view>
+        <view class="edit-link" bindtap="goEditProfile">编辑</view>
+      </view>
+
+      <view class="stats-card">
+        <view class="stat-item">
+          <view class="stat-value">{{ myStats.followCount }}</view>
+          <view class="stat-label">关注</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-value">{{ myStats.fansCount }}</view>
+          <view class="stat-label">粉丝</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-value">{{ myStats.likedReceivedCount }}</view>
+          <view class="stat-label">获赞</view>
+        </view>
+      </view>
+
+      <view class="action-row">
+        <view class="action-card action-card-left" bindtap="goMyNotes">
+          <view class="action-title">我的发布</view>
+          <view class="action-desc">{{ myNotes.list.length }} 篇内容</view>
+        </view>
+        <view class="action-card" bindtap="goDraftList">
+          <view class="action-title">草稿箱</view>
+          <view class="action-desc">{{ draftSummary.count }} 篇未发布</view>
+        </view>
+      </view>
+
+      <view class="section-block">
+        <view class="section-header">
+          <view class="section-title">我的笔记</view>
+          <view class="section-link" bindtap="goMyNotes">查看全部</view>
+        </view>
+        <mpx-empty wx:if="{{ !myNotes.loading && myNotes.list.length === 0 }}" title="还没有发布内容" desc="发布成功后会显示在这里。" />
+        <view wx:else class="feed-grid">
+          <view class="feed-column">
+            <note-card wx:for="{{ leftColumn }}" wx:key="id" note="{{ item }}" bind:cardtap="handleCardTap" bind:authortap="noop" />
+          </view>
+          <view class="feed-column">
+            <note-card wx:for="{{ rightColumn }}" wx:key="id" note="{{ item }}" bind:cardtap="handleCardTap" bind:authortap="noop" />
+          </view>
+        </view>
+      </view>
+
+      <view class="section-block">
+        <view class="section-header">
+          <view class="section-title">功能入口</view>
+        </view>
+        <view class="menu-card" bindtap="goSettings">
+          <view class="menu-title">设置</view>
+          <view class="menu-arrow">></view>
+        </view>
+        <view class="menu-card danger" bindtap="logout">
+          <view class="menu-title danger">退出登录</view>
+          <view class="menu-arrow danger">></view>
+        </view>
+      </view>
     </view>
   </view>
 </template>
@@ -15,19 +78,60 @@
 <script>
 import { createPage } from '@mpxjs/core'
 import { mapActions, mapState } from '@mpxjs/pinia'
-import { useUserStore } from '@/store'
-import { navigateTo, switchTab } from '@/utils'
+import { useProfileStore, useUserStore } from '@/store'
+import { navigateTo, reLaunch } from '@/utils'
+
+function splitColumns(list = []) {
+  return list.slice(0, 4).reduce((columns, item, index) => {
+    columns[index % 2].push(item)
+    return columns
+  }, [[], []])
+}
 
 createPage({
   computed: {
-    ...mapState(useUserStore, ['userInfo', 'token'])
+    ...mapState(useUserStore, ['isLogin']),
+    ...mapState(useProfileStore, ['myProfile', 'myStats', 'myNotes', 'draftSummary']),
+    leftColumn() {
+      return splitColumns(this.myNotes.list || [])[0]
+    },
+    rightColumn() {
+      return splitColumns(this.myNotes.list || [])[1]
+    }
+  },
+  async onShow() {
+    if (!this.isLogin) return
+    await Promise.all([
+      this.fetchMyProfile(),
+      this.fetchMyNotes({ refresh: true }),
+      this.fetchDraftSummary()
+    ])
   },
   methods: {
     ...mapActions(useUserStore, ['clearSession']),
-    goLogin() { navigateTo('login') },
+    ...mapActions(useProfileStore, ['fetchMyProfile', 'fetchMyNotes', 'fetchDraftSummary']),
+    goLogin() {
+      navigateTo('login')
+    },
+    goEditProfile() {
+      navigateTo('edit-profile')
+    },
+    goMyNotes() {
+      navigateTo('my-notes')
+    },
+    goDraftList() {
+      navigateTo('draft-list')
+    },
+    goSettings() {
+      navigateTo('settings')
+    },
+    handleCardTap(e) {
+      navigateTo('note-detail', { noteId: e.detail.note.id })
+    },
+    noop() {},
     logout() {
       this.clearSession()
-      switchTab('home')
+      reLaunch('home')
     }
   }
 })
@@ -36,36 +140,156 @@ createPage({
 <script name="json">
 module.exports = {
   navigationBarTitleText: '我的',
-  allowsBounceVertical: 'NO'
+  allowsBounceVertical: 'NO',
+  usingComponents: {
+    'note-card': '@/components/note-card'
+  }
 }
 </script>
 
 <style lang="scss" scoped>
-.section {
-  margin: 20rpx;
+.profile-page {
   padding: 24rpx;
-  background: #fff;
-  border-radius: 16rpx;
 }
 
-.row {
+.login-card,
+.profile-header,
+.stats-card,
+.action-card,
+.section-block {
+  border-radius: 24rpx;
+  background: #fff;
+}
+
+.login-card {
+  padding: 28rpx;
+}
+
+.login-title,
+.section-title,
+.action-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #222;
+}
+
+.login-desc,
+.action-desc,
+.profile-bio,
+.stat-label {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.5;
+}
+
+.login-button {
+  margin-top: 24rpx;
+  background: #FF2442;
+  color: #fff;
+  border-radius: 999rpx;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+}
+
+.profile-avatar {
+  width: 108rpx;
+  height: 108rpx;
+  margin-right: 20rpx;
+  border-radius: 999rpx;
+}
+
+.profile-main {
+  flex: 1;
+}
+
+.profile-name,
+.stat-value {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #222;
+}
+
+.edit-link,
+.section-link {
+  font-size: 24rpx;
+  color: #FF2442;
+}
+
+.stats-card {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 16rpx;
-  color: #333;
-  font-size: 28rpx;
+  margin-top: 20rpx;
+  padding: 24rpx;
 }
 
-.label {
-  color: #888;
+.stat-item {
+  flex: 1;
+  text-align: center;
 }
 
-.btn {
+.action-row {
+  display: flex;
   margin-top: 20rpx;
 }
 
-.primary {
-  background: #1677ff;
-  color: #fff;
+.action-card {
+  flex: 1;
+  padding: 24rpx;
+}
+
+.action-card-left {
+  margin-right: 16rpx;
+}
+
+.section-block {
+  margin-top: 20rpx;
+  padding: 24rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.feed-grid {
+  display: flex;
+  gap: 16rpx;
+}
+
+.feed-column {
+  flex: 1;
+}
+
+.menu-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 0;
+}
+
+.menu-card.danger {
+  border-top: 1px solid #f2f2f2;
+}
+
+.menu-title {
+  font-size: 28rpx;
+  color: #222;
+}
+
+.menu-arrow {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.menu-title.danger,
+.menu-arrow.danger {
+  color: #FF2442;
 }
 </style>

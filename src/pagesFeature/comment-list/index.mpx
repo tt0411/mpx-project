@@ -1,0 +1,262 @@
+<template>
+  <view class="page comment-page">
+    <view class="page-header">
+      <view class="page-title">评论</view>
+      <view class="page-subtitle">{{ list.length }} 条互动</view>
+    </view>
+
+    <view class="composer-card">
+      <input class="composer-input" value="{{ inputValue }}" placeholder="说点什么..." bindinput="handleInput" />
+      <view class="composer-action" bindtap="handleSend">发送</view>
+    </view>
+    <view wx:if="{{ replyTarget }}" class="reply-tip">正在回复 {{ replyTarget.user.nickname }}</view>
+
+    <view wx:if="{{ loading }}" class="skeleton-wrap">
+      <mpx-skeleton rows="5" row-height="32" padding="20px" background="#ffffff" />
+    </view>
+
+    <mpx-empty wx:elif="{{ !loading && list.length === 0 }}" title="还没有评论" desc="抢先留下第一条互动。" />
+
+    <view wx:else>
+      <view wx:for="{{ list }}" wx:key="id" class="comment-card">
+        <view class="comment-main">
+          <image class="comment-avatar" src="{{ item.user.avatar }}" mode="aspectFill" />
+          <view class="comment-body">
+            <view class="comment-name">{{ item.user.nickname }}</view>
+            <view class="comment-content">{{ item.content }}</view>
+            <view class="comment-meta">
+              <view>{{ item.createdAt }}</view>
+              <view class="comment-link" bindtap="handleReply" data-id="{{ item.id }}">回复</view>
+              <view wx:if="{{ item.canDelete }}" class="comment-link danger" bindtap="handleDelete" data-id="{{ item.id }}">删除</view>
+            </view>
+          </view>
+        </view>
+
+        <view wx:if="{{ item.replies && item.replies.length }}" class="reply-list">
+          <view wx:for="{{ item.replies }}" wx:key="id" class="reply-item">
+            <view class="reply-line">
+              <text class="reply-name">{{ item.user.nickname }}</text>
+              <text class="reply-text">{{ item.replyUser ? ` 回复 ${item.replyUser.nickname}` : '' }}：{{ item.content }}</text>
+            </view>
+            <view class="comment-meta">
+              <view>{{ item.createdAt }}</view>
+              <view wx:if="{{ item.canDelete }}" class="comment-link danger" bindtap="handleDelete" data-id="{{ item.id }}">删除</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import mpx, { createPage } from '@mpxjs/core'
+import { mapActions } from '@mpxjs/pinia'
+import { deleteComment, getCommentList } from '@/api'
+import { useNoteStore, useUserStore } from '@/store'
+import { navigateTo } from '@/utils'
+
+createPage({
+  data: {
+    noteId: '',
+    loading: false,
+    list: [],
+    inputValue: '',
+    replyTarget: null
+  },
+  onLoad(options) {
+    this.noteId = options.noteId || ''
+    this.fetchComments()
+  },
+  methods: {
+    ...mapActions(useNoteStore, ['createNoteComment', 'replyToComment', 'patchCommentCount', 'fetchCommentPreview']),
+    async fetchComments() {
+      this.loading = true
+      try {
+        const { code, data } = await getCommentList({ params: { noteId: this.noteId, pageNo: 1, pageSize: 20 } })
+        if (code === 0) {
+          this.list = data.list || []
+        }
+      } finally {
+        this.loading = false
+      }
+    },
+    handleInput(e) {
+      this.inputValue = e.detail.value
+    },
+    handleReply(e) {
+      const parentId = e.currentTarget.dataset.id
+      this.replyTarget = this.list.find((item) => item.id === parentId) || null
+    },
+    async handleSend() {
+      const content = (this.inputValue || '').trim()
+      if (!content) {
+        mpx.showToast({ title: '请输入评论内容', icon: 'none' })
+        return
+      }
+
+      if (!useUserStore().isLogin) {
+        navigateTo('login')
+        return
+      }
+
+      if (this.replyTarget) {
+        await this.replyToComment(this.noteId, this.replyTarget.id, content)
+      } else {
+        await this.createNoteComment(this.noteId, content)
+      }
+
+      this.inputValue = ''
+      this.replyTarget = null
+      await this.fetchComments()
+      await this.fetchCommentPreview(this.noteId)
+      mpx.showToast({ title: '发送成功', icon: 'none' })
+    },
+    handleDelete(e) {
+      const commentId = e.currentTarget.dataset.id
+      mpx.showModal({
+        title: '删除评论',
+        content: '删除后将无法恢复，是否继续？',
+        success: async (res) => {
+          if (!res.confirm) return
+          await deleteComment({ data: { commentId } })
+          this.patchCommentCount(this.noteId, -1)
+          await this.fetchComments()
+          await this.fetchCommentPreview(this.noteId)
+          mpx.showToast({ title: '评论已删除', icon: 'none' })
+        }
+      })
+    }
+  }
+})
+</script>
+
+<script name="json">
+module.exports = {
+  navigationBarTitleText: '评论',
+  allowsBounceVertical: 'NO'
+}
+</script>
+
+<style lang="scss" scoped>
+.comment-page {
+  padding: 24rpx;
+}
+
+.page-header {
+  margin-bottom: 24rpx;
+}
+
+.page-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #222;
+}
+
+.page-subtitle,
+.reply-tip {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #999;
+}
+
+.composer-card,
+.comment-card {
+  padding: 20rpx;
+  border-radius: 24rpx;
+  background: #fff;
+}
+
+.composer-card {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.composer-input {
+  flex: 1;
+  height: 72rpx;
+  padding: 0 20rpx;
+  border-radius: 999rpx;
+  background: #f5f5f7;
+  font-size: 24rpx;
+}
+
+.composer-action {
+  font-size: 24rpx;
+  color: #FF2442;
+  font-weight: 600;
+}
+
+.reply-tip {
+  margin: 14rpx 6rpx 20rpx;
+}
+
+.skeleton-wrap {
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
+.comment-card {
+  margin-bottom: 16rpx;
+}
+
+.comment-main {
+  display: flex;
+  align-items: flex-start;
+}
+
+.comment-avatar {
+  width: 72rpx;
+  height: 72rpx;
+  margin-right: 16rpx;
+  border-radius: 999rpx;
+}
+
+.comment-body {
+  flex: 1;
+}
+
+.comment-name,
+.reply-name {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #222;
+}
+
+.comment-content,
+.reply-text {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: #333;
+}
+
+.comment-meta {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: #999;
+}
+
+.comment-link {
+  color: #666;
+}
+
+.comment-link.danger {
+  color: #FF2442;
+}
+
+.reply-list {
+  margin-top: 16rpx;
+  padding-left: 88rpx;
+}
+
+.reply-item {
+  padding: 16rpx;
+  margin-top: 12rpx;
+  border-radius: 18rpx;
+  background: #f7f8fa;
+}
+</style>

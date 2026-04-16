@@ -1,0 +1,140 @@
+<template>
+  <view class="page draft-page">
+    <view class="page-title">草稿箱</view>
+
+    <view wx:if="{{ loading }}" class="skeleton-wrap">
+      <mpx-skeleton rows="4" row-height="32" padding="20px" background="#ffffff" />
+    </view>
+
+    <mpx-empty wx:elif="{{ !loading && draftList.length === 0 }}" title="还没有草稿" desc="保存过的草稿会显示在这里。" />
+
+    <view wx:else>
+      <view wx:for="{{ draftList }}" wx:key="draftId" class="draft-item" bindtap="handleEditDraft" data-id="{{ item.draftId }}">
+        <image class="draft-cover" src="{{ item.images[0] || '/src/static/images/mock/draft-1.jpg' }}" mode="aspectFill" />
+        <view class="draft-content">
+          <view class="draft-name">{{ item.title || '未命名草稿' }}</view>
+          <view class="draft-time">最后编辑于 {{ item.updatedAt }}</view>
+          <view class="draft-count">{{ item.images.length }} 张图片</view>
+        </view>
+        <view class="draft-delete" catchtap="handleDeleteDraft" data-id="{{ item.draftId }}">删除</view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import mpx, { createPage } from '@mpxjs/core'
+import { deleteDraft, getDraftList } from '@/api'
+import { navigateTo } from '@/utils'
+import { useProfileStore, useUserStore } from '@/store'
+
+createPage({
+  data: {
+    loading: false,
+    draftList: []
+  },
+  async onShow() {
+    if (!useUserStore().isLogin) {
+      navigateTo('login')
+      return
+    }
+
+    await this.fetchDraftList()
+  },
+  methods: {
+    async fetchDraftList() {
+      this.loading = true
+      try {
+        const { code, data } = await getDraftList({ params: { pageNo: 1, pageSize: 20 } })
+        if (code === 0) {
+          this.draftList = data.list || []
+        }
+      } finally {
+        this.loading = false
+      }
+    },
+    handleEditDraft(e) {
+      navigateTo('publish-editor', { draftId: e.currentTarget.dataset.id })
+    },
+    handleDeleteDraft(e) {
+      const draftId = e.currentTarget.dataset.id
+      mpx.showModal({
+        title: '删除草稿',
+        content: '删除后将无法恢复，是否继续？',
+        success: async (res) => {
+          if (!res.confirm) return
+          await deleteDraft({ data: { draftId } })
+          await this.fetchDraftList()
+          await useProfileStore().fetchDraftSummary()
+          mpx.showToast({ title: '草稿已删除', icon: 'none' })
+        }
+      })
+    }
+  }
+})
+</script>
+
+<script name="json">
+module.exports = {
+  navigationBarTitleText: '草稿箱',
+  allowsBounceVertical: 'NO'
+}
+</script>
+
+<style lang="scss" scoped>
+.draft-page {
+  padding: 24rpx;
+}
+
+.page-title {
+  margin-bottom: 24rpx;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #222;
+}
+
+.skeleton-wrap {
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
+.draft-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  margin-bottom: 16rpx;
+  border-radius: 24rpx;
+  background: #fff;
+}
+
+.draft-cover {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 20rpx;
+  background: #f0f1f5;
+  margin-right: 20rpx;
+}
+
+.draft-content {
+  flex: 1;
+}
+
+.draft-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #222;
+}
+
+.draft-time,
+.draft-count {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #999;
+}
+
+.draft-delete {
+  margin-left: 16rpx;
+  font-size: 24rpx;
+  color: #FF2442;
+}
+</style>

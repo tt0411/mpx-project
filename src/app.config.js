@@ -2,6 +2,7 @@ module.exports = {
   pages: [
     './pages/tabs/home/index',
     './pages/tabs/discover/index',
+    './pages/tabs/publish/index',
     './pages/tabs/message/index',
     './pages/tabs/profile/index'
   ],
@@ -24,7 +25,7 @@ module.exports = {
   tabBar: {
     custom: true,
     color: '#999999',
-    selectedColor: '#1677ff',
+    selectedColor: '#FF2442',
     backgroundColor: '#ffffff',
     overlay: true,
     list: [
@@ -35,6 +36,10 @@ module.exports = {
       {
         pagePath: 'pages/tabs/discover/index',
         text: '发现'
+      },
+      {
+        pagePath: 'pages/tabs/publish/index',
+        text: '发布'
       },
       {
         pagePath: 'pages/tabs/message/index',

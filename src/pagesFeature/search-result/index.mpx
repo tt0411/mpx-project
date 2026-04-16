@@ -1,0 +1,274 @@
+<template>
+  <view class="page search-page">
+    <view class="search-bar">
+      <input class="search-input" value="{{ localKeyword }}" placeholder="搜索笔记、用户、话题" bindinput="handleInput" bindconfirm="handleSearch" confirm-type="search" />
+      <view class="search-action" bindtap="handleSearch">搜索</view>
+    </view>
+
+    <view class="result-tabs">
+      <view wx:for="{{ tabList }}" wx:key="name" class="result-tab {{ activeResultTab === item.name ? 'is-active' : '' }}" data-name="{{ item.name }}" bindtap="handleSwitchTab">
+        {{ item.label }}
+      </view>
+    </view>
+
+    <view wx:if="{{ activeResultTab === 'note' }}">
+      <view wx:if="{{ results.note.loading && results.note.list.length === 0 }}" class="skeleton-wrap">
+        <mpx-skeleton rows="4" row-height="32" padding="20px" background="#ffffff" />
+      </view>
+      <mpx-empty wx:elif="{{ !results.note.loading && results.note.list.length === 0 }}" title="没有相关笔记" desc="可以换个关键词再试试。" />
+      <view wx:else class="feed-grid">
+        <view class="feed-column">
+          <note-card wx:for="{{ leftColumn }}" wx:key="id" note="{{ item }}" bind:cardtap="handleNoteTap" bind:authortap="handleAuthorTap" />
+        </view>
+        <view class="feed-column">
+          <note-card wx:for="{{ rightColumn }}" wx:key="id" note="{{ item }}" bind:cardtap="handleNoteTap" bind:authortap="handleAuthorTap" />
+        </view>
+      </view>
+    </view>
+
+    <view wx:elif="{{ activeResultTab === 'user' }}">
+      <mpx-empty wx:if="{{ !results.user.loading && results.user.list.length === 0 }}" title="没有相关用户" desc="可以换个昵称或简介关键词。" />
+      <view wx:for="{{ results.user.list }}" wx:key="id" class="user-card" bindtap="handleUserTap" data-id="{{ item.id }}">
+        <image class="user-avatar" src="{{ item.avatar }}" mode="aspectFill" />
+        <view class="user-content">
+          <view class="user-name">{{ item.nickname }}</view>
+          <view class="user-bio">{{ item.bio }}</view>
+          <view class="user-meta">粉丝 {{ item.fansCount }}</view>
+        </view>
+        <view class="follow-tag {{ item.isFollowed ? 'is-followed' : '' }}">{{ item.isFollowed ? '已关注' : '关注' }}</view>
+      </view>
+    </view>
+
+    <view wx:else>
+      <mpx-empty wx:if="{{ !results.topic.loading && results.topic.list.length === 0 }}" title="没有相关话题" desc="可以换个更具体的主题试试。" />
+      <view wx:for="{{ results.topic.list }}" wx:key="id" class="topic-card" bindtap="handleTopicTap" data-id="{{ item.id }}">
+        <view class="topic-name">{{ item.name }}</view>
+        <view class="topic-desc">{{ item.desc }}</view>
+        <view class="topic-count">{{ item.noteCount }} 篇笔记</view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import mpx, { createPage } from '@mpxjs/core'
+import { mapActions, mapState } from '@mpxjs/pinia'
+import { useSearchStore } from '@/store'
+import { navigateTo } from '@/utils'
+
+function splitColumns(list = []) {
+  return list.reduce((columns, item, index) => {
+    columns[index % 2].push(item)
+    return columns
+  }, [[], []])
+}
+
+const TAB_LIST = [
+  { name: 'note', label: '笔记' },
+  { name: 'user', label: '用户' },
+  { name: 'topic', label: '话题' }
+]
+
+createPage({
+  data: {
+    localKeyword: '',
+    tabList: TAB_LIST
+  },
+  computed: {
+    ...mapState(useSearchStore, ['results', 'activeResultTab']),
+    leftColumn() {
+      return splitColumns(this.results.note.list || [])[0]
+    },
+    rightColumn() {
+      return splitColumns(this.results.note.list || [])[1]
+    }
+  },
+  onLoad(options) {
+    this.localKeyword = options.keyword || ''
+    this.initializeSearch(this.localKeyword)
+  },
+  methods: {
+    ...mapActions(useSearchStore, ['setKeyword', 'addSearchHistory', 'searchByType', 'switchResultTab', 'resetSearchResults']),
+    async initializeSearch(keyword) {
+      const nextKeyword = (keyword || '').trim()
+      if (!nextKeyword) return
+
+      this.setKeyword(nextKeyword)
+      this.addSearchHistory(nextKeyword)
+      this.resetSearchResults()
+      await Promise.all([
+        this.searchByType('note', { refresh: true }),
+        this.searchByType('user', { refresh: true }),
+        this.searchByType('topic', { refresh: true })
+      ])
+    },
+    handleInput(e) {
+      this.localKeyword = e.detail.value
+    },
+    async handleSearch() {
+      await this.initializeSearch(this.localKeyword)
+    },
+    handleSwitchTab(e) {
+      this.switchResultTab(e.currentTarget.dataset.name)
+    },
+    handleNoteTap(e) {
+      navigateTo('note-detail', { noteId: e.detail.note.id })
+    },
+    handleAuthorTap(e) {
+      navigateTo('user-profile', { userId: e.detail.note.author.id })
+    },
+    handleUserTap(e) {
+      navigateTo('user-profile', { userId: e.currentTarget.dataset.id })
+    },
+    handleTopicTap(e) {
+      navigateTo('topic-detail', { topicId: e.currentTarget.dataset.id })
+    }
+  }
+})
+</script>
+
+<script name="json">
+module.exports = {
+  navigationBarTitleText: '搜索结果',
+  allowsBounceVertical: 'NO',
+  usingComponents: {
+    'note-card': '@/components/note-card'
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.search-page {
+  padding: 20rpx 24rpx 0;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.search-input {
+  flex: 1;
+  height: 80rpx;
+  padding: 0 24rpx;
+  border-radius: 999rpx;
+  background: #fff;
+  font-size: 24rpx;
+}
+
+.search-action {
+  min-width: 92rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: #FF2442;
+  font-weight: 600;
+}
+
+.result-tabs {
+  display: flex;
+  gap: 28rpx;
+  margin-bottom: 24rpx;
+}
+
+.result-tab {
+  position: relative;
+  padding-bottom: 10rpx;
+  font-size: 28rpx;
+  color: #666;
+}
+
+.result-tab.is-active {
+  color: #222;
+  font-weight: 600;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 6rpx;
+    border-radius: 999rpx;
+    background: #FF2442;
+  }
+}
+
+.skeleton-wrap {
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
+.feed-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+
+.feed-column {
+  flex: 1;
+}
+
+.user-card,
+.topic-card {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+  padding: 24rpx;
+  border-radius: 24rpx;
+  background: #fff;
+}
+
+.user-avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 999rpx;
+  margin-right: 20rpx;
+}
+
+.user-content {
+  flex: 1;
+}
+
+.user-name,
+.topic-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #222;
+}
+
+.user-bio,
+.topic-desc {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.user-meta,
+.topic-count {
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: #999;
+}
+
+.follow-tag {
+  min-width: 110rpx;
+  height: 56rpx;
+  line-height: 56rpx;
+  border-radius: 999rpx;
+  background: #FF2442;
+  color: #fff;
+  font-size: 22rpx;
+  text-align: center;
+}
+
+.follow-tag.is-followed {
+  background: #f0f1f5;
+  color: #666;
+}
+
+.topic-card {
+  display: block;
+}
+</style>

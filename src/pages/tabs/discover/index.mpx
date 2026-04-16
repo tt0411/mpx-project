@@ -1,13 +1,48 @@
 <template>
-  <view class="page">
-    <view class="section">
-      <view class="title">示例接口数据</view>
-      <view wx:if="{{ loading }}" class="desc">加载中...</view>
-      <view wx:elif="{{ list.length === 0 }}" class="desc">暂无数据（可接入真实接口）</view>
-      <view wx:else>
-        <view wx:for="{{ list }}" wx:key="id" class="card" bindtap="goDetail" data-id="{{ item.id }}">
-          <view class="card-title">{{ item.title }}</view>
-          <view class="card-desc">{{ item.summary }}</view>
+  <view class="page discover-page">
+    <view class="search-bar">
+      <input class="search-input" value="{{ searchKeyword }}" placeholder="搜索你感兴趣的内容" bindinput="handleSearchInput" bindconfirm="handleSearchConfirm" confirm-type="search" />
+      <view class="search-action" bindtap="handleSearchConfirm">搜索</view>
+    </view>
+
+    <view class="section-block">
+      <view class="section-title">热门搜索</view>
+      <view class="tag-group">
+        <view wx:for="{{ hotKeywords }}" wx:key="id" class="keyword-tag" data-keyword="{{ item.keyword }}" bindtap="handleKeywordTap">{{ item.keyword }}</view>
+      </view>
+    </view>
+
+    <view class="section-block">
+      <view class="section-title">热门分类</view>
+      <view class="category-grid">
+        <view wx:for="{{ categories }}" wx:key="id" class="category-item" data-name="{{ item.name }}" bindtap="handleComingSoon">
+          <view class="category-dot"></view>
+          <view class="category-name">{{ item.name }}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="section-block">
+      <view class="section-title">热门话题</view>
+      <view wx:for="{{ hotTopics }}" wx:key="id" class="topic-card" data-id="{{ item.id }}" bindtap="handleTopicTap">
+        <view class="topic-name">{{ item.name }}</view>
+        <view class="topic-desc">{{ item.desc }}</view>
+        <view class="topic-count">{{ item.noteCount }} 篇笔记</view>
+      </view>
+    </view>
+
+    <view class="section-block">
+      <view class="section-title">趋势内容</view>
+      <view wx:if="{{ feeds.discover.loading && feeds.discover.list.length === 0 }}" class="skeleton-wrap">
+        <mpx-skeleton rows="4" row-height="32" padding="20px" background="#ffffff" />
+      </view>
+      <mpx-empty wx:elif="{{ !feeds.discover.loading && feeds.discover.list.length === 0 }}" title="暂无趋势内容" desc="后续会接入更完整的发现流。" />
+      <view wx:else class="feed-grid">
+        <view class="feed-column">
+          <note-card wx:for="{{ leftColumn }}" wx:key="id" note="{{ item }}" bind:cardtap="handleCardTap" bind:authortap="handleAuthorTap" />
+        </view>
+        <view class="feed-column">
+          <note-card wx:for="{{ rightColumn }}" wx:key="id" note="{{ item }}" bind:cardtap="handleCardTap" bind:authortap="handleAuthorTap" />
         </view>
       </view>
     </view>
@@ -15,25 +50,88 @@
 </template>
 
 <script>
-import { createPage } from '@mpxjs/core'
-import { getDemoList } from '@/api'
+import mpx, { createPage } from '@mpxjs/core'
+import { mapActions, mapState } from '@mpxjs/pinia'
+import { useFeedStore, useSearchStore } from '@/store'
 import { navigateTo } from '@/utils'
 
+function splitColumns(list = []) {
+  return list.reduce((columns, item, index) => {
+    columns[index % 2].push(item)
+    return columns
+  }, [[], []])
+}
+
+const CATEGORIES = [
+  { id: 'travel', name: '旅行' },
+  { id: 'food', name: '美食' },
+  { id: 'outfit', name: '穿搭' },
+  { id: 'beauty', name: '美妆' },
+  { id: 'home', name: '家居' },
+  { id: 'study', name: '学习' },
+  { id: 'fitness', name: '健身' },
+  { id: 'explore', name: '探店' }
+]
+
+const HOT_TOPICS = [
+  { id: 'topic_001', name: '#上海探店', desc: '发现上海值得去的好地方', noteCount: '12.6w' },
+  { id: 'topic_002', name: '#周末去哪玩', desc: '周末短途和城市漫游灵感', noteCount: '9.8w' },
+  { id: 'topic_003', name: '#平价好物推荐', desc: '高性价比日常好物持续更新', noteCount: '8.3w' }
+]
+
 createPage({
-  data: { loading: false, list: [] },
-  onShow() { this.fetchList() },
+  data: {
+    categories: CATEGORIES,
+    hotTopics: HOT_TOPICS,
+    searchKeyword: ''
+  },
+  computed: {
+    ...mapState(useFeedStore, ['feeds']),
+    ...mapState(useSearchStore, ['hotKeywords']),
+    leftColumn() {
+      return splitColumns(this.feeds.discover.list || [])[0]
+    },
+    rightColumn() {
+      return splitColumns(this.feeds.discover.list || [])[1]
+    }
+  },
+  async onShow() {
+    await Promise.all([this.ensureHotKeywords(), this.ensureDiscoverFeed()])
+  },
   methods: {
-    async fetchList() {
-      this.loading = true
-      try {
-        const { code, data } = await getDemoList({ showLoading: false })
-        if (code === 0) this.list = data || []
-      } finally {
-        this.loading = false
+    ...mapActions(useFeedStore, ['fetchFeed']),
+    ...mapActions(useSearchStore, ['fetchHotKeywords']),
+    async ensureHotKeywords() {
+      if (!this.hotKeywords.length) {
+        await this.fetchHotKeywords()
       }
     },
-    goDetail(e) {
-      navigateTo('demo-detail', { id: Number(e.currentTarget.dataset.id) })
+    async ensureDiscoverFeed() {
+      if (!this.feeds.discover.initialized) {
+        await this.fetchFeed('discover', { refresh: true })
+      }
+    },
+    handleSearchInput(e) {
+      this.searchKeyword = e.detail.value
+    },
+    handleSearchConfirm() {
+      const keyword = (this.searchKeyword || '').trim() || '上海探店'
+      navigateTo('search-result', { keyword })
+    },
+    handleKeywordTap(e) {
+      navigateTo('search-result', { keyword: e.currentTarget.dataset.keyword })
+    },
+    handleComingSoon(e) {
+      mpx.showToast({ title: `${e.currentTarget.dataset.name} 下一阶段接入`, icon: 'none' })
+    },
+    handleTopicTap(e) {
+      navigateTo('topic-detail', { topicId: e.currentTarget.dataset.id })
+    },
+    handleCardTap(e) {
+      navigateTo('note-detail', { noteId: e.detail.note.id })
+    },
+    handleAuthorTap(e) {
+      navigateTo('user-profile', { userId: e.detail.note.author.id })
     }
   }
 })
@@ -42,42 +140,133 @@ createPage({
 <script name="json">
 module.exports = {
   navigationBarTitleText: '发现',
-  allowsBounceVertical: 'NO'
+  allowsBounceVertical: 'NO',
+  usingComponents: {
+    'note-card': '@/components/note-card'
+  }
 }
 </script>
 
 <style lang="scss" scoped>
-.section {
-  margin: 20rpx;
+.discover-page {
+  padding: 20rpx 24rpx 0;
 }
 
-.title {
-  margin-bottom: 16rpx;
-  font-size: 34rpx;
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.search-input {
+  flex: 1;
+  height: 80rpx;
+  padding: 0 24rpx;
+  border-radius: 999rpx;
+  background: #fff;
+  font-size: 24rpx;
+}
+
+.search-action {
+  min-width: 92rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: #FF2442;
   font-weight: 600;
 }
 
-.desc {
-  color: #888;
-  font-size: 26rpx;
+.section-block {
+  margin-bottom: 28rpx;
 }
 
-.card {
+.section-title {
   margin-bottom: 16rpx;
-  padding: 20rpx;
-  background: #fff;
-  border-radius: 16rpx;
-}
-
-.card-title {
-  color: #222;
   font-size: 30rpx;
-  font-weight: 500;
+  font-weight: 600;
+  color: #222;
 }
 
-.card-desc {
-  margin-top: 8rpx;
+.tag-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.keyword-tag {
+  padding: 12rpx 22rpx;
+  border-radius: 999rpx;
+  background: #fff;
   color: #666;
   font-size: 24rpx;
+}
+
+.category-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  width: calc(25% - 12rpx);
+  padding: 16rpx;
+  box-sizing: border-box;
+  border-radius: 20rpx;
+  background: #fff;
+}
+
+.category-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 999rpx;
+  background: #FF2442;
+}
+
+.category-name {
+  font-size: 24rpx;
+  color: #444;
+}
+
+.topic-card {
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  border-radius: 24rpx;
+  background: #fff;
+}
+
+.topic-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #222;
+}
+
+.topic-desc {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.topic-count {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: #999;
+}
+
+.skeleton-wrap {
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
+.feed-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+
+.feed-column {
+  flex: 1;
 }
 </style>

@@ -1,7 +1,14 @@
 <script type="application/json">
   {
     "pages": [
-      "./demo-detail/index"
+      "./search-result/index",
+      "./publish-editor/index",
+      "./draft-list/index",
+      "./my-notes/index",
+      "./note-detail/index",
+      "./comment-list/index",
+      "./user-profile/index",
+      "./topic-detail/index"
     ]
   }
 </script>

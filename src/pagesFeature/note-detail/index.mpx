@@ -1,0 +1,305 @@
+<template>
+  <view class="page detail-page">
+    <view wx:if="{{ isLoading }}" class="skeleton-wrap">
+      <mpx-skeleton rows="7" row-height="32" padding="20px" background="#ffffff" />
+    </view>
+
+    <mpx-empty wx:elif="{{ !currentNote }}" title="内容不存在" desc="这条笔记可能已经被删除。" />
+
+    <view wx:else>
+      <swiper class="note-swiper" indicator-dots="{{ currentNote.images.length > 1 }}" circular="{{ currentNote.images.length > 1 }}">
+        <swiper-item wx:for="{{ currentNote.images }}" wx:key="index">
+          <image class="note-image" src="{{ item }}" mode="aspectFill" />
+        </swiper-item>
+      </swiper>
+
+      <view class="author-row">
+        <view class="author-info" bindtap="handleAuthorTap">
+          <image class="author-avatar" src="{{ currentNote.author.avatar }}" mode="aspectFill" />
+          <view>
+            <view class="author-name">{{ currentNote.author.nickname }}</view>
+            <view class="author-meta">{{ currentNote.locationText || '真实分享中' }}</view>
+          </view>
+        </view>
+        <view class="follow-button {{ authorProfile && authorProfile.isFollowed ? 'is-followed' : '' }}" bindtap="handleFollow">{{ authorProfile && authorProfile.isFollowed ? '已关注' : '关注' }}</view>
+      </view>
+
+      <view class="content-card">
+        <view class="note-title">{{ currentNote.title }}</view>
+        <view class="note-content">{{ currentNote.content }}</view>
+        <view wx:if="{{ currentNote.topics.length }}" class="topic-group">
+          <view wx:for="{{ currentNote.topics }}" wx:key="id" class="topic-tag" data-id="{{ item.id }}" bindtap="handleTopicTap">{{ item.name }}</view>
+        </view>
+        <view class="meta-line">{{ currentNote.publishTime }} · {{ currentNote.locationText }}</view>
+      </view>
+
+      <view class="comment-card" bindtap="goCommentList">
+        <view class="comment-header">
+          <view class="comment-title">评论 {{ currentNote.commentCount }}</view>
+          <view class="comment-link">查看全部</view>
+        </view>
+        <view wx:if="{{ commentPreview.length === 0 }}" class="comment-empty">还没有评论，抢先留下第一条互动。</view>
+        <view wx:for="{{ commentPreview }}" wx:key="id" class="comment-preview-item">
+          <view class="comment-preview-name">{{ item.user.nickname }}</view>
+          <view class="comment-preview-content">{{ item.content }}</view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{ currentNote }}" class="bottom-bar">
+      <view class="bottom-action {{ currentNote.liked ? 'is-active' : '' }}" bindtap="handleLike">赞 {{ currentNote.likeCount }}</view>
+      <view class="bottom-action {{ currentNote.collected ? 'is-active' : '' }}" bindtap="handleCollect">藏 {{ currentNote.collectCount }}</view>
+      <view class="bottom-action" bindtap="goCommentList">评 {{ currentNote.commentCount }}</view>
+      <button class="share-button" open-type="share">分享</button>
+    </view>
+  </view>
+</template>
+
+<script>
+import mpx, { createPage } from '@mpxjs/core'
+import { mapActions, mapState } from '@mpxjs/pinia'
+import { useNoteStore, useProfileStore, useUserStore } from '@/store'
+import { navigateTo } from '@/utils'
+
+createPage({
+  data: {
+    noteId: ''
+  },
+  computed: {
+    ...mapState(useNoteStore, ['detailMap', 'commentPreviewMap', 'detailLoadingMap']),
+    ...mapState(useProfileStore, ['visitProfiles', 'followPendingMap']),
+    ...mapState(useUserStore, ['isLogin']),
+    currentNote() {
+      return this.detailMap[this.noteId] || null
+    },
+    commentPreview() {
+      return this.commentPreviewMap[this.noteId] || []
+    },
+    isLoading() {
+      return Boolean(this.detailLoadingMap[this.noteId])
+    },
+    authorProfile() {
+      if (!this.currentNote) return null
+      return this.visitProfiles[this.currentNote.author.id] || null
+    }
+  },
+  async onLoad(options) {
+    this.noteId = options.noteId || options.id || ''
+    if (!this.noteId) return
+    await this.fetchNoteDetail(this.noteId)
+    this.fetchCommentPreview(this.noteId)
+    if (this.currentNote) {
+      this.fetchVisitProfile(this.currentNote.author.id)
+    }
+  },
+  onShareAppMessage() {
+    return {
+      title: this.currentNote ? this.currentNote.title : '笔记详情',
+      path: `/pagesFeature/note-detail/index?noteId=${this.noteId}`
+    }
+  },
+  methods: {
+    ...mapActions(useNoteStore, ['fetchNoteDetail', 'fetchCommentPreview', 'toggleLike', 'toggleCollect']),
+    ...mapActions(useProfileStore, ['fetchVisitProfile', 'patchVisitFollowState']),
+    ensureLogin() {
+      if (this.isLogin) return true
+      navigateTo('login')
+      return false
+    },
+    async handleLike() {
+      if (!this.ensureLogin()) return
+      await this.toggleLike(this.noteId)
+    },
+    async handleCollect() {
+      if (!this.ensureLogin()) return
+      await this.toggleCollect(this.noteId)
+    },
+    goCommentList() {
+      navigateTo('comment-list', { noteId: this.noteId })
+    },
+    handleFollow() {
+      if (!this.currentNote) return
+      if (!this.ensureLogin()) return
+      if (this.followPendingMap[this.currentNote.author.id]) return
+      this.patchVisitFollowState(this.currentNote.author.id)
+    },
+    handleAuthorTap() {
+      if (!this.currentNote) return
+      navigateTo('user-profile', { userId: this.currentNote.author.id })
+    },
+    handleTopicTap(e) {
+      navigateTo('topic-detail', { topicId: e.currentTarget.dataset.id })
+    }
+  }
+})
+</script>
+
+<script name="json">
+module.exports = {
+  navigationBarTitleText: '笔记详情',
+  allowsBounceVertical: 'NO'
+}
+</script>
+
+<style lang="scss" scoped>
+.detail-page {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 120rpx);
+}
+
+.skeleton-wrap {
+  padding: 24rpx;
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
+.note-swiper {
+  width: 100%;
+  height: 520rpx;
+  background: #fff;
+}
+
+.note-image {
+  width: 100%;
+  height: 100%;
+}
+
+.author-row,
+.content-card,
+.comment-card {
+  margin: 20rpx 24rpx 0;
+  padding: 24rpx;
+  border-radius: 24rpx;
+  background: #fff;
+}
+
+.author-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.author-info {
+  display: flex;
+  align-items: center;
+}
+
+.author-avatar {
+  width: 88rpx;
+  height: 88rpx;
+  margin-right: 18rpx;
+  border-radius: 999rpx;
+}
+
+.author-name,
+.note-title,
+.comment-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #222;
+}
+
+.author-meta,
+.meta-line,
+.comment-empty,
+.comment-link,
+.comment-preview-content {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.follow-button {
+  min-width: 110rpx;
+  height: 56rpx;
+  line-height: 56rpx;
+  border-radius: 999rpx;
+  text-align: center;
+  background: #FF2442;
+  color: #fff;
+  font-size: 22rpx;
+}
+
+.follow-button.is-followed {
+  background: #f5f5f7;
+  color: #666;
+}
+
+.note-content {
+  margin-top: 16rpx;
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: #333;
+}
+
+.topic-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 18rpx;
+}
+
+.topic-tag {
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: #fff1f3;
+  color: #FF2442;
+  font-size: 22rpx;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.comment-preview-item {
+  margin-top: 16rpx;
+}
+
+.comment-preview-name {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #222;
+}
+
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx 24rpx calc(env(safe-area-inset-bottom) + 16rpx);
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid #eee;
+}
+
+.bottom-action,
+.share-button {
+  flex: 1;
+  height: 72rpx;
+  line-height: 72rpx;
+  border-radius: 999rpx;
+  background: #f5f5f7;
+  text-align: center;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.bottom-action.is-active {
+  background: #fff1f3;
+  color: #FF2442;
+}
+
+.share-button {
+  margin: 0;
+  padding: 0;
+  background: #FF2442;
+  color: #fff;
+  border: none;
+}
+
+.share-button::after {
+  border: none;
+}
+</style>

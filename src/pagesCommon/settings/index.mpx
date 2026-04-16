@@ -1,0 +1,91 @@
+<template>
+  <view class="page settings-page">
+    <view class="settings-card">
+      <view class="menu-row">
+        <view class="menu-label">当前账号</view>
+        <view class="menu-value">{{ userInfo.nickname || userInfo.name || '未登录' }}</view>
+      </view>
+      <view class="menu-row" bindtap="handlePlaceholder">
+        <view class="menu-label">隐私说明</view>
+        <view class="menu-value">查看</view>
+      </view>
+      <view class="menu-row" bindtap="handlePlaceholder">
+        <view class="menu-label">清理缓存</view>
+        <view class="menu-value">待接入</view>
+      </view>
+    </view>
+
+    <button class="logout-button" bindtap="handleLogout">退出登录</button>
+  </view>
+</template>
+
+<script>
+import mpx, { createPage } from '@mpxjs/core'
+import { mapActions, mapState } from '@mpxjs/pinia'
+import { useUserStore } from '@/store'
+import { reLaunch } from '@/utils'
+
+createPage({
+  computed: {
+    ...mapState(useUserStore, ['userInfo'])
+  },
+  methods: {
+    ...mapActions(useUserStore, ['clearSession']),
+    handlePlaceholder() {
+      mpx.showToast({ title: '下一阶段接入', icon: 'none' })
+    },
+    handleLogout() {
+      this.clearSession()
+      reLaunch('home')
+    }
+  }
+})
+</script>
+
+<script name="json">
+module.exports = {
+  navigationBarTitleText: '设置',
+  allowsBounceVertical: 'NO'
+}
+</script>
+
+<style lang="scss" scoped>
+.settings-page {
+  padding: 24rpx;
+}
+
+.settings-card {
+  padding: 0 24rpx;
+  border-radius: 24rpx;
+  background: #fff;
+}
+
+.menu-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 96rpx;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.menu-row:last-child {
+  border-bottom: none;
+}
+
+.menu-label {
+  font-size: 28rpx;
+  color: #222;
+}
+
+.menu-value {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.logout-button {
+  margin-top: 24rpx;
+  background: #fff1f3;
+  color: #FF2442;
+  border-radius: 999rpx;
+}
+</style>

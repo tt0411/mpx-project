@@ -1,0 +1,147 @@
+<template>
+  <view class="page topic-page">
+    <view wx:if="{{ loading }}" class="skeleton-wrap">
+      <mpx-skeleton rows="6" row-height="32" padding="20px" background="#ffffff" />
+    </view>
+
+    <view wx:elif="{{ topic }}">
+      <view class="topic-card">
+        <view class="topic-name">{{ topic.name }}</view>
+        <view class="topic-desc">{{ topic.desc }}</view>
+        <view class="topic-count">{{ topic.noteCount }} 篇笔记</view>
+      </view>
+
+      <view class="section-title">相关笔记</view>
+      <mpx-empty wx:if="{{ noteList.length === 0 }}" title="这个话题还没有内容" desc="后续内容会逐步补齐。" />
+      <view wx:else class="feed-grid">
+        <view class="feed-column">
+          <note-card wx:for="{{ leftColumn }}" wx:key="id" note="{{ item }}" bind:cardtap="handleCardTap" bind:authortap="handleAuthorTap" />
+        </view>
+        <view class="feed-column">
+          <note-card wx:for="{{ rightColumn }}" wx:key="id" note="{{ item }}" bind:cardtap="handleCardTap" bind:authortap="handleAuthorTap" />
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import { createPage } from '@mpxjs/core'
+import { getTopicDetail, getTopicNotes } from '@/api'
+import { navigateTo } from '@/utils'
+
+function splitColumns(list = []) {
+  return list.reduce((columns, item, index) => {
+    columns[index % 2].push(item)
+    return columns
+  }, [[], []])
+}
+
+createPage({
+  data: {
+    topicId: '',
+    loading: false,
+    topic: null,
+    noteList: []
+  },
+  computed: {
+    leftColumn() {
+      return splitColumns(this.noteList || [])[0]
+    },
+    rightColumn() {
+      return splitColumns(this.noteList || [])[1]
+    }
+  },
+  onLoad(options) {
+    this.topicId = options.topicId || ''
+    this.fetchTopicData()
+  },
+  methods: {
+    async fetchTopicData() {
+      if (!this.topicId) return
+      this.loading = true
+      try {
+        const [{ code: detailCode, data: detailData }, { code: listCode, data: listData }] = await Promise.all([
+          getTopicDetail({ params: { topicId: this.topicId } }),
+          getTopicNotes({ params: { topicId: this.topicId, pageNo: 1, pageSize: 20 } })
+        ])
+
+        if (detailCode === 0) {
+          this.topic = detailData
+        }
+
+        if (listCode === 0) {
+          this.noteList = listData.list || []
+        }
+      } finally {
+        this.loading = false
+      }
+    },
+    handleCardTap(e) {
+      navigateTo('note-detail', { noteId: e.detail.note.id })
+    },
+    handleAuthorTap(e) {
+      navigateTo('user-profile', { userId: e.detail.note.author.id })
+    }
+  }
+})
+</script>
+
+<script name="json">
+module.exports = {
+  navigationBarTitleText: '话题详情',
+  allowsBounceVertical: 'NO',
+  usingComponents: {
+    'note-card': '@/components/note-card'
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.topic-page {
+  padding: 24rpx;
+}
+
+.skeleton-wrap,
+.topic-card {
+  border-radius: 24rpx;
+  overflow: hidden;
+  background: #fff;
+}
+
+.topic-card {
+  padding: 28rpx 24rpx;
+}
+
+.topic-name,
+.section-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #222;
+}
+
+.topic-desc,
+.topic-count {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.5;
+}
+
+.topic-count {
+  color: #999;
+}
+
+.section-title {
+  margin: 28rpx 0 18rpx;
+}
+
+.feed-grid {
+  display: flex;
+  gap: 16rpx;
+}
+
+.feed-column {
+  flex: 1;
+}
+</style>
