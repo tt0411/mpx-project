@@ -25,7 +25,7 @@
 <script>
 import mpx, { createPage } from '@mpxjs/core'
 import { deleteDraft, getDraftList } from '@/api'
-import { navigateTo } from '@/utils'
+import { navigateTo, navigateToLogin } from '@/utils'
 import { useProfileStore, useUserStore } from '@/store'
 
 createPage({
@@ -35,7 +35,7 @@ createPage({
   },
   async onShow() {
     if (!useUserStore().isLogin) {
-      navigateTo('login')
+      navigateToLogin('draft-list')
       return
     }
 

@@ -3,6 +3,7 @@ import { envConfig } from '@/utils'
 
 const baseURL = envConfig.baseURL
 let loadingCount = 0
+let interceptorsInitialized = false
 
 function showLoading() {
   if (loadingCount === 0) {
@@ -18,61 +19,77 @@ function hideLoading() {
   }
 }
 
-mpx.xfetch.interceptors.request.use((config) => {
-  if (config.showLoading) {
-    showLoading()
+function ensureXFetch() {
+  const xfetch = mpx.xfetch
+
+  if (!xfetch) {
+    throw new Error('mpx xfetch is not initialized')
   }
 
-  const session = mpx.getStorageSync('template_session') || {}
-  const token = session.token
-  const cookies = mpx.getStorageSync('cookies')
+  if (!interceptorsInitialized) {
+    xfetch.interceptors.request.use((config) => {
+      if (config.showLoading) {
+        showLoading()
+      }
 
-  config.headers = config.headers || {}
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+      const session = mpx.getStorageSync('template_session') || {}
+      const token = session.token
+      const cookies = mpx.getStorageSync('cookies')
+
+      config.headers = config.headers || {}
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
+      if (cookies && cookies.length) {
+        config.headers.cookie = cookies.join(';')
+      }
+
+      return config
+    })
+
+    xfetch.interceptors.response.use(
+      (response) => {
+        if (response.requestConfig.showLoading) {
+          hideLoading()
+        }
+
+        if (response.cookies && response.cookies.length) {
+          const cookieParts = response.cookies[0].split(';')
+          mpx.setStorageSync('cookies', cookieParts)
+        }
+
+        return response.data
+      },
+      (error) => {
+        hideLoading()
+
+        if (error.code === 'ECONNABORTED') {
+          mpx.showToast({ title: '请求超时', icon: 'none' })
+          return Promise.reject(error)
+        }
+
+        try {
+          const status = error.response && error.response.status
+          const message = status === 404 ? '接口不存在' : status === 500 ? '服务异常' : '网络异常'
+          mpx.showToast({ title: message, icon: 'none' })
+        } catch (err) {
+          mpx.showToast({ title: '网络异常', icon: 'none' })
+        }
+
+        return Promise.reject(error)
+      }
+    )
+
+    interceptorsInitialized = true
   }
-  if (cookies && cookies.length) {
-    config.headers.cookie = cookies.join(';')
-  }
 
-  return config
-})
-
-mpx.xfetch.interceptors.response.use(
-  (response) => {
-    if (response.requestConfig.showLoading) {
-      hideLoading()
-    }
-
-    if (response.cookies && response.cookies.length) {
-      const cookieParts = response.cookies[0].split(';')
-      mpx.setStorageSync('cookies', cookieParts)
-    }
-
-    return response.data
-  },
-  (error) => {
-    hideLoading()
-
-    if (error.code === 'ECONNABORTED') {
-      mpx.showToast({ title: '请求超时', icon: 'none' })
-      return Promise.reject(error)
-    }
-
-    try {
-      const status = error.response && error.response.status
-      const message = status === 404 ? '接口不存在' : status === 500 ? '服务异常' : '网络异常'
-      mpx.showToast({ title: message, icon: 'none' })
-    } catch (err) {
-      mpx.showToast({ title: '网络异常', icon: 'none' })
-    }
-
-    return Promise.reject(error)
-  }
-)
+  return xfetch
+}
 
 function request({ url, config = {} }) {
-  return mpx.xfetch.fetch({
+  const xfetch = ensureXFetch()
+
+  return xfetch.fetch({
     url: url.includes('http') ? url : `${baseURL}${url}`,
     timeout: config.timeout || 10000,
     ...config

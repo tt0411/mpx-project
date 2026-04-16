@@ -79,7 +79,7 @@
 import { createPage } from '@mpxjs/core'
 import { mapActions, mapState } from '@mpxjs/pinia'
 import { useProfileStore, useUserStore } from '@/store'
-import { navigateTo, reLaunch } from '@/utils'
+import { navigateTo, navigateToLogin, reLaunch } from '@/utils'
 
 function splitColumns(list = []) {
   return list.slice(0, 4).reduce((columns, item, index) => {
@@ -111,7 +111,7 @@ createPage({
     ...mapActions(useUserStore, ['clearSession']),
     ...mapActions(useProfileStore, ['fetchMyProfile', 'fetchMyNotes', 'fetchDraftSummary']),
     goLogin() {
-      navigateTo('login')
+      navigateToLogin('profile')
     },
     goEditProfile() {
       navigateTo('edit-profile')

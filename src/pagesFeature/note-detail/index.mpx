@@ -59,7 +59,7 @@
 import mpx, { createPage } from '@mpxjs/core'
 import { mapActions, mapState } from '@mpxjs/pinia'
 import { useNoteStore, useProfileStore, useUserStore } from '@/store'
-import { navigateTo } from '@/utils'
+import { navigateTo, navigateToLogin } from '@/utils'
 
 createPage({
   data: {
@@ -103,7 +103,7 @@ createPage({
     ...mapActions(useProfileStore, ['fetchVisitProfile', 'patchVisitFollowState']),
     ensureLogin() {
       if (this.isLogin) return true
-      navigateTo('login')
+      navigateToLogin('note-detail', { noteId: this.noteId })
       return false
     },
     async handleLike() {

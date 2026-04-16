@@ -55,7 +55,7 @@ import mpx, { createPage } from '@mpxjs/core'
 import { mapActions } from '@mpxjs/pinia'
 import { deleteComment, getCommentList } from '@/api'
 import { useNoteStore, useUserStore } from '@/store'
-import { navigateTo } from '@/utils'
+import { navigateTo, navigateToLogin } from '@/utils'
 
 createPage({
   data: {
@@ -97,7 +97,7 @@ createPage({
       }
 
       if (!useUserStore().isLogin) {
-        navigateTo('login')
+        navigateToLogin('comment-list', { noteId: this.noteId })
         return
       }
 

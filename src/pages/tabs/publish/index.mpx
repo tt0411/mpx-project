@@ -44,7 +44,7 @@
 import mpx, { createPage } from '@mpxjs/core'
 import { mapActions, mapState } from '@mpxjs/pinia'
 import { useProfileStore, useUserStore } from '@/store'
-import { navigateTo } from '@/utils'
+import { navigateTo, navigateToLogin } from '@/utils'
 
 createPage({
   computed: {
@@ -58,30 +58,31 @@ createPage({
   },
   methods: {
     ...mapActions(useProfileStore, ['fetchDraftSummary']),
-    ensureLogin() {
+    ensureLogin(redirect = 'publish', params = {}) {
       if (this.isLogin) return true
-      navigateTo('login')
+      navigateToLogin(redirect, params)
       return false
     },
     handlePrimaryAction() {
-      if (!this.ensureLogin()) return
+      if (!this.ensureLogin('publish-editor')) return
       navigateTo('publish-editor')
     },
     handleActionTap(e) {
-      if (!this.ensureLogin()) return
-
       const { action } = e.currentTarget.dataset
       if (action === 'drafts') {
+        if (!this.ensureLogin('draft-list')) return
         navigateTo('draft-list')
         return
       }
 
       if (action === 'notes') {
+        if (!this.ensureLogin('my-notes')) return
         navigateTo('my-notes')
       }
     },
     goLatestDraft() {
-      if (!this.ensureLogin() || !this.draftSummary.latestDraft) return
+      if (!this.draftSummary.latestDraft) return
+      if (!this.ensureLogin('publish-editor', { draftId: this.draftSummary.latestDraft.draftId })) return
       navigateTo('publish-editor', { draftId: this.draftSummary.latestDraft.draftId })
     },
     handleGuidelineTap() {

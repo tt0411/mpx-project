@@ -30,7 +30,7 @@
 import mpx, { createPage } from '@mpxjs/core'
 import { mapActions, mapState } from '@mpxjs/pinia'
 import { useProfileStore, useUserStore } from '@/store'
-import { navigateTo } from '@/utils'
+import { navigateTo, navigateToLogin } from '@/utils'
 
 function splitColumns(list = []) {
   return list.reduce((columns, item, index) => {
@@ -51,7 +51,7 @@ createPage({
   },
   async onShow() {
     if (!useUserStore().isLogin) {
-      navigateTo('login')
+      navigateToLogin('my-notes')
       return
     }
 

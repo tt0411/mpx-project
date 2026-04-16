@@ -40,7 +40,7 @@
 import { createPage } from '@mpxjs/core'
 import { mapActions, mapState } from '@mpxjs/pinia'
 import { useMessageStore, useUserStore } from '@/store'
-import { navigateTo } from '@/utils'
+import { navigateTo, navigateToLogin } from '@/utils'
 
 const TAB_LIST = [
   { name: 'all', label: '全部' },
@@ -106,7 +106,7 @@ createPage({
       }
     },
     goLogin() {
-      navigateTo('login')
+      navigateToLogin('message')
     }
   }
 })
