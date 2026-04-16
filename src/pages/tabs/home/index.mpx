@@ -1,10 +1,10 @@
 <template>
   <view class="page home-page">
     <view class="home-header">
-      <view>
+      <!-- <view>
         <view class="brand">小红书 Lite</view>
         <view class="brand-desc">内容优先的轻社区示范版</view>
-      </view>
+      </view> -->
       <view class="search-entry" bindtap="goSearch">
         <cube-icon size="18" color="#999999" type="search" />
         <view class="search-placeholder">搜索上海探店、春季穿搭、减脂餐</view>

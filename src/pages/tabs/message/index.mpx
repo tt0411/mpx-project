@@ -1,6 +1,5 @@
 <template>
   <view class="page message-page">
-    <view class="page-title">消息</view>
 
     <view wx:if="{{ !isLogin }}" class="login-card">
       <view class="login-title">登录后查看互动通知</view>

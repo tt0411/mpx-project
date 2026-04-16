@@ -117,7 +117,6 @@ module.exports = {
 .field-textarea {
   width: 100%;
   margin-top: 12rpx;
-  padding: 18rpx 20rpx;
   box-sizing: border-box;
   border-radius: 18rpx;
   background: #f7f8fa;
@@ -125,8 +124,15 @@ module.exports = {
   color: #222;
 }
 
+.field-input {
+  height: 88rpx;
+  padding: 0 20rpx;
+}
+
 .field-textarea {
   min-height: 180rpx;
+  padding: 18rpx 20rpx;
+  line-height: 1.5;
 }
 
 .save-button {
